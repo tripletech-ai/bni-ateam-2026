@@ -15,7 +15,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "922110368", lineLink: "",
-    tags: ["龍巖生命產業代表","頂級養生宅"]
+    tags: ["龍巖生命產業代表"]
   },
   {
     id: "003", name: "王彥萍", branch: "長城分會", region: "zhongshan",
@@ -32,7 +32,7 @@
     have: "臉書社團兩萬人，固定服務的客戶3000人，知名人士都有",
     wantMeet: "風水命理師，身心靈老師，禮贈品代表",
     wantReferral: "陽宅風水勘驗，陰宅選位，想要有自己開運商品的企業主",
-    lineId: "leegogo01", lineLink: "",
+    lineId: "leegogo01", lineLink: "無",
     tags: ["開運商品販售","臉書社團兩萬人","知名人士都有","風水命理師","身心靈老師","禮贈品代表","陽宅風水勘驗","陰宅選位"]
   },
   {
@@ -56,11 +56,11 @@
   {
     id: "007", name: "方榮久", branch: "長翔分會", region: "zhongshan",
     profession: "AI 勞資顧問",
-    have: "✔ AI 勞資風險健檢\n✔ 勞動法企業內訓\n✔ AI × 心智圖教學\n✔ 工作規則／勞動契約制定\n✔ 職場霸凌與勞資爭議預防\n✔ AI 數位教材與企業培訓規劃\n✔ ESG 勞動法合規輔導\n✔ 政府補助課程申請規劃",
-    wantMeet: "✔ 10人以上企業老闆\n✔ 人資主管／福委會\n✔ 科技業與傳產主管\n✔ 教育訓練主管\n✔ 想導入 AI 提升效率的企業\n✔ 想建立企業制度與降低勞資風險的公司\n✔ 政府補助課程申請規劃",
-    wantReferral: "✔ 10人以上企業老闆\n✔ 人資主管／福委會\n✔ 科技業與傳產主管\n✔ 教育訓練主管\n✔ 想導入 AI 提升效率的企業\n✔ 想建立企業制度與降低勞資風險的公司\n✔ 政府補助課程申請規劃",
+    have: "✔ AI 勞資風險健檢\n✔ 勞動法企業內訓\n✔ AI × 心智圖教學\n✔ 工作規則／勞動契約制定\n✔ 職場霸凌與勞資爭議預防\n✔ AI 數位教材與企業培訓規劃\n✔ ESG 勞動法合規輔導\n✔ 政府補助課程申請規劃\n",
+    wantMeet: "✔ 10人以上企業老闆\n✔ 人資主管／福委會\n✔ 科技業與傳產主管\n✔ 教育訓練主管\n✔ 想導入 AI 提升效率的企業\n✔ 想建立企業制度與降低勞資風險的公司\n✔ 政府補助課程申請規劃\n",
+    wantReferral: "✔ 10人以上企業老闆\n✔ 人資主管／福委會\n✔ 科技業與傳產主管\n✔ 教育訓練主管\n✔ 想導入 AI 提升效率的企業\n✔ 想建立企業制度與降低勞資風險的公司\n✔ 政府補助課程申請規劃\n",
     lineId: "pofen", lineLink: "https://line.me/ti/p/9b4v-88mwW",
-    tags: ["AI","勞資顧問","勞資風險健檢","勞動法企業內訓","心智圖教學","ESG","勞動法合規輔導","人資主管／福委會","科技業與傳產主管","教育訓練主管"]
+    tags: ["勞資顧問","勞資風險健檢","勞動法企業內訓","心智圖教學","ESG","勞動法合規輔導","人資主管／福委會","科技業與傳產主管","教育訓練主管","想導入"]
   },
   {
     id: "008", name: "周玉茹", branch: "長翔分會", region: "zhongshan",
@@ -74,9 +74,9 @@
   {
     id: "009", name: "徐翠蓮", branch: "長翔分會", region: "zhongshan",
     profession: "室內裝修統包",
-    have: "老屋翻新\n新成屋裝修\n商空規劃施工\n住宅裝修規劃施工\n室內裝修統包",
-    wantMeet: "企業負責人\n機關工程採購主管\n建設公司",
-    wantReferral: "仲介\n代租代管業\n資深商空設計師\n資深住宅設計師\n家具家飾業\n驗屋代表",
+    have: "老屋翻新\n新成屋裝修\n商空規劃施工\n住宅裝修規劃施工\n室內裝修統包\n",
+    wantMeet: "企業負責人\n機關工程採購主管\n建設公司\n\n\n\n",
+    wantReferral: "仲介\n代租代管業\n資深商空設計師\n資深住宅設計師\n家具家飾業\n驗屋代表\n",
     lineId: "lily0920393131", lineLink: "https://line.me/ti/p/Gs9JMgK64w",
     tags: ["室內裝修統包","老屋翻新","新成屋裝修","商空規劃施工","住宅裝修規劃施工","企業負責人","機關工程採購主管","建設公司","仲介","代租代管業"]
   },
@@ -84,8 +84,8 @@
     id: "010", name: "林宗平", branch: "長翔分會", region: "zhongshan",
     profession: "不動產代銷",
     have: "都更案                                                           危老案                                          新建案",
-    wantMeet: "建築師\n建設公司\n土地開發公司",
-    wantReferral: "建築師\n建設公司\n土地開發公司",
+    wantMeet: "建築師\n建設公司\n土地開發公司\n",
+    wantReferral: "建築師\n建設公司\n土地開發公司\n",
     lineId: "jason909", lineLink: "https://line.me/ti/p/tUz5ydfkmr",
     tags: ["不動產代銷","都更案","危老案","新建案","建築師","建設公司","土地開發公司"]
   },
@@ -105,7 +105,7 @@
     wantMeet: "專業人士/管顧公司/雲端平台公司",
     wantReferral: "專業人士/管顧公司/雲端平台公司",
     lineId: "930849519", lineLink: "https://line.me/ti/p/lvKp88vThL",
-    tags: ["數位課程與平台","想當講師","開課","把專業變成課程","發展斜槓","第二收入","建立個人品牌","線上課程","數位課程","企業知識庫"]
+    tags: ["數位課程與平台","想當講師","開課","把專業變成課程","發展斜槓","第二收入","建立個人品牌","分享專業企業內訓","線上課程","數位課程"]
   },
   {
     id: "013", name: "劉玓岡", branch: "金虎分會", region: "sanlu",
@@ -132,12 +132,12 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "leo594888", lineLink: "",
-    tags: ["平面設計","活動展場視覺設計","活動行銷公司","活動單位","廟宇單位"]
+    tags: ["平面設計","活動展場視覺設計"]
   },
   {
     id: "016", name: "駱湘樺", branch: "金虎分會", region: "sanlu",
     profession: "生命禮儀",
-    have: "服務：生命禮儀規劃、塔位諮詢殯葬、花禮贈送\n\n資源：身心靈老師",
+    have: "服務：生命禮儀規劃、塔位諮詢殯葬、花禮贈送\n\n資源：身心靈老師\n",
     wantMeet: "長照中心\n養生村\n養老院",
     wantReferral: "佛學團體、宗親會",
     lineId: "azraelluo", lineLink: "https://line.me/ti/p/K5j0yAgOWx",
@@ -177,7 +177,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "allen1666", lineLink: "",
-    tags: ["負離子設備","商務中心","ESG永續辦公室","民宿業者","健康教室"]
+    tags: ["負離子設備"]
   },
   {
     id: "021", name: "吳騏祥", branch: "金利分會", region: "sanlu",
@@ -186,7 +186,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "920333582", lineLink: "",
-    tags: ["氦氖雷射儀","做雅健康的族群"]
+    tags: ["氦氖雷射儀"]
   },
   {
     id: "022", name: "呂品蓁", branch: "金利分會", region: "sanlu",
@@ -195,7 +195,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "922109767", lineLink: "",
-    tags: ["頭皮護理","美容師","香氛師"]
+    tags: ["頭皮護理"]
   },
   {
     id: "023", name: "黃立喬", branch: "金利分會", region: "sanlu",
@@ -204,7 +204,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "933893413", lineLink: "",
-    tags: ["護眼管理","•眼鏡行","•企業福委","•眼科醫生"]
+    tags: ["護眼管理"]
   },
   {
     id: "024", name: "呂宜蓁", branch: "金利分會", region: "sanlu",
@@ -283,7 +283,7 @@
     profession: "系統櫃設計.系統櫃工廠",
     have: "系統櫃連工帶料\n系統櫃規劃設計\n系統櫃工程\n輕裝修工程\n系統板材出料",
     wantMeet: "室內設計師\n商空設計師\n統包工程廠商\n各項工種負責人 \n 想和系統櫃工廠端合作的人",
-    wantReferral: "需要系統櫃連工帶料的任何人\n需要系統櫃規劃設計的任何人\n需要系統板材出料的任何人",
+    wantReferral: "需要系統櫃連工帶料的任何人\n需要系統櫃規劃設計的任何人\n需要系統板材出料的任何人\n",
     lineId: "ddd8021", lineLink: "",
     tags: ["系統櫃連工帶料","系統櫃規劃設計","系統櫃工程","輕裝修工程","系統板材出料","室內設計師","商空設計師","統包工程廠商","各項工種負責人"]
   },
@@ -294,16 +294,16 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "waterfall5v0", lineLink: "",
-    tags: ["租物平台","原本在做販賣","戶用外品","3c器材","母嬰用品等","新品發表的商家"]
+    tags: ["租物平台"]
   },
   {
     id: "034", name: "吳孟純", branch: "金鑫分會", region: "sanlu",
     profession: "裝潢整合行銷",
-    have: "建商、代銷、室內設計、家具軟裝\n塗料、地板、窗簾、各類建材，連鎖店面",
+    have: "\n",
     wantMeet: "",
     wantReferral: "",
     lineId: "nakoruru529", lineLink: "",
-    tags: ["裝潢整合行銷","建商","代銷","室內設計","家具軟裝","塗料","地板","窗簾","各類建材","連鎖店面"]
+    tags: ["裝潢整合行銷"]
   },
   {
     id: "035", name: "鍾沛雯", branch: "金鑫分會", region: "sanlu",
@@ -339,7 +339,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "benny0421", lineLink: "",
-    tags: ["咖啡外燴","展覽設計公司","醫療","科技","醫學會秘書","企業行銷部","旅行社"]
+    tags: ["咖啡外燴"]
   },
   {
     id: "039", name: "陳文銓", branch: "金鑫分會", region: "sanlu",
@@ -348,7 +348,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "jobt", lineLink: "",
-    tags: ["壽險業","家事律師","稅務會計師","稅務地政士"]
+    tags: ["壽險業"]
   },
   {
     id: "040", name: "陳佩妤", branch: "金鑫分會", region: "sanlu",
@@ -366,7 +366,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "and24256", lineLink: "",
-    tags: ["搬家公司","整理師","包租代管","代銷","房仲"]
+    tags: ["搬家公司"]
   },
   {
     id: "042", name: "潘咨吟", branch: "金鑫分會", region: "sanlu",
@@ -375,7 +375,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "clayplanet", lineLink: "",
-    tags: ["黏土創作","貴族學校","活動公關公司","車商"]
+    tags: ["黏土創作"]
   },
   {
     id: "043", name: "楊凱絡", branch: "金鑫分會", region: "sanlu",
@@ -384,7 +384,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "king-own", lineLink: "",
-    tags: ["清潔業","包租代管","太陽能板維運","駐點清潔業","消毒除蟲","環葯販售業","日租業"]
+    tags: ["清潔業"]
   },
   {
     id: "044", name: "吳啓民", branch: "金鑫分會", region: "sanlu",
@@ -393,7 +393,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "", lineLink: "",
-    tags: ["消毒除蟲","室內設計師","商空設計師","清潔業者","餐飲顧問"]
+    tags: ["消毒除蟲"]
   },
   {
     id: "045", name: "何明昉", branch: "金鑫分會", region: "sanlu",
@@ -402,7 +402,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "手機：0926639661", lineLink: "",
-    tags: ["廣告影像製作","展覽設計公司","餐飲設備商","連鎖餐飲顧問","品牌","代銷公司","公關公司","精品品牌"]
+    tags: ["廣告影像製作"]
   },
   {
     id: "046", name: "林怡秀", branch: "金鑫分會", region: "sanlu",
@@ -447,7 +447,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "a459574", lineLink: "",
-    tags: ["油漆工程","營造業","室內","商空","展場設計師","軟裝","統包工程"]
+    tags: ["油漆工程"]
   },
   {
     id: "051", name: "梁虔駖 Ben", branch: "長佑分會", region: "zhongshan",
@@ -465,7 +465,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "wert1868", lineLink: "",
-    tags: ["風水地理師","命理占卜師","開運用品商","中小企業開店老闆"]
+    tags: ["風水地理師"]
   },
   {
     id: "053", name: "游姿菱", branch: "長佑分會", region: "zhongshan",
@@ -474,7 +474,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "@rita577990", lineLink: "",
-    tags: ["呼吸照護","耳鼻喉科醫師","胸腔內科醫師","呼吸治療師","打呼族群","出院準備","氧氣治療族群"]
+    tags: ["呼吸照護"]
   },
   {
     id: "054", name: "曾惠君", branch: "長佑分會", region: "zhongshan",
@@ -509,7 +509,7 @@
     have: "各種美容整形手術                  各種微整醫美治療                      各種光電雷射治療                  腸胃健康管理      痔瘡            植髮護髮    泌尿科                   功能醫學   再生醫學               減重醫學   中醫漢方",
     wantMeet: "空姐/空少           活動主持人   直播主   美妝美裝網紅         產後媽媽      理專或保險業務          自媒體經營者(追蹤數>1萬)",
     wantReferral: "醫美診所負責人                                  桃園以北大型月子中心(>30床)      網紅經紀公司     各類健康講座",
-    lineId: "aphro-songer", lineLink: "",
+    lineId: "aphro-songer", lineLink: "無",
     tags: ["美容醫學","各種美容整形手術","各種微整醫美治療","各種光電雷射治療","腸胃健康管理","痔瘡","植髮護髮","泌尿科","功能醫學","再生醫學"]
   },
   {
@@ -519,14 +519,14 @@
     wantMeet: "科技業工程師福委會、職業駕駛工會福委會\n高爾夫球俱樂部;",
     wantReferral: "旅宿業者、寢具業者、有通路平台的舒眠保健品業者\n抗衰老診所、預防醫學診所",
     lineId: "danniel810608", lineLink: "https://line.me/ti/p/N4NrjJO6Bo",
-    tags: ["OSA牙醫師","美白","矯正","牙周","植牙","高爾夫球俱樂部","旅宿業者","寢具業者","抗衰老診所","預防醫學診所"]
+    tags: ["OSA牙醫師","美白","矯正","牙周","植牙","高爾夫球俱樂部;","旅宿業者","寢具業者","抗衰老診所","預防醫學診所"]
   },
   {
     id: "059", name: "莊博全", branch: "金暘分會", region: "sanlu",
     profession: "房屋檢測",
     have: "房屋檢測\n工程檢測\n土木技師\n新成屋住戶群組",
     wantMeet: "室內設計師\n房仲\n電機技師",
-    wantReferral: "建設公司業務部\n代銷\n建築師",
+    wantReferral: "\n建設公司業務部\n代銷\n建築師",
     lineId: "tripletrust", lineLink: "https://line.me/ti/p/0QJ3bTfAc-",
     tags: ["房屋檢測","工程檢測","土木技師","新成屋住戶群組","室內設計師","房仲","電機技師","建設公司業務部","代銷","建築師"]
   },
@@ -555,7 +555,7 @@
     wantMeet: "勞資顧問 / HR / 長照人員派遣",
     wantReferral: "企業職工服務（福委會）/勞資顧問/醫療相關生態圈",
     lineId: "0099101342anitakang", lineLink: "",
-    tags: ["醫療長照","資源：環境工程","半導體業","醫美業","大型工程拆除業","勞資顧問","HR","長照人員派遣","企業職工服務","福委會"]
+    tags: ["醫療長照","資源：環境工程","半導體業","醫美業","大型工程拆除業","勞資顧問","長照人員派遣","企業職工服務","福委會","醫療相關生態圈"]
   },
   {
     id: "063", name: "王煜明", branch: "金鈺分會", region: "sanlu",
@@ -573,13 +573,13 @@
     wantMeet: "國外銷售營養品或\n醫療用品相關代理商",
     wantReferral: "社區型連鎖藥局負責人\n自費醫美/減重診所院長\n健康管理顧問/功能醫學醫師\n健身房/私人教練工作室負責人\n企業職工福利委員會 (福委) 接觸者",
     lineId: "wailson1234", lineLink: "https://line.me/ti/p/ElU1tYbafI",
-    tags: ["生活保健食品","有特約","醫生","藥師","營養師","等專業人士","國外銷售營養品或","自費醫美","減重診所院長","健康管理顧問"]
+    tags: ["生活保健食品","有特約醫生","藥師","營養師等專業人士","國外銷售營養品或","自費醫美","減重診所院長","健康管理顧問","功能醫學醫師","健身房"]
   },
   {
     id: "065", name: "謝承諺", branch: "金鈺分會", region: "sanlu",
     profession: "特種消防設備",
     have: "台中市/基隆市/新北市消防局搶救科",
-    wantMeet: "宮廟總幹事\n社團/基金會理事長\n大型化工廠工安課\n遊艇業者\n大型營造公司",
+    wantMeet: "宮廟總幹事\n社團/基金會理事長\n大型化工廠工安課\n遊艇業者\n大型營造公司\n",
     wantReferral: "工業保險公司\n消防工程/顧問公司\n防災/風險管理公司\n海外經銷商\n永續推動公司/師\n租賃業者",
     lineId: "ID:3e-michael\nTEL:0975-699137", lineLink: "https://line.me/ti/p/psKnX5lLf6",
     tags: ["特種消防設備","台中市","基隆市","宮廟總幹事","社團","基金會理事長","大型化工廠工安課","遊艇業者","大型營造公司","工業保險公司"]
@@ -591,7 +591,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "remi780615", lineLink: "",
-    tags: ["企業陪跑顧問","食品業","保健品業","行銷公司"]
+    tags: ["企業陪跑顧問"]
   },
   {
     id: "067", name: "陳沛緹", branch: "長悅分會", region: "zhongshan",
@@ -600,7 +600,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "930135525", lineLink: "",
-    tags: ["壽險理財","會計師","律師","地政士"]
+    tags: ["壽險理財"]
   },
   {
     id: "068", name: "張文婷", branch: "長悅分會", region: "zhongshan",
@@ -670,7 +670,7 @@
     profession: "石墨烯應用",
     have: "石墨烯印染加工技術/海外直播主/石墨烯相關產品(眼罩、寢具、護具)",
     wantMeet: "健康產業/旅行業/登山/健身/樂齡產業",
-    wantReferral: "寢具業者/芳療SPA/中醫診所/整復師/經絡理療/高爾夫球/登山/科技業採購",
+    wantReferral: "寢具業者/芳療SPA/中醫診所/整復師/經絡理療/高爾夫球/登山/科技業採購\n\n\n",
     lineId: "dct629tim", lineLink: "ttps://line.me/ti/p/3vcyUAfQko",
     tags: ["石墨烯應用","海外直播主","石墨烯相關產品","眼罩","寢具","護具","健康產業","旅行業","登山","健身"]
   },
@@ -690,7 +690,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "hnp2016", lineLink: "",
-    tags: ["手足指甲保健","-皮膚科診所","-運動醫學診所","-長照產業"]
+    tags: ["手足指甲保健"]
   },
   {
     id: "078", name: "孫成育", branch: "長輝分會", region: "zhongshan",
@@ -713,7 +713,7 @@
   {
     id: "080", name: "顧心芝", branch: "長輝分會", region: "zhongshan",
     profession: "餐飲行銷整合顧問",
-    have: "餐飲品牌定位、開店規劃、\n社群行銷、POS數據分析、\n短影音企劃、電商建置、\n招商募資簡報、異業合作整合、\n餐飲教育課程",
+    have: "餐飲品牌定位、開店規劃、\n社群行銷、POS數據分析、\n短影音企劃、電商建置、\n招商募資簡報、異業合作整合、\n餐飲教育課程\n",
     wantMeet: "餐飲品牌創辦人、連鎖加盟主、\n百貨招商窗口、食品品牌、\n投資人、建築師、\n商業空間設計、保健品品牌、\n地方創生團隊",
     wantReferral: "想開店但不知道如何開始的人、\n已有店面但營收停滯的品牌、需\n要品牌重塑與行銷整合的餐飲業\n者、想拓展加盟與電商的店家、\n需要募資簡報與商業模式規劃的\n餐飲團隊",
     lineId: "faifaiku", lineLink: "https://line.me/ti/p/ihOUgdycvX",
@@ -744,7 +744,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "tim932", lineLink: "",
-    tags: ["平面攝影","動態攝影","活動主持","品牌行銷","活動公關"]
+    tags: ["平面攝影"]
   },
   {
     id: "084", name: "林以晴", branch: "金佑分會", region: "sanlu",
@@ -753,7 +753,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "vivi5209999", lineLink: "",
-    tags: ["產險","如：中華電信","診所","餐廳","美體業⋯等"]
+    tags: ["產險"]
   },
   {
     id: "085", name: "楊妙玲", branch: "金盟分會", region: "sanlu",
@@ -768,7 +768,7 @@
     id: "086", name: "林亞叡", branch: "金盟分會", region: "sanlu",
     profession: "防水工程",
     have: "傭有15年以上的施工經驗.專業一條龍服務\n根本壁癌處理保固5年\n2.在保固期內可做延長保固服務\n3.結構加強處理\n4.防水施工規劃\n5抓漏服務",
-    wantMeet: "不動產地政士\n房屋代銷業者\n驗屋師或驗屋公司",
+    wantMeet: "\n不動產地政士\n房屋代銷業者\n驗屋師或驗屋公司",
     wantReferral: "有投資房地產的投資客\n自住及有房屋在出租的業主\n室內設計師\n短影音操盤手",
     lineId: "amanda499", lineLink: "https://line.me/ti/p/xEEV7oALXk",
     tags: ["防水工程","3.結構加強處理","4.防水施工規劃","5抓漏服務","不動產地政士","房屋代銷業者","驗屋師或驗屋公司","室內設計師","短影音操盤手"]
@@ -789,7 +789,7 @@
     wantMeet: "保險公司訓練總部/組織行銷頭部/課程平台/企業永續長/管顧公司/企業二代接班/學校及家庭教育輔導機構",
     wantReferral: "課程平台/政府標案/兒童青少年教培業",
     lineId: "cathytan", lineLink: "https://line.me/ti/p/TBgfVMTv6O",
-    tags: ["財富流教練","明日之星沙盤","突破盲點","以"道"為本","搭配"覺察"","讓企業團隊凝聚","目標突圍","保險公司訓練總部","組織行銷頭部","課程平台"]
+    tags: ["財富流教練","明日之星沙盤","突破盲點","以道為本","搭配覺察","讓企業團隊凝聚","目標突圍","保險公司訓練總部","組織行銷頭部","課程平台"]
   },
   {
     id: "089", name: "工藤七海", branch: "金澎湃分會", region: "sanlu",
@@ -812,11 +812,11 @@
   {
     id: "091", name: "楊曉凡", branch: "金澎湃分會", region: "sanlu",
     profession: "泰國集運",
-    have: "我是來自泰國曼谷的曉凡，專注跨境商流，協助商品安全、高效流動於泰國與台灣市場之間\n\n我擁有台泰智慧商流系統與泰國數百家一手品牌資源。用IT精密邏輯，曾協助直播團隊十天狂衝六百萬業績！專門解決中大型電商與直播主海外供應鏈不穩、跨國清關不透明的痛點，將跨境貨運升級為一鍵掌控的智慧商流",
+    have: "我是來自泰國曼谷的曉凡，專注跨境商流，協助商品安全、高效流動於泰國與台灣市場之間\n\n我擁有台泰智慧商流系統與泰國數百家一手品牌資源。用IT精密邏輯，曾協助直播團隊十天狂衝六百萬業績！專門解決中大型電商與直播主海外供應鏈不穩、跨國清關不透明的痛點，將跨境貨運升級為一鍵掌控的智慧商流\n\n",
     wantMeet: "我需要引進泰國商品來打破選品紅海、提升毛利的台灣中大型電商老闆與大盤批發商；以及計畫前往泰國曼谷現場直播帶貨、需要最強「跨國後勤總部」支援的百萬級直播主、團購一姐與直播經紀公司。",
     wantReferral: "1.想來泰國直播的直播帶貨主\n2.想增加泰國商品線的品牌商與進口商\n3.直播帶貨老師\n4.團媽頭",
     lineId: "shoufan39", lineLink: "https://line.me/ti/p/Q-qtqTpnV2",
-    tags: ["泰國集運","專注跨境商流","協助商品安全","需要最強","跨國後勤總部","3.直播帶貨老師","4.團媽頭"]
+    tags: ["泰國集運","專注跨境商流","協助商品安全","3.直播帶貨老師","4.團媽頭"]
   },
   {
     id: "092", name: "曾筱婷", branch: "金澎湃分會", region: "sanlu",
@@ -852,7 +852,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "", lineLink: "",
-    tags: ["護椎體雕衣","推拿","物理治療師","美容美體美業者","醫美","骨科醫生"]
+    tags: ["護椎體雕衣"]
   },
   {
     id: "096", name: "詹鴻鵠", branch: "長翼分會", region: "zhongshan",
@@ -870,7 +870,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "meganhu", lineLink: "",
-    tags: ["越南投資","會計師","企管顧問"]
+    tags: ["越南投資"]
   },
   {
     id: "098", name: "楊旭宸", branch: "金英分會", region: "sanlu",
@@ -879,7 +879,7 @@
     wantMeet: "",
     wantReferral: "",
     lineId: "airronan", lineLink: "",
-    tags: ["企業ESG顧問","管顧公司","上市櫃公司永續長","中小企業主"]
+    tags: ["企業ESG顧問"]
   },
   {
     id: "099", name: "蕭淑蓉｜滾滾", branch: "金安分會", region: "sanlu",
@@ -894,7 +894,7 @@
     id: "100", name: "洪岳裕", branch: "金安分會", region: "sanlu",
     profession: "物理治療",
     have: "無痛脊椎物理治療\n慢性疼痛物理治療\n孕產物理治療",
-    wantMeet: "自費醫療經營者",
+    wantMeet: "自費醫療經營者\n",
     wantReferral: "自費醫療診所\n骨科、復健科、疼痛科\n產科醫師、婦科醫師\n物理治療師",
     lineId: "watermemory", lineLink: "https://line.me/ti/p/sKtaOdKOyJ",
     tags: ["物理治療","無痛脊椎物理治療","慢性疼痛物理治療","孕產物理治療","自費醫療經營者","自費醫療診所","骨科","復健科","疼痛科","產科醫師"]

@@ -28,9 +28,17 @@ body {
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
-  padding-bottom: 72px;
+  /* iOS safe area for home bar */
+  padding-bottom: calc(72px + env(safe-area-inset-bottom));
   max-width: var(--mobile-max);
   margin: 0 auto;
+  /* Prevent horizontal scroll */
+  overflow-x: hidden;
+}
+/* Desktop: show centered mobile frame */
+@media (min-width: 431px) {
+  html { background: #d8d5d0; }
+  body { box-shadow: 0 0 40px rgba(0,0,0,0.15); }
 }
 h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 #app { min-height: calc(100vh - 72px); }
@@ -44,6 +52,8 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
   border-top: 1px solid var(--border);
   display: flex; z-index: 100;
   box-shadow: 0 -2px 12px rgba(4,44,83,0.08);
+  /* iOS safe area padding */
+  padding-bottom: env(safe-area-inset-bottom);
 }
 .tab-item {
   flex: 1; display: flex; flex-direction: column;
@@ -256,6 +266,30 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .contact-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-sm); padding: 14px 10px; text-align: center; cursor: pointer; color: var(--navy); font-size: 13px; font-weight: 500; display: flex; flex-direction: column; align-items: center; gap: 6px; font-family: 'Noto Sans TC', sans-serif; }
 .contact-btn svg { width: 24px; height: 24px; stroke: currentColor; fill: none; }
 .contact-btn.line { color: var(--line-green); border-color: var(--line-green); }
+
+/* RWD: small screens (< 360px) */
+@media (max-width: 359px) {
+  .person-name  { font-size: 15px; }
+  .person-meta  { font-size: 11px; }
+  .btn          { font-size: 11px; padding: 7px 6px; }
+  .stat-num     { font-size: 22px; }
+  .hero-title   { font-size: 19px; }
+  .yang-card    { flex-direction: column; }
+  .yang-photo   { width: 100%; min-height: 70px; }
+}
+
+/* Prevent text overflow in cards */
+.person-name, .mark-name { word-break: break-word; }
+.person-section-text     { word-break: break-word; white-space: pre-wrap; }
+.person-meta, .mark-meta { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Active states for mobile tap */
+.btn:active, .btn-ai:active, .btn-sm:active,
+.branch-chip:active, .ai-example-chip:active,
+.yang-card:active, .contact-btn:active { opacity: 0.7; }
+
+/* Smooth scrolling */
+html { scroll-behavior: smooth; }
 
 /* Focus styles for keyboard navigation */
 .tab-item:focus-visible,
