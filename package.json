@@ -1,0 +1,12 @@
+{
+  "name": "bni-ateam-2026",
+  "version": "1.0.0",
+  "description": "BNI 20周年年會 A Team 商務連結平台",
+  "type": "module",
+  "dependencies": {
+    "openai": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

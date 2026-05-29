@@ -1,0 +1,14 @@
+node_modules/
+.netlify/
+.env
+.env.local
+*.env
+
+# 原始資料檔（含個人聯絡資訊，不推到 git）
+*.xlsm
+*.xlsx
+*.xls
+*.csv
+
+# 設計稿（可選）
+*.html.bak
