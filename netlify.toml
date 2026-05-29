@@ -18,7 +18,8 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "geolocation=(), microphone=(), camera=()"
 
+# JS modules: always revalidate so browser gets latest after each deploy
 [[headers]]
-  for = "/src/data/members.js"
+  for = "/src/**"
   [headers.values]
-    Cache-Control = "public, max-age=3600"
+    Cache-Control = "public, no-cache, must-revalidate"
