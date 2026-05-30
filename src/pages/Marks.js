@@ -25,7 +25,7 @@ export function renderMarks(container) {
   const cards = marks.map(m => `
     <div class="mark-card" data-key="${escAttr(m.key)}">
       <div class="mark-card-top">
-        <div class="mark-avatar" aria-hidden="true">${escHtml((m.name || '?').slice(-1))}</div>
+        <div class="mark-avatar" aria-hidden="true">${escHtml((m.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?')}</div>
         <div style="flex:1;min-width:0">
           <div class="mark-name">${escHtml(m.name)}</div>
           <div class="mark-meta">${escHtml(m.branch)} · ${escHtml(m.profession)}</div>

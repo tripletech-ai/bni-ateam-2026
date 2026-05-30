@@ -6,7 +6,8 @@ export function personCardHTML(member, opts = {}) {
   const { matchedKeywords = [] } = opts;
   const mark = getMark(member);
   const key = memberKey(member);
-  const initial = (member.name || '?').slice(-1);
+  // Extract last CJK character for avatar, skipping brackets/punctuation
+  const initial = (member.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
 
   const badge = matchedKeywords.length > 0
     ? `<span class="match-badge">${matchedKeywords.length} 項符合</span>` : '';
