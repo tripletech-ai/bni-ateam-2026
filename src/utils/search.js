@@ -1,4 +1,9 @@
-import { MEMBERS } from "../data/members.js";
+// Members data is loaded via classic <script> tag as window.BNI_MEMBERS
+// This avoids ES module cache issues across Netlify deployments
+
+function getMembers() {
+  return window.BNI_MEMBERS || [];
+}
 
 export function searchMembers(keywords) {
   if (!keywords || keywords.length === 0) return [];
@@ -6,7 +11,7 @@ export function searchMembers(keywords) {
   if (lkw.length === 0) return [];
 
   const results = [];
-  for (const member of MEMBERS) {
+  for (const member of getMembers()) {
     const searchText = [
       member.name,
       member.branch,
@@ -15,7 +20,7 @@ export function searchMembers(keywords) {
       member.wantMeet,
       member.wantReferral,
       ...(member.tags || [])
-    ].join(" ").toLowerCase();
+    ].join(' ').toLowerCase();
 
     const matched = lkw.filter(k => searchText.includes(k));
     if (matched.length > 0) {
@@ -23,7 +28,6 @@ export function searchMembers(keywords) {
     }
   }
 
-  // Sort by match count descending, then by name
   return results.sort((a, b) =>
     b.matchedKeywords.length - a.matchedKeywords.length ||
     a.name.localeCompare(b.name, 'zh-TW')
@@ -31,9 +35,9 @@ export function searchMembers(keywords) {
 }
 
 export function getMembersByBranch(branchName) {
-  return MEMBERS.filter(m => m.branch === branchName);
+  return getMembers().filter(m => m.branch === branchName);
 }
 
 export function getAllMembers() {
-  return [...MEMBERS];
+  return [...getMembers()];
 }

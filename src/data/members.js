@@ -1,4 +1,5 @@
-﻿export const MEMBERS = [
+﻿/* global - loaded as classic script tag, not ES module */
+window.BNI_MEMBERS = [
   {
     id: "001", name: "張力文", branch: "長城分會", region: "zhongshan",
     profession: "企業培訓",
@@ -909,3 +910,5 @@
     tags: ["海外金融","香港","新加坡","國內壽險業","銀行業務","國內保險業"]
   },
 ];
+/* Also export for any direct module usage */
+if (typeof module !== 'undefined') module.exports = { MEMBERS: window.BNI_MEMBERS };
