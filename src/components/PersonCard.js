@@ -28,9 +28,11 @@ export function personCardHTML(member, opts = {}) {
   const kwSection = matchedKeywords.length > 0
     ? `<div class="person-keywords">${matchedKeywords.map(k => escHtml(k)).join('、')}</div>` : '';
 
+  const regionClass = member.region === 'sanlu' ? 'region-sanlu' : member.region === 'zhongshan' ? 'region-zhongshan' : '';
+
   return `<div class="person-card ${staggerClass}" data-key="${escAttr(key)}">
     <div class="person-card-header">
-      <div class="person-avatar" aria-hidden="true">${escHtml(initial)}</div>
+      <div class="person-avatar ${regionClass}" aria-hidden="true">${escHtml(initial)}</div>
       <div style="flex:1;min-width:0">
         <div class="person-name">${escHtml(member.name)}</div>
         <div class="person-meta">${escHtml(member.branch)} · ${escHtml(member.profession)}</div>

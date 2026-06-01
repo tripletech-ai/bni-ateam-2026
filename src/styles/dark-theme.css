@@ -342,3 +342,74 @@ body {
   font-size: 13px; color: var(--dark-muted); text-align: center;
   padding: 10px 16px 14px;
 }
+
+/* ============================================
+   Dark Theme Refinements — Contrast & Character
+   ============================================ */
+
+/* Section headers: editorial serif gold, no generic decorative bar */
+.section-header {
+  padding: 20px 16px 12px;
+  border-bottom: none;
+}
+.section-title {
+  color: var(--gold-bright);
+  font-size: 17px;
+  font-weight: 900;
+  letter-spacing: 0.1px;
+  position: static;
+  padding-left: 0;
+}
+
+/* Stats strip: gold numbers = brand intentionality */
+.stats-strip {
+  display: flex;
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--dark-border);
+}
+.stat-item  { padding: 18px 8px; }
+.stat-num   { color: var(--gold-bright); font-size: 32px; letter-spacing: -0.5px; }
+.stat-label { color: rgba(255,255,255,0.65); font-size: 11px; letter-spacing: 0.3px; }
+
+/* Results header */
+.results-header { color: rgba(255,255,255,0.65); font-size: 13px; padding: 16px 16px 8px; }
+.results-header span { color: #ffffff; font-size: 22px; font-weight: 900; margin-right: 4px; }
+
+/* Result stats: gold for achievement context */
+.result-stat-num   { color: var(--gold-bright); font-size: 34px; letter-spacing: -0.5px; }
+.result-stat-label { color: rgba(255,255,255,0.72); font-size: 12px; margin-top: 6px; }
+.result-progress   { margin: 12px 16px; }
+
+/* Muted text — contrast fixes (WCAG AA minimum) */
+.person-section-label  { color: rgba(255,255,255,0.68); }
+.person-meta           { color: rgba(255,255,255,0.62); }
+.mark-meta             { color: rgba(255,255,255,0.62); }
+.leader-title          { color: rgba(255,255,255,0.68); }
+.director-name         { color: rgba(255,255,255,0.92); }
+.branch-region-title   { color: rgba(255,255,255,0.65); font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+.ai-box-label          { color: rgba(255,255,255,0.80); }
+.video-caption         { color: rgba(255,255,255,0.68); }
+.yang-title            { color: rgba(255,255,255,0.70); }
+.ai-result-query       { color: rgba(255,255,255,0.68); }
+.progress-bar-wrap + div { color: rgba(255,255,255,0.65); }
+.person-section-text   { font-size: 13px; line-height: 1.65; color: rgba(255,255,255,0.85); }
+
+/* Person avatar: region color identity via background tint + border */
+.person-avatar.region-sanlu {
+  background: rgba(74,222,128,0.18);
+  border: 2px solid rgba(74,222,128,0.60);
+}
+.person-avatar.region-zhongshan {
+  background: rgba(147,197,253,0.18);
+  border: 2px solid rgba(147,197,253,0.60);
+}
+
+/* Branch chip count */
+.branch-chip .chip-count { color: rgba(255,255,255,0.58); font-size: 11px; }
+
+/* Leader cards */
+.leader-name { color: #ffffff; }
+.leader-card-secondary .leader-name { color: rgba(255,255,255,0.95); }
+
+/* Match badge */
+.match-badge { font-size: 11px; padding: 3px 9px; }

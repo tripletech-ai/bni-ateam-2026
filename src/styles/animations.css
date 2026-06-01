@@ -94,11 +94,19 @@
   100% { background-position:  200% center; }
 }
 .hero-title-shimmer {
-  background: linear-gradient(90deg, #fff 0%, #FAC775 30%, #fff 50%, #FAC775 70%, #fff 100%);
-  background-size: 200% auto;
+  /* Subtle shimmer: mostly white, brief gold highlight passes through slowly */
+  background: linear-gradient(90deg,
+    #ffffff 0%,
+    #ffffff 38%,
+    rgba(250,199,117,0.75) 46%,
+    rgba(255,255,255,0.95) 50%,
+    rgba(250,199,117,0.75) 54%,
+    #ffffff 62%,
+    #ffffff 100%);
+  background-size: 300% auto;
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: goldShimmer 3s linear infinite;
+  animation: goldShimmer 6s ease-in-out infinite; /* slower = more subtle */
 }
 
 .tab-item.active svg {

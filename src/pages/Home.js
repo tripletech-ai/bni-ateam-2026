@@ -16,7 +16,7 @@ export function renderHome(container) {
         ${escHtml(t('hero_eyebrow'))}
       </div>
       <h1 class="hero-title serif hero-title-shimmer">${escHtml(t('hero_title'))}</h1>
-      <p class="hero-sub">${t('hero_sub').replace('\n', '<br>')}</p>
+      <p class="hero-sub">${escHtml(t('hero_sub')).replace('\n', '<br>')}</p>
       <div style="font-size:11px;margin-top:12px;opacity:0.45;letter-spacing:0.3px">
         ${escHtml(t('hero_region'))}
       </div>
