@@ -54,29 +54,21 @@ body {
 .stat-num  { color: var(--gold-bright); }
 .stat-label { color: var(--dark-muted); }
 
+/* Content cards: solid background, no glassmorphism */
 .card,
 .person-card,
 .mark-card,
 .yang-card,
 .result-stat,
-.result-progress,
-.ai-result-card {
-  background: rgba(20, 28, 50, 0.85);
-  border: 1px solid var(--dark-border);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+.result-progress {
+  background: #101629;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.30);
 }
-@supports (backdrop-filter: blur(1px)) {
-  .card,
-  .person-card,
-  .mark-card,
-  .yang-card,
-  .result-stat,
-  .result-progress,
-  .ai-result-card {
-    background: var(--dark-surface);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
+.ai-result-card {
+  background: rgba(186,117,23,0.14);
+  border: 1px solid rgba(250,199,117,0.25);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.30);
 }
 
 .person-name  { color: var(--dark-text); }
@@ -234,14 +226,11 @@ body {
 .leaders-hero-sub { font-size: 13px; opacity: 0.65; line-height: 1.5; }
 
 .leader-card-primary {
-  background: rgba(20,28,50,0.85);
-  border: 1px solid rgba(250,199,117,0.20);
+  background: #101629;
+  border: 1px solid rgba(250,199,117,0.22);
   border-radius: var(--r); margin: 16px;
   overflow: hidden;
   box-shadow: 0 4px 24px rgba(0,0,0,0.35);
-}
-@supports (backdrop-filter: blur(1px)) {
-  .leader-card-primary { backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
 }
 .leader-card-primary .lc-top {
   display: flex; align-items: center; gap: 14px; padding: 18px 16px 14px;
@@ -347,13 +336,13 @@ body {
    Dark Theme Refinements — Contrast & Character
    ============================================ */
 
-/* Section headers: editorial serif gold, no generic decorative bar */
+/* Section headers: heavy white serif — editorial, not AI-template */
 .section-header {
   padding: 20px 16px 12px;
   border-bottom: none;
 }
 .section-title {
-  color: var(--gold-bright);
+  color: rgba(255,255,255,0.95);
   font-size: 17px;
   font-weight: 900;
   letter-spacing: 0.1px;
@@ -361,15 +350,21 @@ body {
   padding-left: 0;
 }
 
-/* Stats strip: gold numbers = brand intentionality */
+/* Yang card: name was inheriting light-mode navy color — invisible on dark bg */
+.yang-name      { color: rgba(255,255,255,0.95); }
+.yang-hero-name { color: #ffffff; }
+
+/* Stats strip: transparent bg, gold numbers float editorially */
 .stats-strip {
   display: flex;
-  background: rgba(255,255,255,0.03);
+  background: transparent;
   border-bottom: 1px solid var(--dark-border);
 }
 .stat-item  { padding: 18px 8px; }
 .stat-num   { color: var(--gold-bright); font-size: 32px; letter-spacing: -0.5px; }
 .stat-label { color: rgba(255,255,255,0.65); font-size: 11px; letter-spacing: 0.3px; }
+/* Member count (2nd item) is the headline number — slightly larger breaks the uniform grid */
+.stats-strip .stat-item:nth-child(2) .stat-num { font-size: 38px; }
 
 /* Results header */
 .results-header { color: rgba(255,255,255,0.65); font-size: 13px; padding: 16px 16px 8px; }
