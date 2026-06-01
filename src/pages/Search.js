@@ -1,69 +1,58 @@
-import { getKeywordsFromAI } from '../utils/aiSearch.js';
+import { getKeywordsFromAI }                from '../utils/aiSearch.js';
 import { searchMembers, getMembersByBranch } from '../utils/search.js';
-import { personCardHTML, bindCardEvents } from '../components/PersonCard.js';
-import { BRANCHES } from '../data/branches.js';
-import { escHtml } from '../utils/html.js';
+import { personCardHTML, bindCardEvents }    from '../components/PersonCard.js';
+import { BRANCHES }                          from '../data/branches.js';
+import { escHtml }                           from '../utils/html.js';
+import { t }                                 from '../i18n/translations.js';
 
 export function renderSearch(container) {
-  // Check for pending search from home page
   const pending = sessionStorage.getItem('bni_pending_search');
-  if (pending) {
-    sessionStorage.removeItem('bni_pending_search');
-  }
+  if (pending) sessionStorage.removeItem('bni_pending_search');
 
   container.innerHTML = buildSearchUI();
   bindSearchEvents(container);
   renderBranchBrowse(document.getElementById('branch-browse-area'));
 
-  // Trigger pending search after UI is ready
-  if (pending) {
-    setTimeout(() => triggerSearch(pending), 50);
-  }
+  if (pending) setTimeout(() => triggerSearch(pending), 50);
 }
 
 function buildSearchUI() {
   return `
     <div id="search-ai-box" class="ai-box">
-      <div class="ai-box-label">說一句話，幫你找到對的人</div>
-      <textarea
-        id="ai-input"
-        class="ai-textarea"
-        placeholder="我是做保險的，想找企業主或會計師"
-        rows="3"
-        aria-label="AI 搜尋輸入框"
-        maxlength="200"></textarea>
-      <button id="ai-submit" class="btn-ai">AI 幫我找</button>
+      <div class="ai-box-label">${escHtml(t('search_label'))}</div>
+      <textarea id="ai-input" class="ai-textarea"
+        placeholder="${escHtml(t('search_placeholder'))}"
+        rows="3" aria-label="${escHtml(t('search_label'))}" maxlength="200"></textarea>
+      <button id="ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
       <div class="ai-examples" aria-label="搜尋範例">
-        <div class="ai-example-chip" role="button" tabindex="0">我是律師，想認識高資產客戶和財務顧問</div>
-        <div class="ai-example-chip" role="button" tabindex="0">我做室內設計，想找建商或企業主裝修客戶</div>
-        <div class="ai-example-chip" role="button" tabindex="0">我是人力資源顧問，想認識中小企業主</div>
+        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example1'))}</div>
+        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example2'))}</div>
+        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example3'))}</div>
       </div>
     </div>
-    <div id="search-loading" style="display:none" class="loading-dots" role="status" aria-live="polite">
-      <div class="dots"><span></span><span></span><span></span></div>
-      <div style="color:rgba(255,255,255,0.7);font-size:13px;margin-top:12px">AI 分析中，請稍候…</div>
-    </div>
-    <div id="ai-result-area" style="display:none"></div>
+    <div id="search-loading" style="display:none" role="status" aria-live="polite"></div>
+    <div id="ai-result-area"      style="display:none"></div>
     <div id="search-results-area" style="display:none"></div>
     <div id="branch-browse-area"></div>
   `;
 }
 
 function bindSearchEvents(container) {
-  // Example chips — click or Enter key
   container.querySelectorAll('.ai-example-chip').forEach(chip => {
     const trigger = () => {
-      document.getElementById('ai-input').value = chip.textContent.trim();
+      const input = document.getElementById('ai-input');
+      if (input) input.value = chip.textContent.trim();
       triggerSearch(chip.textContent.trim());
     };
     chip.addEventListener('click', trigger);
-    chip.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger(); } });
+    chip.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger(); }
+    });
   });
 
   document.getElementById('ai-submit').addEventListener('click', () => {
     const input = document.getElementById('ai-input').value.trim();
-    if (input.length < 2) return;
-    triggerSearch(input);
+    if (input.length >= 2) triggerSearch(input);
   });
 
   document.getElementById('ai-input').addEventListener('keydown', e => {
@@ -75,116 +64,127 @@ function bindSearchEvents(container) {
 }
 
 async function triggerSearch(input) {
-  const aiBox    = document.getElementById('search-ai-box');
-  const loading  = document.getElementById('search-loading');
-  const resultArea  = document.getElementById('ai-result-area');
-  const searchArea  = document.getElementById('search-results-area');
-  const branchArea  = document.getElementById('branch-browse-area');
+  const aiBox      = document.getElementById('search-ai-box');
+  const loading    = document.getElementById('search-loading');
+  const resultArea = document.getElementById('ai-result-area');
+  const searchArea = document.getElementById('search-results-area');
+  const branchArea = document.getElementById('branch-browse-area');
+  const submitBtn  = document.getElementById('ai-submit');
 
-  // Null guard — elements may not exist if user navigated away
   if (!aiBox || !loading) return;
-
-  const submitBtn = document.getElementById('ai-submit');
   if (submitBtn) submitBtn.disabled = true;
 
-  aiBox.style.display = 'none';
-  loading.style.display = 'block';
+  aiBox.style.display      = 'none';
   resultArea.style.display = 'none';
   searchArea.style.display = 'none';
   branchArea.style.display = 'none';
+  loading.style.display    = 'block';
+
+  // Premium AI loading animation
+  loading.innerHTML = `
+    <div class="ai-loading-container">
+      <div class="ai-scan-line"></div>
+      <div class="ai-particles">
+        <div class="ai-particle"></div>
+        <div class="ai-particle"></div>
+        <div class="ai-particle"></div>
+        <div class="ai-particle"></div>
+        <div class="ai-particle"></div>
+      </div>
+      <div class="ai-loading-text">${escHtml(t('search_analyzing'))}</div>
+      <div class="ai-shimmer-bar"><div class="ai-shimmer-fill"></div></div>
+    </div>`;
 
   const keywords = await getKeywordsFromAI(input);
 
-  // Check if user navigated away during async operation
+  // Guard: user may have navigated away
   if (!document.getElementById('search-loading')) return;
 
   loading.style.display = 'none';
   if (submitBtn) submitBtn.disabled = false;
 
+  // Show AI keyword result card (no manual search button — auto-searches immediately)
   resultArea.style.display = 'block';
   resultArea.innerHTML = `
-    <div class="ai-result-card">
-      <div class="ai-result-query">你說：「${escHtml(input)}」</div>
-      <div class="keyword-tags">${keywords.map(k => `<span class="keyword-tag">${escHtml(k)}</span>`).join('')}</div>
-      <button id="btn-do-search" class="btn-search-members">搜尋這些夥伴（${keywords.length} 個關鍵字）</button>
-      <button id="btn-reset-search" class="btn-reset">重新輸入</button>
-    </div>
-  `;
+    <div class="ai-result-card" style="margin:16px">
+      <div class="ai-result-query" style="font-size:12px;margin-bottom:8px;opacity:0.7">
+        ${escHtml(input.length > 45 ? input.substring(0, 45) + '…' : input)}
+      </div>
+      <div class="keyword-tags">
+        ${keywords.map(k => `<span class="keyword-tag">${escHtml(k)}</span>`).join('')}
+      </div>
+      <button id="btn-reset-search" class="btn-reset">${escHtml(t('search_reset'))}</button>
+    </div>`;
 
   document.getElementById('btn-reset-search').addEventListener('click', resetSearch);
-  document.getElementById('btn-do-search').addEventListener('click', () => {
-    const results = searchMembers(keywords);
-    showResults(results, searchArea);
-    branchArea.style.display = 'block';
-  });
 
-  // Auto-trigger search immediately
-  document.getElementById('btn-do-search').click();
+  // Auto-search immediately (no manual button)
+  const results = searchMembers(keywords);
+  showResults(results, searchArea);
+  branchArea.style.display = 'block';
 }
 
 function showResults(results, container) {
   container.style.display = 'block';
   if (results.length === 0) {
     container.innerHTML = `<div class="empty-state">
-      <div class="empty-state-title">找不到符合的夥伴</div>
-      <div class="empty-state-sub">試試其他關鍵字描述</div>
+      <div class="empty-state-title">${escHtml(t('search_no_result'))}</div>
+      <div class="empty-state-sub">${escHtml(t('search_no_result_sub'))}</div>
       <button onclick="document.getElementById('btn-reset-search')?.click()"
-        style="margin-top:16px;padding:10px 20px;background:var(--navy);color:#fff;border:none;border-radius:var(--r-sm);font-size:13px;cursor:pointer;font-family:'Noto Sans TC',sans-serif">
-        重新搜尋
+        class="btn-ai" style="margin-top:16px;border-radius:var(--r-sm);padding:10px 24px;font-size:13px">
+        ${escHtml(t('search_reset'))}
       </button>
     </div>`;
     return;
   }
   container.innerHTML = `
-    <div class="results-header"><span>${results.length}</span> 位夥伴符合</div>
-    <div id="cards-list"></div>
-  `;
+    <div class="results-header">
+      <span>${results.length}</span> ${escHtml(t('search_results'))}
+    </div>
+    <div id="cards-list"></div>`;
+
   const cardsList = document.getElementById('cards-list');
-  cardsList.innerHTML = results.map(m =>
-    personCardHTML(m, { matchedKeywords: m.matchedKeywords || [] })
+  cardsList.innerHTML = results.map((m, i) =>
+    personCardHTML(m, { matchedKeywords: m.matchedKeywords || [], staggerIndex: i })
   ).join('');
   bindCardEvents(cardsList, results);
 }
 
 function resetSearch() {
-  const aiBox   = document.getElementById('search-ai-box');
-  const resultArea = document.getElementById('ai-result-area');
-  const searchArea = document.getElementById('search-results-area');
-  const branchArea = document.getElementById('branch-browse-area');
-
-  if (aiBox)   { aiBox.style.display   = 'block'; }
-  if (resultArea) { resultArea.style.display = 'none';  }
-  if (searchArea) { searchArea.style.display = 'none';  }
-  if (branchArea) { branchArea.style.display = 'block'; }
-
+  const aiBox    = document.getElementById('search-ai-box');
+  const result   = document.getElementById('ai-result-area');
+  const search   = document.getElementById('search-results-area');
+  const branches = document.getElementById('branch-browse-area');
+  if (aiBox)    aiBox.style.display    = 'block';
+  if (result)   result.style.display   = 'none';
+  if (search)   search.style.display   = 'none';
+  if (branches) branches.style.display = 'block';
   const input = document.getElementById('ai-input');
   if (input) { input.value = ''; input.focus(); }
 }
 
 function renderBranchBrowse(container) {
   if (!container) return;
-  const zhongshan = BRANCHES.zhongshan.filter(b => b.count > 0);
-  const sanlu = BRANCHES.sanlu.filter(b => b.count > 0);
+  const zh  = BRANCHES.zhongshan.filter(b => b.count > 0);
+  const san = BRANCHES.sanlu.filter(b => b.count > 0);
 
   container.innerHTML = `
-    <div class="section-header"><div class="section-title">瀏覽分會</div></div>
+    <div class="section-header"><div class="section-title">${escHtml(t('search_browse'))}</div></div>
     <div class="branch-section">
-      <div class="branch-region-title">中山區</div>
+      <div class="branch-region-title">${escHtml(t('search_zhongshan'))}</div>
       <div class="branch-chips">
-        ${zhongshan.map(b => `<div class="branch-chip zhongshan" data-branch="${escHtml(b.name)}分會" role="button" tabindex="0">
+        ${zh.map(b => `<div class="branch-chip zhongshan" data-branch="${escHtml(b.name)}分會" role="button" tabindex="0">
           ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
         </div>`).join('')}
       </div>
-      <div class="branch-region-title">三蘆區</div>
+      <div class="branch-region-title">${escHtml(t('search_sanlu'))}</div>
       <div class="branch-chips">
-        ${sanlu.map(b => `<div class="branch-chip sanlu" data-branch="${escHtml(b.name)}分會" role="button" tabindex="0">
+        ${san.map(b => `<div class="branch-chip sanlu" data-branch="${escHtml(b.name)}分會" role="button" tabindex="0">
           ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
         </div>`).join('')}
       </div>
-    </div>
-  `;
+    </div>`;
 
-  // Branch chip click (and keyboard)
   container.addEventListener('click', e => {
     const chip = e.target.closest('[data-branch]');
     if (!chip) return;
@@ -200,7 +200,7 @@ function renderBranchBrowse(container) {
 }
 
 function showBranchMembers(branchName) {
-  const members = getMembersByBranch(branchName);
+  const members   = getMembersByBranch(branchName);
   const container = document.getElementById('search-results-area');
   if (!container) return;
   container.style.display = 'block';
@@ -212,12 +212,15 @@ function showBranchMembers(branchName) {
     return;
   }
 
+  const prefix = window.BNI_LANG === 'en' ? '' : '';
   container.innerHTML = `
-    <div class="results-header"><span>${members.length}</span> 位 ${escHtml(branchName)} 夥伴</div>
-    <div id="cards-list"></div>
-  `;
+    <div class="results-header">
+      <span>${members.length}</span> ${escHtml(t('search_branch_members'))}${escHtml(branchName)} 夥伴
+    </div>
+    <div id="cards-list"></div>`;
+
   const cardsList = document.getElementById('cards-list');
-  cardsList.innerHTML = members.map(m => personCardHTML(m)).join('');
+  cardsList.innerHTML = members.map((m, i) => personCardHTML(m, { staggerIndex: i })).join('');
   bindCardEvents(cardsList, members);
   container.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
