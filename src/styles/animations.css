@@ -1,0 +1,126 @@
+/* =============================================
+   BNI A Team — Animations & Transitions
+   ============================================= */
+
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#app > * { animation: fadeSlideUp 0.22s ease both; }
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.person-card   { animation: cardIn 0.22s ease both; }
+.mark-card     { animation: cardIn 0.22s ease both; }
+.director-card { animation: cardIn 0.18s ease both; }
+
+.stagger-1 { animation-delay:   0ms; }
+.stagger-2 { animation-delay:  50ms; }
+.stagger-3 { animation-delay: 100ms; }
+.stagger-4 { animation-delay: 150ms; }
+.stagger-5 { animation-delay: 200ms; }
+.stagger-6 { animation-delay: 250ms; }
+
+.btn, .btn-ai, .btn-sm,
+.branch-chip, .ai-example-chip {
+  transition: transform 0.1s, box-shadow 0.1s, opacity 0.1s;
+}
+.btn:active, .btn-sm:active { transform: scale(0.96); }
+.btn-ai:active { transform: scale(0.98); }
+.branch-chip:hover  { transform: translateY(-1px); }
+.branch-chip:active { transform: translateY(0) scale(0.97); }
+
+@keyframes scanLine {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(400%); opacity: 0; }
+}
+@keyframes particlePulse {
+  0%, 100% { transform: scale(1);   opacity: 0.6; }
+  50%       { transform: scale(1.6); opacity: 1; }
+}
+@keyframes typeReveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to   { clip-path: inset(0 0%   0 0); }
+}
+@keyframes shimmerBar {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.ai-loading-container {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 44px 24px 36px;
+  background: linear-gradient(180deg, #0d1a3a 0%, #0a0f1e 100%);
+  position: relative; overflow: hidden; min-height: 180px;
+}
+.ai-scan-line {
+  position: absolute; height: 1px; width: 50%; top: 50%;
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+  animation: scanLine 1.8s ease-in-out infinite;
+}
+.ai-particles { display: flex; gap: 10px; margin-bottom: 20px; }
+.ai-particle {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--gold-bright);
+  box-shadow: 0 0 8px var(--gold-glow2);
+  animation: particlePulse 1.2s ease-in-out infinite;
+}
+.ai-particle:nth-child(1) { animation-delay:   0ms; }
+.ai-particle:nth-child(2) { animation-delay: 200ms; background: #93c5fd; box-shadow: 0 0 8px rgba(147,197,253,0.4); }
+.ai-particle:nth-child(3) { animation-delay: 400ms; }
+.ai-particle:nth-child(4) { animation-delay: 200ms; background: #93c5fd; box-shadow: 0 0 8px rgba(147,197,253,0.4); }
+.ai-particle:nth-child(5) { animation-delay:   0ms; }
+.ai-loading-text {
+  font-size: 13px; color: rgba(255,255,255,0.75);
+  font-family: 'Noto Sans TC', sans-serif;
+  margin-bottom: 16px; overflow: hidden; white-space: nowrap;
+  animation: typeReveal 1.2s steps(20, end) forwards;
+}
+.ai-shimmer-bar  { width: 120px; height: 3px; border-radius: 2px; overflow: hidden; background: var(--dark-surface2); }
+.ai-shimmer-fill {
+  height: 100%; border-radius: 2px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold-bright) 40%, rgba(255,255,255,0.8) 50%, var(--gold-bright) 60%, transparent 100%);
+  background-size: 200% 100%;
+  animation: shimmerBar 1.2s linear infinite;
+}
+
+@keyframes goldShimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+.hero-title-shimmer {
+  background: linear-gradient(90deg, #fff 0%, #FAC775 30%, #fff 50%, #FAC775 70%, #fff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldShimmer 3s linear infinite;
+}
+
+.tab-item.active svg {
+  filter: drop-shadow(0 0 4px rgba(250,199,117,0.6));
+}
+
+@media (hover: hover) {
+  .person-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.accordion-content.open { animation: slideDown 0.2s ease both; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#lang-toggle { animation: fadeIn 0.3s ease 0.5s both; }
