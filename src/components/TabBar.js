@@ -1,30 +1,30 @@
 import { getMarkCount } from '../utils/storage.js';
-
-const TABS = [
-  { hash: '#home',   label: '首頁',    icon: homeIcon()   },
-  { hash: '#search', label: '找人脈',  icon: searchIcon() },
-  { hash: '#marks',  label: '我的標記', icon: heartIcon()  },
-  { hash: '#result', label: '我的成果', icon: chartIcon()  },
-  { hash: '#yang',   label: '我的',    icon: personIcon() },
-];
+import { t }            from '../i18n/translations.js';
 
 export function renderTabBar(el, currentHash) {
   if (!el) return;
   const markCount = getMarkCount();
-  el.innerHTML = TABS.map(t => {
-    const isMarks = t.hash === '#marks';
-    const isActive = currentHash === t.hash ||
-      (currentHash === '' && t.hash === '#home');
+  const TABS = [
+    { hash: '#home',    label: t('tab_home'),    icon: homeIcon()   },
+    { hash: '#search',  label: t('tab_search'),  icon: searchIcon() },
+    { hash: '#marks',   label: t('tab_marks'),   icon: heartIcon()  },
+    { hash: '#result',  label: t('tab_result'),  icon: chartIcon()  },
+    { hash: '#leaders', label: t('tab_leaders'), icon: teamIcon()   },
+  ];
+  el.innerHTML = TABS.map(tab => {
+    const isMarks  = tab.hash === '#marks';
+    const isActive = currentHash === tab.hash ||
+      (currentHash === '' && tab.hash === '#home');
     const badge = isMarks && markCount > 0
       ? `<span class="tab-badge" aria-label="${markCount} 個標記">${markCount}</span>` : '';
     return `<button
       class="tab-item${isActive ? ' active' : ''}"
-      onclick="location.hash='${t.hash.slice(1)}'"
-      aria-label="${t.label}"
+      onclick="location.hash='${tab.hash.slice(1)}'"
+      aria-label="${tab.label}"
       aria-selected="${isActive}"
       role="tab">
-      <span style="position:relative;display:inline-flex">${t.icon}${badge}</span>
-      <span>${t.label}</span>
+      <span style="position:relative;display:inline-flex">${tab.icon}${badge}</span>
+      <span>${tab.label}</span>
     </button>`;
   }).join('');
 }
@@ -41,6 +41,6 @@ function heartIcon() {
 function chartIcon() {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>`;
 }
-function personIcon() {
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+function teamIcon() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>`;
 }
