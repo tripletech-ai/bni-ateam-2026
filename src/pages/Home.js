@@ -12,12 +12,12 @@ export function renderHome(container) {
 
   container.innerHTML = `
     <div class="hero">
-      <div style="font-size:11px;letter-spacing:3px;opacity:0.5;margin-bottom:10px;font-family:'Noto Sans TC',sans-serif">
+      <div style="font-size:16px;letter-spacing:2px;opacity:0.60;margin-bottom:10px;font-family:'Noto Sans TC',sans-serif">
         ${escHtml(t('hero_eyebrow'))}
       </div>
       <h1 class="hero-title serif hero-title-shimmer">${escHtml(t('hero_title'))}</h1>
       <p class="hero-sub">${escHtml(t('hero_sub')).replace('\n', '<br>')}</p>
-      <div style="font-size:11px;margin-top:12px;opacity:0.45;letter-spacing:0.3px">
+      <div style="font-size:16px;margin-top:12px;opacity:0.65;letter-spacing:0.3px">
         ${escHtml(t('hero_region'))}
       </div>
     </div>

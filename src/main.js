@@ -54,6 +54,46 @@ window.addEventListener('unhandledrejection', event => {
   console.error('Unhandled promise rejection:', event.reason);
 });
 
+// ── Welcome overlay (shown on every visit) ─────────────
+function showWelcome() {
+  const overlay = document.createElement('div');
+  overlay.id = 'welcome-overlay';
+  overlay.innerHTML = `
+    <div id="welcome-card">
+      <div class="welcome-eyebrow">BNI · ANDERSON TEAM · 2026 年會</div>
+      <div class="welcome-title">A Team<br>商務連結系統</div>
+      <div class="welcome-rule"></div>
+      <div class="welcome-guide">
+        <div class="welcome-row">
+          <span class="welcome-tag">找人脈</span>
+          <span class="welcome-desc">搜尋你想認識的夥伴</span>
+        </div>
+        <div class="welcome-row">
+          <span class="welcome-tag">AI 搜尋</span>
+          <span class="welcome-desc">說出需求，AI 幫你精準配對</span>
+        </div>
+        <div class="welcome-row">
+          <span class="welcome-tag">標記</span>
+          <span class="welcome-desc">記下想約 1-1 或合作的人</span>
+        </div>
+        <div class="welcome-row">
+          <span class="welcome-tag">成果</span>
+          <span class="welcome-desc">查看今天的標記進度</span>
+        </div>
+      </div>
+      <div class="welcome-goal">今天目標：標記 5 位以上夥伴</div>
+      <button id="welcome-start">開始使用</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  document.getElementById('welcome-start').addEventListener('click', () => {
+    overlay.style.transition = 'opacity 0.22s';
+    overlay.style.opacity = '0';
+    setTimeout(() => overlay.remove(), 230);
+  });
+}
+
 window.addEventListener('hashchange', navigate);
 initLangToggle();
+showWelcome();
 navigate();

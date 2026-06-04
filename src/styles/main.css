@@ -58,8 +58,8 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .tab-item {
   flex: 1; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 8px 4px 10px; cursor: pointer; gap: 3px;
-  font-size: 10px; color: var(--muted);
+  padding: 10px 4px 12px; cursor: pointer; gap: 3px;
+  font-size: 15px; color: var(--muted);
   border: none; background: none;
   font-family: 'Noto Sans TC', sans-serif;
   transition: color 0.15s;
@@ -78,8 +78,8 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .btn {
   border: none; cursor: pointer; border-radius: var(--r-sm);
   font-family: 'Noto Sans TC', sans-serif;
-  font-weight: 500; font-size: 12px;
-  padding: 8px 10px; transition: opacity 0.15s;
+  font-weight: 500; font-size: 18px;
+  padding: 12px 10px; transition: opacity 0.15s;
 }
 .btn:active { opacity: 0.75; }
 .btn-line  { background: var(--line-green); color: #fff; flex: 1.2; }
@@ -115,7 +115,7 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .btn-ai {
   width: 100%; margin-top: 10px;
   background: var(--gold); color: #fff;
-  padding: 13px; font-size: 15px; font-weight: 700;
+  padding: 17px; font-size: 20px; font-weight: 700;
   border-radius: var(--r-sm); border: none; cursor: pointer;
   font-family: 'Noto Sans TC', sans-serif;
 }
@@ -190,11 +190,11 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .person-card { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); margin: 0 16px 12px; overflow: hidden; }
 .person-card-header { display: flex; align-items: center; padding: 16px 16px 12px; gap: 12px; }
 .person-avatar {
-  width: 48px; height: 48px; border-radius: 50%;
+  width: 58px; height: 58px; border-radius: 50%;
   background: var(--navy-light);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Noto Serif TC', serif;
-  font-size: 18px; font-weight: 700; color: var(--navy); flex-shrink: 0;
+  font-size: 24px; font-weight: 700; color: var(--navy); flex-shrink: 0;
 }
 .person-name { font-family: 'Noto Serif TC', serif; font-size: 17px; font-weight: 700; }
 .person-meta { font-size: 12px; color: var(--muted); margin-top: 2px; }
@@ -211,8 +211,8 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .branch-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
 .branch-chip {
   background: var(--surface); border: 1px solid var(--border);
-  border-radius: 20px; padding: 6px 14px; font-size: 13px;
-  cursor: pointer; display: flex; align-items: center; gap: 5px;
+  border-radius: 20px; padding: 10px 18px; font-size: 19px;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
 }
 .branch-chip .chip-count { font-size: 11px; color: var(--muted); }
 .branch-chip.sanlu { border-color: var(--green); color: var(--green); }
@@ -248,7 +248,7 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 /* Mark card */
 .mark-card { background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow); margin: 0 16px 10px; padding: 14px 16px; }
 .mark-card-top { display: flex; align-items: center; gap: 10px; }
-.mark-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--navy-light); display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif TC', serif; font-weight: 700; font-size: 16px; color: var(--navy); flex-shrink: 0; }
+.mark-avatar { width: 50px; height: 50px; border-radius: 50%; background: var(--navy-light); display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif TC', serif; font-weight: 700; font-size: 22px; color: var(--navy); flex-shrink: 0; }
 .mark-name { font-weight: 700; font-size: 15px; }
 .mark-meta { font-size: 12px; color: var(--muted); }
 .mark-badges { display: flex; gap: 6px; margin: 8px 0; flex-wrap: wrap; }

@@ -19,14 +19,14 @@ export function renderYang(container) {
     </div>
 
     <div style="padding:20px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
-      <div class="section-title serif" style="margin-bottom:12px;font-size:16px">帶領理念</div>
-      <p style="font-size:14px;line-height:1.9;color:var(--text)">
+      <div class="section-title serif" style="margin-bottom:12px">帶領理念</div>
+      <p style="font-size:inherit;line-height:1.9;color:var(--text)">
         在艱難的時代中，我們更要團結一致，透過 A Team 商務連結平台，讓 20 個分會彼此連結、彼此成就，共同創造無限商機。
       </p>
     </div>
 
     <div style="padding:16px">
-      <div class="section-title serif" style="margin-bottom:14px;font-size:16px">電子名片</div>
+      <div class="section-title serif" style="margin-bottom:14px">關於我</div>
       <div class="contact-grid">
         <button class="contact-btn line" id="yang-line" aria-label="加 LINE">
           <svg viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
@@ -40,9 +40,9 @@ export function renderYang(container) {
           <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           E-mail
         </button>
-        <button class="contact-btn" id="yang-card" aria-label="查看電子名片">
+        <button class="contact-btn" id="yang-card" aria-label="關於我">
           <svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-          查看名片
+          關於我
         </button>
       </div>
     </div>
@@ -77,6 +77,6 @@ function bindYangEvents() {
   });
   document.getElementById('yang-card').addEventListener('click', () => {
     if (info.cardLink) window.open(info.cardLink, '_blank', 'noopener');
-    else alert('電子名片連結待楊董確認後補充');
+    else alert('關於我連結待楊董確認後補充');
   });
 }

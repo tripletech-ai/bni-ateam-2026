@@ -8,7 +8,7 @@ export function renderLeaders(container) {
 
   container.innerHTML = `
     <div class="leaders-hero">
-      <div style="font-size:11px;letter-spacing:3px;opacity:0.5;margin-bottom:10px;font-family:'Noto Sans TC',sans-serif">
+      <div style="font-size:16px;letter-spacing:2px;opacity:0.60;margin-bottom:10px;font-family:'Noto Sans TC',sans-serif">
         BNI ANDERSON TEAM
       </div>
       <div class="leaders-hero-title serif">${escHtml(t('leaders_title'))}</div>
@@ -69,9 +69,9 @@ function leaderCardSecondary(l) {
   const initial = (l.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
   return `
     <div class="leader-card-secondary">
-      <div class="leader-avatar" style="width:42px;height:42px;font-size:16px">${escHtml(initial)}</div>
+      <div class="leader-avatar">${escHtml(initial)}</div>
       <div style="flex:1">
-        <div class="leader-name" style="font-size:16px">${escHtml(l.name)}</div>
+        <div class="leader-name">${escHtml(l.name)}</div>
         <div class="leader-title">${escHtml(l.title)}</div>
       </div>
       <button class="director-btn-card ${l.cardLink ? 'has-link' : ''}"
@@ -97,7 +97,7 @@ function accordion(title, people, id) {
   return `
     <div class="accordion-wrap" style="margin:0 16px 10px;border-radius:var(--r);border:1px solid var(--dark-border);overflow:hidden">
       <div class="accordion-header open" data-accordion="${id}">
-        <span style="font-size:14px;font-weight:600">${escHtml(title)}</span>
+        <span style="font-size:21px;font-weight:600">${escHtml(title)}</span>
         <svg class="accordion-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="accordion-content open" id="accordion-${id}" style="display:block">${cards}</div>
