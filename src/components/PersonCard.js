@@ -35,7 +35,8 @@ export function personCardHTML(member, opts = {}) {
       <div class="person-avatar ${regionClass}" aria-hidden="true">${escHtml(initial)}</div>
       <div style="flex:1;min-width:0">
         <div class="person-name">${escHtml(member.name)}</div>
-        <div class="person-meta">${escHtml(member.branch)} · ${escHtml(member.profession)}</div>
+        <div class="person-meta">${escHtml(member.branch)}</div>
+        <div class="person-meta person-profession">${escHtml(member.profession)}</div>
       </div>
       ${badge}
       <svg class="card-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>

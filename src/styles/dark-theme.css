@@ -104,6 +104,7 @@ body {
   background: rgba(163,45,45,0.20);
   color: #fca5a5;
   border: 1px solid rgba(163,45,45,0.35);
+  word-break: keep-all;
 }
 .btn-biz.active {
   background: #991b1b;
@@ -403,11 +404,9 @@ body {
   background: transparent;
   border-bottom: 1px solid var(--dark-border);
 }
-.stat-item  { padding: 18px 8px; }
-.stat-num   { color: var(--gold-bright); font-size: 32px; letter-spacing: -0.5px; }
+.stat-item  { padding: 18px 8px; display: flex; flex-direction: column; align-items: center; }
+.stat-num   { color: var(--gold-bright); font-size: 32px; letter-spacing: -0.5px; line-height: 1.15; }
 .stat-label { color: rgba(255,255,255,0.65); font-size: 11px; letter-spacing: 0.3px; }
-/* Member count (2nd item) is the headline number — slightly larger breaks the uniform grid */
-.stats-strip .stat-item:nth-child(2) .stat-num { font-size: 38px; }
 
 /* Results header */
 .results-header { color: rgba(255,255,255,0.65); font-size: 13px; padding: 16px 16px 8px; }
