@@ -30,7 +30,7 @@ export function personCardHTML(member, opts = {}) {
 
   const regionClass = member.region === 'sanlu' ? 'region-sanlu' : member.region === 'zhongshan' ? 'region-zhongshan' : '';
 
-  return `<div class="person-card ${staggerClass}" data-key="${escAttr(key)}">
+  return `<div class="person-card ${staggerClass}" data-key="${escAttr(key)}" data-expanded="false">
     <div class="person-card-header">
       <div class="person-avatar ${regionClass}" aria-hidden="true">${escHtml(initial)}</div>
       <div style="flex:1;min-width:0">
@@ -38,17 +38,20 @@ export function personCardHTML(member, opts = {}) {
         <div class="person-meta">${escHtml(member.branch)} · ${escHtml(member.profession)}</div>
       </div>
       ${badge}
+      <svg class="card-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
-    ${haveSection}${wantSection}${kwSection}
-    <div class="person-actions">
-      <button class="btn btn-line"
-        data-action="line" data-key="${escAttr(key)}"
-        data-line-link="${escAttr(member.lineLink || '')}"
-        data-line-id="${escAttr(member.lineId || '')}">${escHtml(t('card_line'))}</button>
-      <button class="btn btn-one ${mark.one ? 'active' : ''}"
-        data-action="one" data-key="${escAttr(key)}">${escHtml(t('card_one'))}</button>
-      <button class="btn btn-biz ${mark.biz ? 'active' : ''}"
-        data-action="biz" data-key="${escAttr(key)}">${escHtml(t('card_biz'))}</button>
+    <div class="person-card-body" style="display:none">
+      ${haveSection}${wantSection}${kwSection}
+      <div class="person-actions">
+        <button class="btn btn-line"
+          data-action="line" data-key="${escAttr(key)}"
+          data-line-link="${escAttr(member.lineLink || '')}"
+          data-line-id="${escAttr(member.lineId || '')}">${t('card_line')}</button>
+        <button class="btn btn-one ${mark.one ? 'active' : ''}"
+          data-action="one" data-key="${escAttr(key)}">${t('card_one')}</button>
+        <button class="btn btn-biz ${mark.biz ? 'active' : ''}"
+          data-action="biz" data-key="${escAttr(key)}">${t('card_biz')}</button>
+      </div>
     </div>
   </div>`;
 }
@@ -56,6 +59,16 @@ export function personCardHTML(member, opts = {}) {
 export function bindCardEvents(container, members) {
   if (!container) return;
   container.addEventListener('click', e => {
+    // Card expand/collapse — click anywhere except action buttons
+    const card = e.target.closest('.person-card');
+    if (card && !e.target.closest('[data-action]')) {
+      const expanded = card.dataset.expanded === 'true';
+      card.dataset.expanded = String(!expanded);
+      const body = card.querySelector('.person-card-body');
+      if (body) body.style.display = expanded ? 'none' : 'block';
+      return;
+    }
+
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
     const action = btn.dataset.action;

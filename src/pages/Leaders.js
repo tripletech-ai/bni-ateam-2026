@@ -81,18 +81,44 @@ function leaderCardSecondary(l) {
     </div>`;
 }
 
-function accordion(title, people, id) {
-  const cards = people.map(p => {
-    const initial = (p.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
-    return `<div class="director-card">
+function directorCardHTML(p) {
+  const initial = (p.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
+  const metaParts = [p.branch, p.profession].filter(Boolean);
+  const metaLine  = metaParts.length ? `<div class="dir-meta">${escHtml(metaParts.join(' · '))}</div>` : '';
+
+  const haveSection = p.have
+    ? `<div class="dir-section"><span class="dir-section-label">${escHtml(t('card_have'))}</span><span class="dir-section-text">${escHtml(p.have)}</span></div>` : '';
+  const wantSection = p.wantMeet
+    ? `<div class="dir-section"><span class="dir-section-label">${escHtml(t('card_want'))}</span><span class="dir-section-text">${escHtml(p.wantMeet)}</span></div>` : '';
+
+  return `<div class="director-card-v2" data-expanded="false">
+    <div class="dir-header">
       <div class="director-avatar">${escHtml(initial)}</div>
-      <div class="director-name">${escHtml(p.name)}</div>
-      <button class="director-btn-card ${p.cardLink ? 'has-link' : ''}"
-        data-action="director-card" data-link="${escAttr(p.cardLink)}">
+      <div class="dir-name-wrap">
+        <div class="director-name">${escHtml(p.name)}</div>
+        ${metaLine}
+      </div>
+      <button class="dir-about-btn ${p.cardLink ? 'has-link' : ''}"
+        data-action="director-card" data-link="${escAttr(p.cardLink || '')}">
         ${escHtml(t('leaders_card'))}
       </button>
-    </div>`;
-  }).join('');
+    </div>
+    <div class="dir-expand-body" style="display:none">
+      ${haveSection}${wantSection}
+      <div class="dir-actions">
+        <button class="btn btn-line btn-sm"
+          data-action="dir-line"
+          data-line-link="${escAttr(p.lineLink || '')}"
+          data-line-id="${escAttr(p.lineId || '')}">${t('leaders_line')}</button>
+        <button class="btn btn-one btn-sm" data-action="dir-one">${t('leaders_one')}</button>
+        <button class="btn btn-biz btn-sm" data-action="dir-biz">${t('leaders_biz')}</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function accordion(title, people, id) {
+  const cards = people.map(p => directorCardHTML(p)).join('');
 
   return `
     <div class="accordion-wrap" style="margin:0 16px 10px;border-radius:var(--r);border:1px solid var(--dark-border);overflow:hidden">
@@ -106,7 +132,7 @@ function accordion(title, people, id) {
 
 function bindLeaderEvents(container) {
   container.addEventListener('click', e => {
-    // Accordion toggle
+    // Accordion section toggle
     const header = e.target.closest('.accordion-header');
     if (header) {
       const id      = header.dataset.accordion;
@@ -118,7 +144,17 @@ function bindLeaderEvents(container) {
       return;
     }
 
-    // Contact buttons
+    // Director card expand/collapse (click anywhere on card except action buttons)
+    const dirCard = e.target.closest('.director-card-v2');
+    if (dirCard && !e.target.closest('[data-action]')) {
+      const expanded = dirCard.dataset.expanded === 'true';
+      dirCard.dataset.expanded = String(!expanded);
+      const body = dirCard.querySelector('.dir-expand-body');
+      if (body) body.style.display = expanded ? 'none' : 'block';
+      return;
+    }
+
+    // Action buttons
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
 
@@ -128,15 +164,18 @@ function bindLeaderEvents(container) {
     }
 
     const action = btn.dataset.action;
-    if (action === 'leader-line') {
-      const link = btn.dataset.link;
-      const id   = btn.dataset.id;
+
+    if (action === 'leader-line' || action === 'dir-line') {
+      const link = btn.dataset.lineLink || btn.dataset.link || '';
+      const id   = btn.dataset.lineId   || btn.dataset.id   || '';
       if (link && link.startsWith('http')) {
         window.open(link, '_blank', 'noopener');
       } else if (id) {
         navigator.clipboard.writeText(id).catch(() => {});
         window.open('https://line.me/R/nv/addFriends', '_blank', 'noopener');
         showToast(t('toast_line_copy'));
+      } else {
+        showToast(t('leaders_pending'));
       }
     } else if (action === 'leader-phone') {
       const ph = btn.dataset.phone;
@@ -147,6 +186,9 @@ function bindLeaderEvents(container) {
     } else if (action === 'leader-card' || action === 'director-card') {
       const link = btn.dataset.link;
       if (link && link.startsWith('http')) window.open(link, '_blank', 'noopener');
+      else showToast(t('leaders_pending'));
+    } else if (action === 'dir-one' || action === 'dir-biz') {
+      showToast(t('leaders_pending'));
     }
   });
 }

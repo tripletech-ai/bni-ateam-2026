@@ -83,10 +83,8 @@ export function renderHome(container) {
       <div class="branch-chips">
         ${zhongshan.map((b, i) => `<div
           class="branch-chip zhongshan stagger-${Math.min(i+1,6)}"
-          data-branch="${escHtml(b.name)}"
-          role="button" tabindex="0"
-          onclick="location.hash='search'"
-          onkeydown="if(event.key==='Enter')location.hash='search'">
+          data-branch="${escHtml(b.name)}分會"
+          role="button" tabindex="0">
           ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
         </div>`).join('')}
       </div>
@@ -94,10 +92,8 @@ export function renderHome(container) {
       <div class="branch-chips">
         ${sanlu.map((b, i) => `<div
           class="branch-chip sanlu stagger-${Math.min(i+1,6)}"
-          data-branch="${escHtml(b.name)}"
-          role="button" tabindex="0"
-          onclick="location.hash='search'"
-          onkeydown="if(event.key==='Enter')location.hash='search'">
+          data-branch="${escHtml(b.name)}分會"
+          role="button" tabindex="0">
           ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
         </div>`).join('')}
       </div>
@@ -110,6 +106,15 @@ export function renderHome(container) {
     </div>
     <div style="height:24px"></div>
   `;
+
+  container.querySelectorAll('.branch-chip[data-branch]').forEach(chip => {
+    const go = () => {
+      sessionStorage.setItem('bni_pending_branch', chip.dataset.branch);
+      location.hash = 'search';
+    };
+    chip.addEventListener('click', go);
+    chip.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+  });
 
   document.getElementById('home-ai-submit').addEventListener('click', () => {
     const v = document.getElementById('home-ai-input').value.trim();

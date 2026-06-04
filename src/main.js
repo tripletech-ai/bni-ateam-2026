@@ -61,7 +61,8 @@ function showWelcome() {
   overlay.innerHTML = `
     <div id="welcome-card">
       <div class="welcome-eyebrow">BNI · ANDERSON TEAM · 2026 年會</div>
-      <div class="welcome-title">A Team<br>商務連結系統</div>
+      <div class="welcome-title hero-title-shimmer">A Team<br>商務連結系統</div>
+      <div class="welcome-lang-hint">右上角可切換 <strong>中文 / EN</strong></div>
       <div class="welcome-rule"></div>
       <div class="welcome-guide">
         <div class="welcome-row">

@@ -6,14 +6,17 @@ import { escHtml }                           from '../utils/html.js';
 import { t }                                 from '../i18n/translations.js';
 
 export function renderSearch(container) {
-  const pending = sessionStorage.getItem('bni_pending_search');
-  if (pending) sessionStorage.removeItem('bni_pending_search');
+  const pending       = sessionStorage.getItem('bni_pending_search');
+  const pendingBranch = sessionStorage.getItem('bni_pending_branch');
+  if (pending)       sessionStorage.removeItem('bni_pending_search');
+  if (pendingBranch) sessionStorage.removeItem('bni_pending_branch');
 
   container.innerHTML = buildSearchUI();
   bindSearchEvents(container);
   renderBranchBrowse(document.getElementById('branch-browse-area'));
 
-  if (pending) setTimeout(() => triggerSearch(pending), 50);
+  if (pending)       setTimeout(() => triggerSearch(pending), 50);
+  else if (pendingBranch) setTimeout(() => showBranchMembers(pendingBranch), 50);
 }
 
 function buildSearchUI() {

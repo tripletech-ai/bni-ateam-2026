@@ -7,7 +7,7 @@ export const translations = {
     tab_leaders: '領導層',
 
     hero_eyebrow: 'BNI · 20 YEARS TAIWAN',
-    hero_title:   '20 分會商務連結行動',
+    hero_title:   'A Team 商務連結行動',
     hero_sub:     '說出你想找的人\nAI 幫你找到對的夥伴',
     hero_region:  '台北市北區 Anderson Team / 新北市西北B區',
 
@@ -32,7 +32,7 @@ export const translations = {
     card_matched: '項符合',
     card_line:    '加 LINE',
     card_one:     '想約 1-1',
-    card_biz:     '有合作可能',
+    card_biz:     '有合作<wbr>可能',
 
     stat_branches: '參與分會',
     stat_members:  '報名夥伴',
@@ -68,13 +68,17 @@ export const translations = {
 
     leaders_title:    'Anderson Team 區域領導群',
     leaders_sub:      '台北市北區 Anderson Team / 新北市西北B區',
-    leaders_section_zh:  '中山區董顧',
-    leaders_section_san: '三蘆區董顧',
+    leaders_section_zh:  '中山區董事顧問',
+    leaders_section_san: '三蘆區董事顧問',
     leaders_card:     '關於我',
     leaders_line:     '加 LINE',
     leaders_phone:    '電話',
     leaders_email:    'Email',
     leaders_pending:  '待補充',
+    leaders_one:      '約 1-1',
+    leaders_biz:      '有合作<wbr>可能',
+    leaders_branch:   '所屬分會',
+    leaders_profession: '產業別',
 
     toast_line_copy:   'LINE ID 已複製，到 LINE 搜尋貼上',
     toast_line_manual: '請手動搜尋 LINE ID：',
@@ -91,7 +95,7 @@ export const translations = {
     tab_leaders: 'Leaders',
 
     hero_eyebrow: 'BNI · 20 YEARS TAIWAN',
-    hero_title:   '20 Chapters Business Connect',
+    hero_title:   'A Team Business Connect',
     hero_sub:     "Tell us who you're looking for\nAI finds the right partner for you",
     hero_region:  'Taipei North Anderson Team / New Taipei NW-B',
 
@@ -152,13 +156,17 @@ export const translations = {
 
     leaders_title:       'Anderson Team Regional Leaders',
     leaders_sub:         'Taipei North Anderson Team / New Taipei NW-B',
-    leaders_section_zh:  'Zhongshan Directors',
-    leaders_section_san: 'Sanlu Directors',
+    leaders_section_zh:  'Zhongshan Board Advisors',
+    leaders_section_san: 'Sanlu Board Advisors',
     leaders_card:        'About Me',
     leaders_line:        'LINE',
     leaders_phone:       'Call',
     leaders_email:       'Email',
     leaders_pending:     'Coming Soon',
+    leaders_one:         '1-on-1',
+    leaders_biz:         'Potential<wbr>Partner',
+    leaders_branch:      'Chapter',
+    leaders_profession:  'Industry',
 
     toast_line_copy:   'LINE ID copied — paste in LINE to search',
     toast_line_manual: 'LINE ID: ',
