@@ -84,11 +84,6 @@ export const LEADERS = {
       lineId: '930849519', lineLink: 'https://line.me/ti/p/lvKp88vThL', cardLink: '',
     },
     {
-      name: '李赫茗', branch: '', profession: '',
-      have: '', wantMeet: '',
-      lineId: '', lineLink: '', cardLink: '',
-    },
-    {
       name: '蕭淑蓉', branch: '金安分會', profession: '整合行銷-統籌大型活動',
       have: '承接政府大型活動、行銷策略、硬體統籌協助',
       wantMeet: '企業福委會、企業內部承辦春酒/尾牙/年會/家庭日窗口',
@@ -117,11 +112,6 @@ export const LEADERS = {
       have: '品牌設計服務、品牌/企業識別系統、品牌策略規劃、美術包裝設計、形象網站設計、商業廣告設計',
       wantMeet: '餐飲品牌創辦人、連鎖加盟主、百貨招商窗口、食品品牌、投資人、商業空間設計',
       lineId: 'defcqshawn', lineLink: 'https://line.me/ti/p/4wzre47qgy', cardLink: '',
-    },
-    {
-      name: '王執定', branch: '', profession: '',
-      have: '', wantMeet: '',
-      lineId: '', lineLink: '', cardLink: '',
     },
     {
       name: '陳沛緹', branch: '長悅分會', profession: '壽險理財',

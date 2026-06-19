@@ -110,7 +110,7 @@
 }
 
 .tab-item.active svg {
-  filter: drop-shadow(0 0 4px rgba(250,199,117,0.6));
+  filter: drop-shadow(0 1px 3px rgba(250,199,117,0.30));
 }
 
 @media (hover: hover) {

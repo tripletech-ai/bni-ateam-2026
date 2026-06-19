@@ -32,14 +32,22 @@ body {
 }
 
 .hero {
-  background: linear-gradient(160deg, #0d1a3a 0%, #0a0f1e 60%, #1a0a2e 100%);
+  background: linear-gradient(168deg, #102145 0%, #0b1428 58%, #080e1d 100%);
   position: relative; overflow: hidden;
 }
 .hero::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(250,199,117,0.08) 0%, transparent 70%);
+  background: radial-gradient(ellipse 78% 56% at 50% -8%, rgba(250,199,117,0.10) 0%, transparent 68%);
   pointer-events: none;
+}
+/* Fine grain — breaks the flat-gradient AI sterility on dark surfaces */
+.hero::after,
+.leaders-hero::after {
+  content: '';
+  position: absolute; inset: 0; pointer-events: none;
+  opacity: 0.5; mix-blend-mode: soft-light;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 .ai-box {
@@ -62,13 +70,13 @@ body {
 .result-stat,
 .result-progress {
   background: #101629;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.30);
+  border: 1px solid rgba(255,255,255,0.07);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 10px 28px -10px rgba(2,10,28,0.7);
 }
 .ai-result-card {
   background: rgba(186,117,23,0.14);
   border: 1px solid rgba(250,199,117,0.25);
-  box-shadow: 0 2px 12px rgba(0,0,0,0.30);
+  box-shadow: inset 0 1px 0 rgba(250,199,117,0.10), 0 10px 28px -10px rgba(2,10,28,0.65);
 }
 
 .person-name  { color: var(--dark-text); }
@@ -98,7 +106,6 @@ body {
   background: var(--navy-accent);
   color: #fff;
   border-color: var(--navy-accent);
-  box-shadow: 0 0 12px rgba(24,95,165,0.4);
 }
 .btn-biz {
   background: rgba(163,45,45,0.20);
@@ -110,13 +117,12 @@ body {
   background: #991b1b;
   color: #fff;
   border-color: #991b1b;
-  box-shadow: 0 0 12px rgba(163,45,45,0.4);
 }
 .btn-ai {
   background: linear-gradient(135deg, #BA7517 0%, #FAC775 100%);
-  box-shadow: 0 4px 20px var(--gold-glow2);
+  box-shadow: 0 6px 18px -6px rgba(186,117,23,0.55);
 }
-.btn-ai:active { box-shadow: 0 2px 8px var(--gold-glow); }
+.btn-ai:active { box-shadow: 0 3px 10px -4px rgba(186,117,23,0.5); }
 
 .ai-result-card {
   background: rgba(186,117,23,0.12);
@@ -189,7 +195,6 @@ body {
 .progress-bar-wrap { background: var(--dark-surface2); }
 .progress-bar-fill {
   background: linear-gradient(90deg, #BA7517, #FAC775);
-  box-shadow: 0 0 8px var(--gold-glow2);
 }
 
 .toast {
@@ -217,14 +222,14 @@ body {
 #lang-toggle:active { background: rgba(255,255,255,0.14); }
 
 .leaders-hero {
-  background: linear-gradient(160deg, #0d1a3a 0%, #0a0f1e 60%, #1a0a2e 100%);
+  background: linear-gradient(168deg, #102145 0%, #0b1428 58%, #080e1d 100%);
   color: #fff; padding: 48px 20px 36px; text-align: center;
   position: relative; overflow: hidden;
 }
 .leaders-hero::before {
   content: '';
   position: absolute; inset: 0;
-  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(250,199,117,0.10) 0%, transparent 70%);
+  background: radial-gradient(ellipse 70% 50% at 50% 0%, rgba(250,199,117,0.11) 0%, transparent 70%);
   pointer-events: none;
 }
 .leaders-hero-title {
@@ -239,15 +244,15 @@ body {
   border: 1px solid rgba(250,199,117,0.22);
   border-radius: var(--r); margin: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.35);
+  box-shadow: inset 0 1px 0 rgba(250,199,117,0.08), 0 14px 34px -12px rgba(2,10,28,0.75);
 }
 .leader-card-primary .lc-top {
   display: flex; align-items: center; gap: 14px; padding: 18px 16px 14px;
 }
 .leader-avatar {
-  width: 52px; height: 52px; border-radius: 50%;
-  background: linear-gradient(135deg, rgba(250,199,117,0.2), rgba(24,95,165,0.2));
-  border: 1px solid rgba(250,199,117,0.25);
+  width: 52px; height: 52px; border-radius: 16px;
+  background: rgba(250,199,117,0.10);
+  border: 1px solid rgba(250,199,117,0.30);
   display: flex; align-items: center; justify-content: center;
   font-family: 'Noto Serif TC', serif; font-size: 20px; font-weight: 700;
   color: var(--gold-bright); flex-shrink: 0;
@@ -275,7 +280,7 @@ body {
   border-radius: var(--r); margin: 0 16px 12px;
   padding: 14px 16px;
   display: flex; align-items: center; gap: 12px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 10px 26px -12px rgba(2,10,28,0.6);
 }
 
 .accordion-header {
@@ -355,7 +360,7 @@ body {
 }
 .video-thumb {
   width: 100%; aspect-ratio: 16/9;
-  background: linear-gradient(135deg, #0d1a3a 0%, #1a0a2e 100%);
+  background: linear-gradient(135deg, #102145 0%, #0a1226 100%);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 12px;
   cursor: pointer; color: rgba(255,255,255,0.8);
@@ -633,3 +638,33 @@ body {
   letter-spacing: 0.3px;
 }
 #welcome-start:active { opacity: 0.85; }
+
+/* ============================================
+   Taste Pass — De-AI Detailing
+   Squircle avatars, display tracking, editorial
+   badges, calmer accents. Main visual unchanged.
+   ============================================ */
+
+/* Avatars: rounded-square (squircle) family — distinctive, not generic circles */
+.person-avatar   { border-radius: 18px; }
+.mark-avatar     { border-radius: 15px; }
+.director-avatar { border-radius: 11px; }
+/* leader-avatar squircle set inline above */
+
+/* Display serif: subtle negative tracking gives editorial weight to headers */
+.hero-title,
+.leaders-hero-title,
+.welcome-title,
+.yang-hero-name,
+.person-name,
+.leader-name,
+.mark-name        { letter-spacing: -0.012em; }
+
+/* Status labels: squared, editorial — not generic pills */
+.match-badge { border-radius: 7px; }
+.mark-badge  { border-radius: 7px; }
+
+/* Soft inner edge on dark inputs for tactile depth */
+.ai-textarea {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+}
