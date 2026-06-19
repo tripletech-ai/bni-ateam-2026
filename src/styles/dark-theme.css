@@ -668,3 +668,27 @@ body {
 .ai-textarea {
   box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
 }
+
+/* ============================================
+   Photo avatars — real faces over initial fallback
+   ============================================ */
+.person-avatar,
+.mark-avatar,
+.director-avatar,
+.leader-avatar,
+.yang-photo {
+  position: relative;
+  overflow: hidden;
+}
+.avatar-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  display: block;
+}
+.yang-photo-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: center top;
+  display: block;
+}

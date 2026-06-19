@@ -2,6 +2,7 @@ import { getMarks, removeMark } from '../utils/storage.js';
 import { showToast }            from '../utils/toast.js';
 import { renderTabBar }         from '../components/TabBar.js';
 import { escHtml, escAttr }     from '../utils/html.js';
+import { avatarInner }          from '../utils/avatar.js';
 import { t }                    from '../i18n/translations.js';
 
 export function renderMarks(container) {
@@ -30,7 +31,7 @@ export function renderMarks(container) {
     return `
     <div class="mark-card ${stagger}" data-key="${escAttr(m.key)}">
       <div class="mark-card-top">
-        <div class="mark-avatar" aria-hidden="true">${escHtml(initial)}</div>
+        <div class="mark-avatar" aria-hidden="true">${avatarInner(m.name, initial)}</div>
         <div style="flex:1;min-width:0">
           <div class="mark-name">${escHtml(m.name)}</div>
           <div class="mark-meta">${escHtml(m.branch)} · ${escHtml(m.profession)}</div>

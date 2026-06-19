@@ -1,6 +1,7 @@
 import { LEADERS }          from '../data/leaders.js';
 import { t }                from '../i18n/translations.js';
 import { escHtml, escAttr } from '../utils/html.js';
+import { avatarInner }      from '../utils/avatar.js';
 import { showToast }        from '../utils/toast.js';
 
 export function renderLeaders(container) {
@@ -34,7 +35,7 @@ function leaderCardPrimary(l) {
   return `
     <div class="leader-card-primary">
       <div class="lc-top">
-        <div class="leader-avatar">${escHtml(initial)}</div>
+        <div class="leader-avatar">${avatarInner(l.name, initial)}</div>
         <div>
           <div class="leader-name">${escHtml(l.name)}</div>
           <div class="leader-title">${escHtml(l.title)}</div>
@@ -69,7 +70,7 @@ function leaderCardSecondary(l) {
   const initial = (l.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
   return `
     <div class="leader-card-secondary">
-      <div class="leader-avatar">${escHtml(initial)}</div>
+      <div class="leader-avatar">${avatarInner(l.name, initial)}</div>
       <div style="flex:1">
         <div class="leader-name">${escHtml(l.name)}</div>
         <div class="leader-title">${escHtml(l.title)}</div>
@@ -93,7 +94,7 @@ function directorCardHTML(p) {
 
   return `<div class="director-card-v2" data-expanded="false">
     <div class="dir-header">
-      <div class="director-avatar">${escHtml(initial)}</div>
+      <div class="director-avatar">${avatarInner(p.name, initial)}</div>
       <div class="dir-name-wrap">
         <div class="director-name">${escHtml(p.name)}</div>
         ${metaLine}
