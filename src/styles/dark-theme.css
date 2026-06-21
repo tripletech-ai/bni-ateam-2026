@@ -458,79 +458,86 @@ body {
 .match-badge { font-size: 11px; padding: 3px 9px; }
 
 /* ============================================
-   Accessibility: Font Scale ×1.5
-   Covers all text elements; large stat numbers excluded.
+   Accessibility: User-selectable font scale
+   --fs-k multiplies every body/label/button size.
+   Baseline values below = "大" (×1.0, 長輩友善).
+   Page loads at 標準 (fs-s) by default; user can
+   bump to 大 / 特大. Big stat numbers excluded.
    ============================================ */
+:root     { --fs-k: 0.78; }   /* fallback = 標準 */
+html.fs-s { --fs-k: 0.78; }   /* 標準（預設，較精緻） */
+html.fs-m { --fs-k: 1;    }   /* 大（長輩友善） */
+html.fs-l { --fs-k: 1.18; }   /* 特大 */
 
 /* Navigation */
-.tab-item { font-size: 15px; }
+.tab-item { font-size: calc(15px * var(--fs-k)); }
 
 /* Hero */
-.hero-title { font-size: 33px; }
-.hero-sub   { font-size: 21px; }
+.hero-title { font-size: calc(33px * var(--fs-k)); }
+.hero-sub   { font-size: calc(21px * var(--fs-k)); }
 
 /* AI search */
-.ai-box-label    { font-size: 20px; }
-.ai-textarea     { font-size: 22px; }
-.ai-example-chip { font-size: 18px; }
-.ai-result-query { font-size: 20px; }
-.keyword-tag     { font-size: 18px; }
+.ai-box-label    { font-size: calc(20px * var(--fs-k)); }
+.ai-textarea     { font-size: calc(22px * var(--fs-k)); }
+.ai-example-chip { font-size: calc(18px * var(--fs-k)); }
+.ai-result-query { font-size: calc(20px * var(--fs-k)); }
+.keyword-tag     { font-size: calc(18px * var(--fs-k)); }
 
 /* Stats labels — numbers (stat-num / result-stat-num) kept as-is */
-.stat-label { font-size: 17px; }
+.stat-label { font-size: calc(17px * var(--fs-k)); }
 
 /* Section headings */
-.section-title        { font-size: 26px; }
-.results-header       { font-size: 20px; }
-.results-header span  { font-size: 30px; }
+.section-title        { font-size: calc(26px * var(--fs-k)); }
+.results-header       { font-size: calc(20px * var(--fs-k)); }
+.results-header span  { font-size: calc(30px * var(--fs-k)); }
 
 /* Person card */
-.person-name          { font-size: 26px; }
-.person-meta          { font-size: 18px; }
-.match-badge          { font-size: 17px; padding: 5px 12px; }
-.person-section-label { font-size: 17px; }
-.person-section-text  { font-size: 20px; line-height: 1.65; }
-.person-keywords      { font-size: 17px; }
+.person-name          { font-size: calc(26px * var(--fs-k)); }
+.person-meta          { font-size: calc(18px * var(--fs-k)); }
+.match-badge          { font-size: calc(17px * var(--fs-k)); padding: 5px 12px; }
+.person-section-label { font-size: calc(17px * var(--fs-k)); }
+.person-section-text  { font-size: calc(20px * var(--fs-k)); line-height: 1.65; }
+.person-keywords      { font-size: calc(17px * var(--fs-k)); }
 
 /* Action buttons */
 .btn-line, .btn-one, .btn-biz,
 .btn-remove, .btn-add-line,
-.btn-reset, .btn-search-members { font-size: 18px; }
-.btn-yang { font-size: 18px; padding: 9px 18px; }
+.btn-reset, .btn-search-members { font-size: calc(18px * var(--fs-k)); }
+.btn-yang { font-size: calc(18px * var(--fs-k)); padding: 9px 18px; }
 
 /* Branch section */
-.branch-region-title          { font-size: 18px; }
-.branch-chip                  { font-size: 19px; }
-.branch-chip .chip-count      { font-size: 16px; }
+.branch-region-title          { font-size: calc(18px * var(--fs-k)); }
+.branch-chip                  { font-size: calc(19px * var(--fs-k)); }
+.branch-chip .chip-count      { font-size: calc(16px * var(--fs-k)); }
 
 /* Yang card (home page) */
-.yang-name  { font-size: 27px; }
-.yang-title { font-size: 18px; }
+.yang-name  { font-size: calc(27px * var(--fs-k)); }
+.yang-title { font-size: calc(18px * var(--fs-k)); }
 
 /* Mark card */
-.mark-name   { font-size: 22px; }
-.mark-meta   { font-size: 18px; }
-.mark-badge  { font-size: 17px; }
+.mark-name   { font-size: calc(22px * var(--fs-k)); }
+.mark-meta   { font-size: calc(18px * var(--fs-k)); }
+.mark-badge  { font-size: calc(17px * var(--fs-k)); }
 
 /* Result page */
-.result-stat-label { font-size: 18px; }
+.result-stat-label { font-size: calc(18px * var(--fs-k)); }
 
 /* Empty states */
-.empty-state-title { font-size: 24px; }
-.empty-state-sub   { font-size: 20px; }
+.empty-state-title { font-size: calc(24px * var(--fs-k)); }
+.empty-state-sub   { font-size: calc(20px * var(--fs-k)); }
 
 /* Leaders page */
-.leaders-hero-title   { font-size: 30px; }
-.leaders-hero-sub     { font-size: 20px; }
-.leader-name          { font-size: 27px; }
-.leader-title         { font-size: 18px; }
-.leader-contact-btn   { font-size: 18px; padding: 14px 8px; }
-.leader-avatar        { width: 62px; height: 62px; font-size: 26px; }
-.director-name        { font-size: 21px; }
-.director-avatar      { width: 44px; height: 44px; font-size: 18px; }
-.director-btn-card    { font-size: 16px; padding: 5px 12px; }
-.accordion-header     { font-size: 21px; }
-.video-caption        { font-size: 20px; }
+.leaders-hero-title   { font-size: calc(30px * var(--fs-k)); }
+.leaders-hero-sub     { font-size: calc(20px * var(--fs-k)); }
+.leader-name          { font-size: calc(27px * var(--fs-k)); }
+.leader-title         { font-size: calc(18px * var(--fs-k)); }
+.leader-contact-btn   { font-size: calc(18px * var(--fs-k)); padding: 14px 8px; }
+.leader-avatar        { width: 62px; height: 62px; font-size: calc(26px * var(--fs-k)); }
+.director-name        { font-size: calc(21px * var(--fs-k)); }
+.director-avatar      { width: 44px; height: 44px; font-size: calc(18px * var(--fs-k)); }
+.director-btn-card    { font-size: calc(16px * var(--fs-k)); padding: 5px 12px; }
+.accordion-header     { font-size: calc(21px * var(--fs-k)); }
+.video-caption        { font-size: calc(20px * var(--fs-k)); }
 
 /* Lang toggle: decorative, keep small */
 #lang-toggle { font-size: 13px; }
@@ -692,3 +699,51 @@ body {
   object-fit: cover; object-position: center top;
   display: block;
 }
+
+/* ============================================
+   Font-size chooser — welcome card + persistent toggle
+   ============================================ */
+.welcome-fs { margin-bottom: 22px; }
+.welcome-fs-label {
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 13px; letter-spacing: 1px;
+  color: rgba(255,255,255,0.55); margin-bottom: 10px;
+}
+.welcome-fs-opts { display: flex; gap: 8px; }
+.welcome-fs-btn {
+  flex: 1; padding: 11px 6px; border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.14);
+  color: rgba(255,255,255,0.80);
+  font-family: 'Noto Sans TC', sans-serif; font-weight: 600;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.welcome-fs-btn[data-active="true"] {
+  background: rgba(250,199,117,0.14);
+  border-color: rgba(250,199,117,0.55);
+  color: var(--gold-bright);
+}
+.welcome-fs-btn:nth-child(1) { font-size: 15px; }
+.welcome-fs-btn:nth-child(2) { font-size: 18px; }
+.welcome-fs-btn:nth-child(3) { font-size: 21px; }
+
+#font-toggle {
+  position: fixed; top: 12px; right: 58px; z-index: 300;
+  display: flex; align-items: baseline; gap: 1px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.80);
+  padding: 4px 11px; border-radius: 20px; cursor: pointer;
+  font-family: 'Noto Sans TC', sans-serif; font-weight: 700;
+  backdrop-filter: blur(8px);
+  transition: background 0.15s;
+}
+#font-toggle:active { background: rgba(255,255,255,0.14); }
+#font-toggle .fs-a-small { font-size: 11px; }
+#font-toggle .fs-a-big   { font-size: 15px; }
+
+/* Welcome card body text scales with chosen size (live preview).
+   Placed last so it wins over the fixed sizes in the Welcome block. */
+.welcome-tag  { font-size: calc(15px * var(--fs-k)); }
+.welcome-desc { font-size: calc(16px * var(--fs-k)); }
+.welcome-goal { font-size: calc(16px * var(--fs-k)); }

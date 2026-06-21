@@ -21,6 +21,32 @@ function initLangToggle() {
   });
 }
 
+// ── Font size (user-selectable accessibility scale) ─────
+const FONT_SIZES = ['fs-s', 'fs-m', 'fs-l'];           // 標準 / 大 / 特大
+const FONT_LABELS = { 'fs-s': '標準', 'fs-m': '大字', 'fs-l': '特大' };
+window.BNI_FONT = localStorage.getItem('bni_font') || 'fs-s';
+
+function applyFontSize(cls) {
+  if (!FONT_SIZES.includes(cls)) cls = 'fs-s';
+  document.documentElement.classList.remove(...FONT_SIZES);
+  document.documentElement.classList.add(cls);
+  window.BNI_FONT = cls;
+  localStorage.setItem('bni_font', cls);
+}
+
+function initFontToggle() {
+  const btn = document.getElementById('font-toggle');
+  if (!btn) return;
+  btn.addEventListener('click', () => {
+    const next = FONT_SIZES[(FONT_SIZES.indexOf(window.BNI_FONT) + 1) % FONT_SIZES.length];
+    applyFontSize(next);
+    import('./utils/toast.js').then(({ showToast }) => showToast(`字體：${FONT_LABELS[next]}`));
+  });
+}
+
+// Apply saved choice immediately so the first paint is correct
+applyFontSize(window.BNI_FONT);
+
 // ── Router ────────────────────────────────────────
 const app = document.getElementById('app');
 
@@ -82,11 +108,30 @@ function showWelcome() {
           <span class="welcome-desc">查看今天的標記進度</span>
         </div>
       </div>
+      <div class="welcome-fs">
+        <div class="welcome-fs-label">字體大小（可隨時在右上角調整）</div>
+        <div class="welcome-fs-opts">
+          <button class="welcome-fs-btn" data-fs="fs-s">標準</button>
+          <button class="welcome-fs-btn" data-fs="fs-m">大</button>
+          <button class="welcome-fs-btn" data-fs="fs-l">特大</button>
+        </div>
+      </div>
       <div class="welcome-goal">今天目標：標記 5 位以上夥伴</div>
       <button id="welcome-start">開始使用</button>
     </div>
   `;
   document.body.appendChild(overlay);
+
+  // Font-size chooser — applies live so the choice is felt immediately
+  const fsButtons = overlay.querySelectorAll('.welcome-fs-btn');
+  const markActive = () => fsButtons.forEach(b =>
+    b.setAttribute('data-active', String(b.dataset.fs === window.BNI_FONT)));
+  markActive();
+  fsButtons.forEach(b => b.addEventListener('click', () => {
+    applyFontSize(b.dataset.fs);
+    markActive();
+  }));
+
   document.getElementById('welcome-start').addEventListener('click', () => {
     overlay.style.transition = 'opacity 0.22s';
     overlay.style.opacity = '0';
@@ -96,5 +141,6 @@ function showWelcome() {
 
 window.addEventListener('hashchange', navigate);
 initLangToggle();
+initFontToggle();
 showWelcome();
 navigate();

@@ -6,7 +6,25 @@
   <meta name="theme-color" content="#0a0f1e">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <title>BNI A Team 商務連結</title>
+  <meta name="apple-mobile-web-app-title" content="A Team">
+
+  <title>BNI A Team 商務連結系統</title>
+  <meta name="description" content="BNI 20 週年年會 A Team 商務連結系統 — 台北市北區 Anderson Team。用一句話說出需求，AI 幫你在 120 位夥伴中找到對的人脈，現場標記 1-1 與合作對象。">
+  <!-- Private event tool — keep out of search engines -->
+  <meta name="robots" content="noindex, nofollow">
+
+  <!-- Social share preview (LINE / Facebook). Set og:url & og:image to the full https URL after deploy. -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="BNI A Team 商務連結系統">
+  <meta property="og:description" content="台北市北區 Anderson Team · 20 分會 120 位夥伴。AI 幫你找到對的人脈，現場標記 1-1 與合作對象。">
+  <meta property="og:image" content="assets/photos/楊日陞.jpg">
+  <meta property="og:locale" content="zh_TW">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <!-- Branded favicon (gold A on navy) + iOS home-screen icon -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23102145'/%3E%3Ctext x='32' y='45' font-family='Georgia,serif' font-size='40' font-weight='bold' fill='%23FAC775' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="src/styles/main.css">
@@ -17,6 +35,7 @@
   <div id="app"></div>
   <nav id="tab-bar" role="tablist" aria-label="主導覽"></nav>
   <div id="toast" class="toast" role="alert" aria-live="polite"></div>
+  <button id="font-toggle" aria-label="字體大小"><span class="fs-a-small">A</span><span class="fs-a-big">A</span></button>
   <button id="lang-toggle" aria-label="切換語言">EN</button>
   <!-- members.js loaded as classic script to avoid ES module cache issues -->
   <script src="src/data/members.js"></script>
