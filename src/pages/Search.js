@@ -1,5 +1,5 @@
 import { getKeywordsFromAI }                from '../utils/aiSearch.js';
-import { searchMembers, getMembersByBranch } from '../utils/search.js';
+import { searchMembers, getSuggestions, getMembersByBranch } from '../utils/search.js';
 import { personCardHTML, bindCardEvents }    from '../components/PersonCard.js';
 import { BRANCHES }                          from '../data/branches.js';
 import { escHtml }                           from '../utils/html.js';
@@ -123,34 +123,64 @@ async function triggerSearch(input) {
 
   // Auto-search immediately (no manual button)
   const results = searchMembers(keywords);
-  showResults(results, searchArea);
+  showResults(results, searchArea, keywords);
   branchArea.style.display = 'block';
 }
 
-function showResults(results, container) {
+const REFINE_HINT = () => `
+  <div class="search-refine">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+      <path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.2 1 2.5h6c0-1.3.3-1.8 1-2.5A6 6 0 0 0 12 3z"/>
+    </svg>
+    <div>${escHtml(t('search_refine_hint'))}</div>
+  </div>`;
+
+const cardsHTML = (list, opts = {}) =>
+  list.map((m, i) => personCardHTML(m, { ...opts, staggerIndex: i })).join('');
+
+function showResults(results, container, keywords = []) {
   container.style.display = 'block';
+  const MIN = 3;
+  const excludeIds = new Set(results.map(r => r.id || r.name));
+
+  // CASE A — no exact match: never a dead end. Guide + soft suggestions.
   if (results.length === 0) {
-    container.innerHTML = `<div class="empty-state">
-      <div class="empty-state-title">${escHtml(t('search_no_result'))}</div>
-      <div class="empty-state-sub">${escHtml(t('search_no_result_sub'))}</div>
-      <button onclick="document.getElementById('btn-reset-search')?.click()"
-        class="btn-ai" style="margin-top:16px;border-radius:var(--r-sm);padding:10px 24px;font-size:13px">
-        ${escHtml(t('search_reset'))}
-      </button>
-    </div>`;
+    const suggestions = getSuggestions(keywords, excludeIds, MIN);
+    container.innerHTML = `
+      <div class="search-noexact">${escHtml(t('search_no_exact'))}</div>
+      ${REFINE_HINT()}
+      <div class="results-header suggest">
+        <span>${suggestions.length}</span> ${escHtml(t('search_suggest_title'))}
+      </div>
+      <div id="cards-list">${cardsHTML(suggestions)}</div>`;
+    bindCardEvents(document.getElementById('cards-list'), suggestions);
     return;
   }
+
+  // CASE B — we have matches. Show them, top up to MIN with suggestions if thin.
+  const topUp = results.length < MIN
+    ? getSuggestions(keywords, excludeIds, MIN - results.length)
+    : [];
+
+  // Exact matches keep their per-member matchedKeywords (drives the "N 項符合" badge)
+  const exactCards = results.map((m, i) =>
+    personCardHTML(m, { matchedKeywords: m.matchedKeywords || [], staggerIndex: i })
+  ).join('');
+
   container.innerHTML = `
     <div class="results-header">
       <span>${results.length}</span> ${escHtml(t('search_results'))}
     </div>
-    <div id="cards-list"></div>`;
+    <div id="cards-list">${exactCards}</div>
+    ${topUp.length ? `
+      <div class="results-header suggest">
+        <span>${topUp.length}</span> ${escHtml(t('search_suggest_title'))}
+      </div>
+      <div id="suggest-list">${cardsHTML(topUp)}</div>` : ''}
+    ${REFINE_HINT()}`;
 
-  const cardsList = document.getElementById('cards-list');
-  cardsList.innerHTML = results.map((m, i) =>
-    personCardHTML(m, { matchedKeywords: m.matchedKeywords || [], staggerIndex: i })
-  ).join('');
-  bindCardEvents(cardsList, results);
+  bindCardEvents(document.getElementById('cards-list'), results);
+  if (topUp.length) bindCardEvents(document.getElementById('suggest-list'), topUp);
 }
 
 function resetSearch() {
