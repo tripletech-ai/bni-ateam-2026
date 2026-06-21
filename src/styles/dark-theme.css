@@ -699,6 +699,24 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   object-fit: cover; object-position: center top;
   display: block;
 }
+/* Stretch photo panel to full card height → fills the rounded
+   left corners, no sharp edge / gap above & below */
+.yang-card { align-items: stretch; }
+
+/* "關於我 / 名片" link on member cards */
+.person-about-wrap { padding: 4px 16px 12px; }
+.btn-about {
+  display: block; width: 100%;
+  background: rgba(250,199,117,0.10);
+  border: 1px solid rgba(250,199,117,0.35);
+  color: var(--gold-bright);
+  border-radius: var(--r-sm); padding: 11px;
+  font-family: 'Noto Sans TC', sans-serif; font-weight: 600;
+  text-align: center; cursor: pointer;
+  font-size: calc(17px * var(--fs-k));
+  transition: background 0.15s;
+}
+.btn-about:active { background: rgba(250,199,117,0.18); }
 
 /* ============================================
    Font-size chooser — welcome card + persistent toggle

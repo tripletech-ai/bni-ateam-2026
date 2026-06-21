@@ -2,6 +2,7 @@ import { LEADERS }          from '../data/leaders.js';
 import { t }                from '../i18n/translations.js';
 import { escHtml, escAttr } from '../utils/html.js';
 import { avatarInner }      from '../utils/avatar.js';
+import { getCardLink }      from '../data/cardLinks.js';
 import { showToast }        from '../utils/toast.js';
 
 export function renderLeaders(container) {
@@ -32,6 +33,7 @@ export function renderLeaders(container) {
 
 function leaderCardPrimary(l) {
   const initial = (l.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
+  const cardLink = getCardLink(l.name) || l.cardLink || '';
   return `
     <div class="leader-card-primary">
       <div class="lc-top">
@@ -57,8 +59,8 @@ function leaderCardPrimary(l) {
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           ${escHtml(t('leaders_email'))}
         </button>
-        <button class="leader-contact-btn ${l.cardLink ? '' : 'pending'}"
-          data-action="leader-card" data-link="${escAttr(l.cardLink)}">
+        <button class="leader-contact-btn ${cardLink ? '' : 'pending'}"
+          data-action="leader-card" data-link="${escAttr(cardLink)}">
           <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
           ${escHtml(t('leaders_card'))}
         </button>
@@ -68,6 +70,7 @@ function leaderCardPrimary(l) {
 
 function leaderCardSecondary(l) {
   const initial = (l.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
+  const cardLink = getCardLink(l.name) || l.cardLink || '';
   return `
     <div class="leader-card-secondary">
       <div class="leader-avatar">${avatarInner(l.name, initial)}</div>
@@ -75,8 +78,8 @@ function leaderCardSecondary(l) {
         <div class="leader-name">${escHtml(l.name)}</div>
         <div class="leader-title">${escHtml(l.title)}</div>
       </div>
-      <button class="director-btn-card ${l.cardLink ? 'has-link' : ''}"
-        data-action="leader-card" data-link="${escAttr(l.cardLink)}">
+      <button class="director-btn-card ${cardLink ? 'has-link' : ''}"
+        data-action="leader-card" data-link="${escAttr(cardLink)}">
         ${escHtml(t('leaders_card'))}
       </button>
     </div>`;
@@ -84,6 +87,7 @@ function leaderCardSecondary(l) {
 
 function directorCardHTML(p) {
   const initial = (p.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
+  const dirCard = getCardLink(p.name) || p.cardLink || '';
   const metaParts = [p.branch, p.profession].filter(Boolean);
   const metaLine  = metaParts.length ? `<div class="dir-meta">${escHtml(metaParts.join(' · '))}</div>` : '';
 
@@ -99,8 +103,8 @@ function directorCardHTML(p) {
         <div class="director-name">${escHtml(p.name)}</div>
         ${metaLine}
       </div>
-      <button class="dir-about-btn ${p.cardLink ? 'has-link' : ''}"
-        data-action="director-card" data-link="${escAttr(p.cardLink || '')}">
+      <button class="dir-about-btn ${dirCard ? 'has-link' : ''}"
+        data-action="director-card" data-link="${escAttr(dirCard)}">
         ${escHtml(t('leaders_card'))}
       </button>
     </div>

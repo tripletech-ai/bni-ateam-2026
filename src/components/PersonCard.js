@@ -2,6 +2,7 @@ import { getMark, setMark, memberKey } from '../utils/storage.js';
 import { showToast }                   from '../utils/toast.js';
 import { escHtml, escAttr }            from '../utils/html.js';
 import { avatarInner }                 from '../utils/avatar.js';
+import { getCardLink }                 from '../data/cardLinks.js';
 import { t }                           from '../i18n/translations.js';
 
 export function personCardHTML(member, opts = {}) {
@@ -31,6 +32,12 @@ export function personCardHTML(member, opts = {}) {
 
   const regionClass = member.region === 'sanlu' ? 'region-sanlu' : member.region === 'zhongshan' ? 'region-zhongshan' : '';
 
+  const cardLink = getCardLink(member.name);
+  const aboutBtn = cardLink
+    ? `<div class="person-about-wrap">
+        <button class="btn btn-about" data-action="about" data-link="${escAttr(cardLink)}">${escHtml(t('leaders_card'))} ›</button>
+       </div>` : '';
+
   return `<div class="person-card ${staggerClass}" data-key="${escAttr(key)}" data-expanded="false">
     <div class="person-card-header">
       <div class="person-avatar ${regionClass}" aria-hidden="true">${avatarInner(member.name, initial)}</div>
@@ -43,7 +50,7 @@ export function personCardHTML(member, opts = {}) {
       <svg class="card-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
     </div>
     <div class="person-card-body" style="display:none">
-      ${haveSection}${wantSection}${kwSection}
+      ${haveSection}${wantSection}${kwSection}${aboutBtn}
       <div class="person-actions">
         <button class="btn btn-line"
           data-action="line" data-key="${escAttr(key)}"
@@ -76,9 +83,12 @@ export function bindCardEvents(container, members) {
     const action = btn.dataset.action;
     const key    = btn.dataset.key;
     const member = members.find(m => memberKey(m) === key);
-    if (!member && action !== 'line') return;
+    if (!member && action !== 'line' && action !== 'about') return;
 
-    if (action === 'line') {
+    if (action === 'about') {
+      const link = btn.dataset.link;
+      if (link) window.open(link, '_blank', 'noopener');
+    } else if (action === 'line') {
       const lineLink = btn.dataset.lineLink || member?.lineLink || '';
       const lineId   = btn.dataset.lineId   || member?.lineId   || '';
       handleLine({ lineLink, lineId });
