@@ -36,9 +36,9 @@ export const LEADERS = {
       lineId: 'bd560812', lineLink: 'https://line.me/ti/p/rBeVdvXGPU', cardLink: '',
     },
     {
-      name: '鐘坤宏', branch: '', profession: '',
-      have: '', wantMeet: '',
-      lineId: '', lineLink: '', cardLink: '',
+      name: '鍾坤宏', branch: '長佑分會', profession: '風水地理師',
+      have: '月子中心/風水、命理', wantMeet: '占卜師、塔羅老師、命理師',
+      lineId: 'wert1868', lineLink: 'https://line.me/ti/p/urny4Gl5Sq', cardLink: '',
     },
     {
       name: '詹鴻鵠', branch: '長翼分會', profession: '商業教育暨資本孵化基地',
@@ -53,9 +53,9 @@ export const LEADERS = {
       lineId: '922110368', lineLink: '', cardLink: '',
     },
     {
-      name: '廖筱蘭', branch: '', profession: '',
-      have: '', wantMeet: '',
-      lineId: '', lineLink: '', cardLink: '',
+      name: '廖筱蘭', branch: '長佑分會', profession: '空調業',
+      have: '冷氣買賣，維修，清洗保養，裝機', wantMeet: '室內設計師、統包工程，企業公司老闆',
+      lineId: '0947230963', lineLink: 'https://line.me/ti/p/DJjRUnCyrg', cardLink: '',
     },
     {
       name: '游姿菱', branch: '長佑分會', profession: '呼吸照護',

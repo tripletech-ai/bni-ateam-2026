@@ -718,6 +718,38 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 }
 .btn-about:active { background: rgba(250,199,117,0.18); }
 
+/* Member card row: name-card button + expand cue on the right */
+.person-card-right {
+  display: flex; flex-direction: column;
+  align-items: flex-end; gap: 8px; flex-shrink: 0;
+}
+.row-card-btn {
+  font-size: calc(15px * var(--fs-k));
+  padding: 7px 13px; white-space: nowrap;
+  background: rgba(250,199,117,0.12);
+  border: 1px solid rgba(250,199,117,0.38);
+  color: var(--gold-bright);
+  border-radius: 9px; cursor: pointer;
+  font-family: 'Noto Sans TC', sans-serif; font-weight: 600;
+}
+.row-card-btn:active { background: rgba(250,199,117,0.22); }
+/* "更多 ▾" tap hint — makes it obvious the card opens */
+.card-expand-cue {
+  display: flex; align-items: center; gap: 3px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.10);
+  padding: 4px 10px; border-radius: 20px;
+  color: rgba(255,255,255,0.62);
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: calc(13px * var(--fs-k));
+}
+.card-expand-cue .cue-text { white-space: nowrap; }
+.card-expand-cue .card-chevron { color: inherit; }
+
+/* Director card: right-side group (名片 + expand cue) + chevron flip */
+.dir-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+.director-card-v2[data-expanded="true"] .card-chevron { transform: rotate(180deg); }
+
 /* ============================================
    AI search — guidance & suggestion tiers
    ============================================ */

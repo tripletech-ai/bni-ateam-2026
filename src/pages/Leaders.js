@@ -101,10 +101,16 @@ function directorCardHTML(p) {
         <div class="director-name">${escHtml(p.name)}</div>
         ${metaLine}
       </div>
-      <button class="dir-about-btn ${dirCard ? 'has-link' : ''}"
-        data-action="director-card" data-link="${escAttr(dirCard)}">
-        ${escHtml(t('leaders_card'))}
-      </button>
+      <div class="dir-right">
+        <button class="dir-about-btn ${dirCard ? 'has-link' : ''}"
+          data-action="director-card" data-link="${escAttr(dirCard)}">
+          ${escHtml(t('leaders_card'))}
+        </button>
+        <div class="card-expand-cue">
+          <span class="cue-text">${escHtml(t('card_more'))}</span>
+          <svg class="card-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
     </div>
     <div class="dir-expand-body" style="display:none">
       ${haveSection}${wantSection}
@@ -154,6 +160,8 @@ function bindLeaderEvents(container) {
       dirCard.dataset.expanded = String(!expanded);
       const body = dirCard.querySelector('.dir-expand-body');
       if (body) body.style.display = expanded ? 'none' : 'block';
+      const cue = dirCard.querySelector('.cue-text');
+      if (cue) cue.textContent = expanded ? t('card_more') : t('card_less');
       return;
     }
 

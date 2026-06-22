@@ -41,7 +41,7 @@ export function renderHome(container) {
         <div class="stat-label">${escHtml(t('stat_branches'))}</div>
       </div>
       <div class="stat-item" role="listitem">
-        <div class="stat-num serif">120</div>
+        <div class="stat-num serif">${(window.BNI_MEMBERS || []).length}</div>
         <div class="stat-label">${escHtml(t('stat_members'))}</div>
       </div>
       <div class="stat-item" role="listitem">

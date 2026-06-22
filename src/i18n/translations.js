@@ -36,6 +36,9 @@ export const translations = {
     card_line:    '加 LINE',
     card_one:     '想約 1-1',
     card_biz:     '有合作<wbr>可能',
+    card_more:    '更多',
+    card_less:    '收合',
+    card_about:   '我的名片',
 
     stat_branches: '參與分會',
     stat_members:  '報名夥伴',
@@ -127,6 +130,9 @@ export const translations = {
     card_line:    'Add LINE',
     card_one:     '1-on-1',
     card_biz:     'Potential Partner',
+    card_more:    'More',
+    card_less:    'Less',
+    card_about:   'My Card',
 
     stat_branches: 'Chapters',
     stat_members:  'Members',

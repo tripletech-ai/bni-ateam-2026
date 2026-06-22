@@ -33,10 +33,8 @@ export function personCardHTML(member, opts = {}) {
   const regionClass = member.region === 'sanlu' ? 'region-sanlu' : member.region === 'zhongshan' ? 'region-zhongshan' : '';
 
   const cardLink = getCardLink(member.name);
-  const aboutBtn = cardLink
-    ? `<div class="person-about-wrap">
-        <button class="btn btn-about" data-action="about" data-link="${escAttr(cardLink)}">${escHtml(t('leaders_card'))} ›</button>
-       </div>` : '';
+  const rowCardBtn = cardLink
+    ? `<button class="row-card-btn" data-action="about" data-link="${escAttr(cardLink)}">${escHtml(t('card_about'))}</button>` : '';
 
   return `<div class="person-card ${staggerClass}" data-key="${escAttr(key)}" data-expanded="false">
     <div class="person-card-header">
@@ -45,11 +43,17 @@ export function personCardHTML(member, opts = {}) {
         <div class="person-meta">${escHtml(member.branch)}</div>
         <div class="person-meta person-profession">${escHtml(member.profession)}</div>
       </div>
-      ${badge}
-      <svg class="card-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      <div class="person-card-right">
+        ${badge}
+        ${rowCardBtn}
+        <div class="card-expand-cue">
+          <span class="cue-text">${escHtml(t('card_more'))}</span>
+          <svg class="card-chevron" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
     </div>
     <div class="person-card-body" style="display:none">
-      ${haveSection}${wantSection}${kwSection}${aboutBtn}
+      ${haveSection}${wantSection}${kwSection}
       <div class="person-actions">
         <button class="btn btn-line"
           data-action="line" data-key="${escAttr(key)}"
@@ -74,6 +78,8 @@ export function bindCardEvents(container, members) {
       card.dataset.expanded = String(!expanded);
       const body = card.querySelector('.person-card-body');
       if (body) body.style.display = expanded ? 'none' : 'block';
+      const cue = card.querySelector('.cue-text');
+      if (cue) cue.textContent = expanded ? t('card_more') : t('card_less');
       return;
     }
 
