@@ -73,7 +73,6 @@ function leaderCardSecondary(l) {
   const cardLink = getCardLink(l.name) || l.cardLink || '';
   return `
     <div class="leader-card-secondary">
-      <div class="leader-avatar">${avatarInner(l.name, initial)}</div>
       <div style="flex:1">
         <div class="leader-name">${escHtml(l.name)}</div>
         <div class="leader-title">${escHtml(l.title)}</div>
@@ -98,7 +97,6 @@ function directorCardHTML(p) {
 
   return `<div class="director-card-v2" data-expanded="false">
     <div class="dir-header">
-      <div class="director-avatar">${avatarInner(p.name, initial)}</div>
       <div class="dir-name-wrap">
         <div class="director-name">${escHtml(p.name)}</div>
         ${metaLine}

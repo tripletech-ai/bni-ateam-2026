@@ -40,7 +40,6 @@ export function personCardHTML(member, opts = {}) {
 
   return `<div class="person-card ${staggerClass}" data-key="${escAttr(key)}" data-expanded="false">
     <div class="person-card-header">
-      <div class="person-avatar ${regionClass}" aria-hidden="true">${avatarInner(member.name, initial)}</div>
       <div style="flex:1;min-width:0">
         <div class="person-name">${escHtml(member.name)}</div>
         <div class="person-meta">${escHtml(member.branch)}</div>

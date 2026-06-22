@@ -31,7 +31,6 @@ export function renderMarks(container) {
     return `
     <div class="mark-card ${stagger}" data-key="${escAttr(m.key)}">
       <div class="mark-card-top">
-        <div class="mark-avatar" aria-hidden="true">${avatarInner(m.name, initial)}</div>
         <div style="flex:1;min-width:0">
           <div class="mark-name">${escHtml(m.name)}</div>
           <div class="mark-meta">${escHtml(m.branch)} · ${escHtml(m.profession)}</div>
