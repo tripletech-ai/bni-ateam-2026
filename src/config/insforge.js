@@ -1,6 +1,9 @@
-/** InsForge backend — anon key is public (RLS-protected). */
-export const INSFORGE_BASE_URL = 'https://6cepnfaz.us-east.insforge.app';
-export const INSFORGE_ANON_KEY =
-  'anon_36c5274b824b5947fb8912981876481272383d2ed1e67fb44a7c3a02469d9b90';
+/**
+ * BNI A Team — standalone InsForge backend (NOT shared with UIC / other projects).
+ * Hosted at https://a-team9204.zeabur.app (Zeabur).
+ */
+export const INSFORGE_BASE_URL = 'https://a-team9204.zeabur.app';
 
-export const BNI_SITE_ID = 'bni-ateam-2026';
+/** Public anon JWT — safe in frontend; RLS restricts writes. Regenerate via POST /api/auth/tokens/anon (admin). */
+export const INSFORGE_ANON_KEY =
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3OC0xMjM0LTU2NzgtOTBhYi1jZGVmMTIzNDU2NzgiLCJlbWFpbCI6ImFub25AaW5zZm9yZ2UuY29tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0MTMxNTJ9.DN2v7DWfEC7p-jgrM47PrJquHmq5MPOON8F5m5G17h8';

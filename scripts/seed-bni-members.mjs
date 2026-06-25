@@ -7,8 +7,8 @@ import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const BASE_URL = 'https://6cepnfaz.us-east.insforge.app';
-const ANON_KEY = 'anon_36c5274b824b5947fb8912981876481272383d2ed1e67fb44a7c3a02469d9b90';
+const BASE_URL = process.env.BNI_API_BASE || 'https://a-team9204.zeabur.app';
+const API_KEY = process.env.BNI_API_KEY || '';
 
 const membersJs = readFileSync(join(__dirname, '../src/data/members.js'), 'utf8');
 const sandbox = { window: {} };
@@ -21,8 +21,8 @@ async function api(path, options = {}) {
     ...options,
     headers: {
       'Content-Type': 'application/json',
-      apikey: ANON_KEY,
-      Authorization: `Bearer ${ANON_KEY}`,
+      apikey: API_KEY,
+      Authorization: `Bearer ${API_KEY}`,
       ...options.headers,
     },
   });
