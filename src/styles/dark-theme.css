@@ -1215,3 +1215,101 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   border-color: rgba(74,222,128,0.35);
   color: #86efac;
 }
+
+/* ── Login / Onboard（與首頁 hero、卡片風格一致）── */
+.login-gate-wrap,
+.onboard-flow-wrap {
+  padding: 0 0 32px;
+  min-height: calc(100vh - 72px);
+}
+
+.login-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 36px 20px 40px;
+  text-align: center;
+  background: linear-gradient(168deg, #102145 0%, #0b1428 58%, #080e1d 100%);
+}
+.login-hero::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: radial-gradient(ellipse 78% 56% at 50% -8%, rgba(250,199,117,0.12) 0%, transparent 68%);
+  pointer-events: none;
+}
+.login-hero-compact { padding: 28px 20px 36px; }
+
+.login-hero-eyebrow {
+  position: relative;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: rgba(250,199,117,0.75);
+  margin-bottom: 12px;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.login-hero-title {
+  position: relative;
+  font-size: 28px;
+  line-height: 1.25;
+  margin: 0 0 8px;
+  color: #fff;
+}
+.login-hero-sub {
+  position: relative;
+  font-size: 14px;
+  color: rgba(255,255,255,0.55);
+  margin: 0;
+  letter-spacing: 0.3px;
+}
+
+.onboard-wrap .onboard-card {
+  position: relative;
+  margin: -18px 16px 0;
+  background: #101629;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--r);
+  padding: 22px 18px 20px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 16px 40px -12px rgba(0,0,0,0.55);
+}
+.onboard-wrap .onboard-title {
+  font-size: 22px;
+  color: var(--dark-text);
+  margin-bottom: 8px;
+}
+.onboard-wrap .onboard-sub,
+.onboard-wrap .onboard-hint,
+.onboard-wrap .onboard-foot {
+  color: var(--dark-muted);
+}
+.onboard-wrap .onboard-sub strong { color: var(--gold-bright); font-weight: 600; }
+.login-lead { font-size: 15px; line-height: 1.6; margin-bottom: 18px !important; }
+
+.onboard-wrap .btn-google {
+  margin-top: 4px;
+  background: #fff;
+  color: #3c4043;
+  border-color: rgba(255,255,255,0.12);
+}
+.onboard-wrap .btn-outline {
+  color: var(--gold-bright);
+  border-color: rgba(250,199,117,0.45);
+  background: rgba(250,199,117,0.06);
+}
+.onboard-wrap .btn-text { color: var(--dark-muted); }
+.onboard-wrap .field-label { color: var(--dark-muted); }
+.onboard-wrap .field-input,
+.onboard-wrap select.field-input,
+.onboard-wrap textarea.field-input {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--dark-border2);
+  color: var(--dark-text);
+}
+.onboard-wrap .field-input::placeholder { color: var(--dark-subtle); }
+.onboard-wrap .bind-item {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--dark-border);
+  color: var(--dark-text);
+}
+.onboard-wrap .bind-name { color: var(--dark-text); }
+.onboard-wrap .bind-meta { color: var(--dark-muted); }
+.onboard-wrap .bind-empty,
+.onboard-wrap .bind-loading { color: var(--dark-muted); }

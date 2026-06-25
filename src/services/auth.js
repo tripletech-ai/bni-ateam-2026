@@ -1,14 +1,45 @@
-import { createClient } from 'https://esm.sh/@insforge/sdk@latest';
+import { createClient } from 'https://esm.sh/@insforge/sdk@1.4.2';
 import { INSFORGE_BASE_URL, INSFORGE_ANON_KEY } from '../config/insforge.js';
 import { withRetry } from '../utils/retry.js';
+import { loadSession, saveSession, clearSession } from './sessionStore.js';
+
+const PKCE_KEY = 'bni_oauth_code_verifier';
 
 let client = null;
+let clientTokenKey = null;
 let currentUser = null;
 let myStatus = null;
 
+function buildClient(accessToken = null) {
+  return createClient({
+    baseUrl: INSFORGE_BASE_URL,
+    anonKey: INSFORGE_ANON_KEY,
+    isServerMode: true,
+    accessToken: accessToken || undefined,
+    auth: { detectOAuthCallback: false },
+  });
+}
+
+function resetClient() {
+  client = null;
+  clientTokenKey = null;
+}
+
+function applySessionToClient(insforge, session) {
+  insforge.setAccessToken(session.accessToken);
+  insforge.getHttpClient().setRefreshToken(session.refreshToken);
+}
+
 export function getClient() {
-  if (!client) {
-    client = createClient({ baseUrl: INSFORGE_BASE_URL, anonKey: INSFORGE_ANON_KEY });
+  const token = loadSession()?.accessToken || null;
+  const key = token || '';
+  if (!client || clientTokenKey !== key) {
+    client = buildClient(token);
+    clientTokenKey = key;
+    const stored = loadSession();
+    if (stored?.refreshToken) {
+      client.getHttpClient().setRefreshToken(stored.refreshToken);
+    }
   }
   return client;
 }
@@ -38,33 +69,139 @@ async function loadStatus() {
   }, { label: 'bni_get_my_status' });
 }
 
-export async function initAuth() {
+function cleanOAuthParamsFromUrl() {
+  const url = new URL(window.location.href);
+  if (!url.searchParams.has('insforge_code') && !url.searchParams.has('error')) return;
+  url.searchParams.delete('insforge_code');
+  url.searchParams.delete('error');
+  url.searchParams.delete('error_description');
+  window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+}
+
+function persistAuthResponse(insforge, data) {
+  const session = {
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken,
+    user: data.user,
+  };
+  if (!session.accessToken || !session.refreshToken || !session.user) {
+    throw new Error('OAuth 回傳缺少 token 或 user');
+  }
+  saveSession(session);
+  resetClient();
+  applySessionToClient(getClient(), session);
+  return session;
+}
+
+async function handleOAuthCallback() {
+  const params = new URLSearchParams(window.location.search);
+  const oauthError = params.get('error');
+  if (oauthError) {
+    cleanOAuthParamsFromUrl();
+    throw new Error(params.get('error_description') || oauthError);
+  }
+
+  const code = params.get('insforge_code');
+  if (!code) return null;
+
+  const codeVerifier = sessionStorage.getItem(PKCE_KEY);
+  sessionStorage.removeItem(PKCE_KEY);
+  cleanOAuthParamsFromUrl();
+
+  if (!codeVerifier) {
+    throw new Error('OAuth 驗證碼遺失，請重新登入');
+  }
+
   const insforge = getClient();
-  const { data, error } = await insforge.auth.getCurrentUser();
-  if (error) console.warn('getCurrentUser:', error.message);
-  currentUser = data?.user || null;
+  const { data, error } = await insforge.auth.exchangeOAuthCode(code, codeVerifier);
+  if (error) throw error;
+  return persistAuthResponse(insforge, data);
+}
+
+async function refreshStoredSession(insforge, refreshToken) {
+  const { data, error } = await insforge.auth.refreshSession({ refreshToken });
+  if (error) throw error;
+  return persistAuthResponse(insforge, data);
+}
+
+async function resolveCurrentUser() {
+  const insforge = getClient();
+  let stored = loadSession();
+  if (!stored) return null;
+
+  applySessionToClient(insforge, stored);
+
+  let { data, error } = await insforge.auth.getCurrentUser();
+  if (data?.user) return data.user;
+
+  if (!stored.refreshToken) {
+    clearSession();
+    resetClient();
+    if (error) console.warn('getCurrentUser:', error.message);
+    return null;
+  }
+
+  try {
+    stored = await refreshStoredSession(insforge, stored.refreshToken);
+    ({ data, error } = await insforge.auth.getCurrentUser());
+    if (data?.user) return data.user;
+  } catch (e) {
+    console.warn('session refresh failed:', e.message);
+  }
+
+  clearSession();
+  resetClient();
+  return null;
+}
+
+export async function initAuth() {
+  try {
+    await handleOAuthCallback();
+  } catch (e) {
+    console.warn('OAuth callback:', e.message);
+    clearSession();
+    resetClient();
+  }
+
+  currentUser = await resolveCurrentUser();
+
   if (currentUser) {
-    try { await loadStatus(); } catch (e) {
+    try {
+      await loadStatus();
+    } catch (e) {
       console.warn('bni_get_my_status:', e.message);
       myStatus = { authenticated: true, bound: false, tutorial_done: false };
     }
   } else {
     myStatus = { authenticated: false };
   }
+
   return { user: currentUser, status: myStatus };
 }
 
 export async function signInWithGoogle() {
   const redirectTo = `${window.location.origin}${window.location.pathname}`;
-  const { error } = await getClient().auth.signInWithOAuth('google', {
+  const { data, error } = await getClient().auth.signInWithOAuth('google', {
     redirectTo,
     additionalParams: { prompt: 'select_account' },
+    skipBrowserRedirect: true,
   });
   if (error) throw error;
+  if (!data?.url || !data?.codeVerifier) {
+    throw new Error('無法啟動 Google 登入');
+  }
+  sessionStorage.setItem(PKCE_KEY, data.codeVerifier);
+  window.location.href = data.url;
 }
 
 export async function signOut() {
-  await getClient().auth.signOut();
+  try {
+    await getClient().auth.signOut();
+  } catch {
+    /* logout API optional when using mobile tokens */
+  }
+  clearSession();
+  resetClient();
   currentUser = null;
   myStatus = { authenticated: false };
 }
