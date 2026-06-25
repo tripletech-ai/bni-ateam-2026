@@ -307,4 +307,120 @@ html { scroll-behavior: smooth; }
 .result-stat { background: var(--surface); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); }
 .result-stat-num { font-family: 'Noto Serif TC', serif; font-size: 32px; font-weight: 900; color: var(--navy); }
 .result-stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+
+.hidden { display: none !important; }
+.boot-loading { padding: 48px 20px; text-align: center; color: var(--muted); }
+
+/* Onboard / Login */
+.onboard-wrap { padding: 20px 16px 32px; min-height: 70vh; }
+.onboard-card {
+  background: var(--surface); border-radius: var(--r);
+  padding: 24px 20px; box-shadow: var(--shadow-md);
+}
+.onboard-eyebrow { font-size: 12px; letter-spacing: 1.5px; color: var(--gold); margin-bottom: 8px; }
+.onboard-title { font-size: 26px; color: var(--navy); margin-bottom: 8px; }
+.onboard-sub { font-size: 14px; color: var(--muted); margin-bottom: 12px; line-height: 1.5; }
+.onboard-hint { font-size: 13px; color: var(--text); margin-bottom: 16px; line-height: 1.55; }
+.onboard-btn { width: 100%; margin-top: 10px; }
+.onboard-panel { margin-top: 8px; }
+.btn-outline {
+  width: 100%; margin-top: 10px; padding: 14px;
+  border: 1.5px solid var(--navy); border-radius: var(--r-sm);
+  background: transparent; color: var(--navy); font-weight: 600;
+}
+.btn-text { background: none; border: none; color: var(--muted); margin-top: 12px; font-size: 13px; }
+.btn-google {
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  width: 100%; padding: 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: #fff; font-weight: 600;
+  box-shadow: var(--shadow);
+}
+.google-icon {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: #4285F4; color: #fff; display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-family: Arial, sans-serif;
+}
+.onboard-foot { font-size: 12px; color: var(--muted); margin-top: 16px; line-height: 1.5; }
+.field-label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+.field-input {
+  width: 100%; padding: 10px 12px; border-radius: var(--r-sm);
+  border: 1px solid var(--border); font-size: 15px; margin-bottom: 4px;
+}
+.field-check { display: flex; align-items: center; gap: 8px; font-size: 14px; margin: 8px 0; }
+.bind-results { margin-top: 10px; display: flex; flex-direction: column; gap: 8px; }
+.bind-item {
+  text-align: left; padding: 12px; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: var(--bg);
+}
+.bind-name { font-weight: 700; color: var(--navy); }
+.bind-meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.bind-loading, .bind-empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
+
+/* Contributor */
+.contributor-card {
+  display: flex; gap: 14px; padding: 16px; margin: 0 16px 8px;
+  background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow);
+}
+.contributor-photo {
+  width: 88px; height: 110px; flex-shrink: 0; border-radius: var(--r-sm);
+  overflow: hidden; background: #0a0f1e;
+}
+.contributor-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.contributor-name { font-size: 20px; font-weight: 700; color: var(--navy); }
+.contributor-role { font-size: 13px; color: var(--gold); margin-top: 2px; }
+.contributor-desc { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+.contributor-companies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.company-chip {
+  font-size: 11px; padding: 4px 10px; border-radius: 999px;
+  background: var(--navy-light); color: var(--navy); font-weight: 600;
+}
+
+/* Admin */
+.admin-wrap { padding: 16px; }
+.admin-sub { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.admin-toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+.admin-toolbar .field-input { flex: 1; min-width: 140px; }
+.admin-list { display: flex; flex-direction: column; gap: 8px; }
+.admin-row {
+  background: var(--surface); border-radius: var(--r-sm);
+  padding: 10px 12px; box-shadow: var(--shadow);
+}
+.admin-row summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.admin-row-name { font-weight: 700; color: var(--navy); }
+.admin-row-meta { font-size: 12px; color: var(--muted); }
+.admin-badge {
+  font-size: 10px; padding: 2px 8px; border-radius: 999px;
+  background: var(--gold-light); color: var(--gold);
+}
+.admin-form { margin-top: 12px; display: flex; flex-direction: column; gap: 4px; }
+.admin-denied { font-size: 14px; color: var(--muted); line-height: 1.6; padding: 12px 0; }
+.admin-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.admin-tab {
+  flex: 1; padding: 10px; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: var(--surface); font-weight: 600;
+}
+.admin-tab.active { background: var(--navy); color: #fff; border-color: var(--navy); }
+.admin-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;
+}
+.admin-stat-card {
+  background: var(--surface); border-radius: var(--r-sm); padding: 14px;
+  box-shadow: var(--shadow); text-align: center;
+}
+.admin-stat-num { font-family: 'Noto Serif TC', serif; font-size: 28px; font-weight: 900; color: var(--navy); }
+.admin-stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.admin-breakdown {
+  display: flex; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 16px;
+}
+.admin-breakdown span { background: var(--bg); padding: 4px 8px; border-radius: 6px; }
+.admin-section-title { font-size: 14px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.admin-recent-list { display: flex; flex-direction: column; gap: 8px; }
+.admin-recent-row {
+  background: var(--surface); border-radius: var(--r-sm); padding: 10px 12px;
+  box-shadow: var(--shadow); font-size: 13px;
+}
+.admin-recent-email { font-size: 12px; color: var(--navy-mid); margin-top: 4px; }
+.admin-recent-meta { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.admin-bind-hint { font-size: 11px; color: var(--muted); }
+.admin-form-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
 .result-progress { margin: 16px; background: var(--surface); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); }

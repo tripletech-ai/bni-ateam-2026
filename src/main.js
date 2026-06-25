@@ -4,7 +4,19 @@ import { renderSearch } from './pages/Search.js';
 import { renderMarks }  from './pages/Marks.js';
 import { renderResult } from './pages/Result.js';
 import { renderLeaders }from './pages/Leaders.js';
+import { renderOnboard, renderLoginGate } from './pages/Onboard.js';
+import { renderAdmin }  from './pages/Admin.js';
 import { t }            from './i18n/translations.js';
+import {
+  initAuth,
+  isBound,
+  isTutorialDone,
+  completeTutorial,
+  checkIsAdmin,
+  fetchAllMembers,
+  getCurrentUser,
+} from './services/auth.js';
+import { loadMembersFromDb } from './services/membersApi.js';
 
 // ── Language ──────────────────────────────────────
 window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
@@ -17,12 +29,12 @@ function initLangToggle() {
     window.BNI_LANG = window.BNI_LANG === 'zh' ? 'en' : 'zh';
     localStorage.setItem('bni_lang', window.BNI_LANG);
     btn.textContent = t('lang_toggle');
-    navigate();
+    boot();
   });
 }
 
-// ── Font size (user-selectable accessibility scale) ─────
-const FONT_SIZES = ['fs-s', 'fs-m', 'fs-l'];           // 標準 / 大 / 特大
+// ── Font size ─────────────────────────────────────
+const FONT_SIZES = ['fs-s', 'fs-m', 'fs-l'];
 const FONT_LABELS = { 'fs-s': '標準', 'fs-m': '大字', 'fs-l': '特大' };
 window.BNI_FONT = localStorage.getItem('bni_font') || 'fs-s';
 
@@ -44,11 +56,13 @@ function initFontToggle() {
   });
 }
 
-// Apply saved choice immediately so the first paint is correct
 applyFontSize(window.BNI_FONT);
 
-// ── Router ────────────────────────────────────────
+// ── App state ─────────────────────────────────────
 const app = document.getElementById('app');
+const tabBar = document.getElementById('tab-bar');
+let isAdmin = false;
+let appReady = false;
 
 const routes = {
   ''         : renderHome,
@@ -57,9 +71,17 @@ const routes = {
   '#marks'   : renderMarks,
   '#result'  : renderResult,
   '#leaders' : renderLeaders,
+  '#admin'   : (c) => renderAdmin(c),
 };
 
+function setChromeVisible(showTabs) {
+  tabBar.style.display = showTabs ? 'flex' : 'none';
+  document.getElementById('font-toggle').style.display = showTabs ? '' : 'none';
+  document.getElementById('lang-toggle').style.display = showTabs ? '' : 'none';
+}
+
 function navigate() {
+  if (!appReady) return;
   const hash = window.location.hash || '';
   const render = routes[hash] || renderHome;
   app.innerHTML = '';
@@ -67,49 +89,58 @@ function navigate() {
     render(app);
   } catch (err) {
     console.error('Page render error:', err);
-    const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = 'padding:40px 20px;text-align:center;color:#f87171;font-family:Noto Sans TC,sans-serif';
-    errorDiv.textContent = '頁面載入失敗，請重新整理';
-    app.appendChild(errorDiv);
+    app.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#f87171">頁面載入失敗，請重新整理</div>';
   }
-  renderTabBar(document.getElementById('tab-bar'), hash);
+  renderTabBar(tabBar, hash, { isAdmin });
   window.scrollTo(0, 0);
 }
 
-window.addEventListener('unhandledrejection', event => {
-  console.error('Unhandled promise rejection:', event.reason);
-});
+async function afterBindComplete() {
+  try {
+    await loadMembersFromDb(fetchAllMembers);
+  } catch (e) {
+    console.warn('Reload members failed:', e);
+  }
+  showWelcomeIfNeeded();
+  setChromeVisible(true);
+  appReady = true;
+  location.hash = '#home';
+  navigate();
+}
 
-// ── Welcome overlay (shown on every visit) ─────────────
+function showWelcomeIfNeeded() {
+  if (!isTutorialDone()) showWelcome();
+}
+
 function showWelcome() {
   const overlay = document.createElement('div');
   overlay.id = 'welcome-overlay';
   overlay.innerHTML = `
     <div id="welcome-card">
       <div class="welcome-eyebrow">BNI · ANDERSON TEAM · 2026 年會</div>
-      <div class="welcome-title hero-title-shimmer">A Team<br>商務連結系統</div>
+      <div class="welcome-title hero-title-shimmer">新手教學</div>
       <div class="welcome-lang-hint">右上角可切換 <strong>中文 / EN</strong></div>
       <div class="welcome-rule"></div>
       <div class="welcome-guide">
         <div class="welcome-row">
-          <span class="welcome-tag">找人脈</span>
-          <span class="welcome-desc">搜尋你想認識的夥伴</span>
+          <span class="welcome-tag">① 登入</span>
+          <span class="welcome-desc">Google 登入並認領／綁定你的會員身分</span>
         </div>
         <div class="welcome-row">
-          <span class="welcome-tag">AI 搜尋</span>
+          <span class="welcome-tag">② 找人脈</span>
+          <span class="welcome-desc">搜尋或瀏覽分會，找到想認識的夥伴</span>
+        </div>
+        <div class="welcome-row">
+          <span class="welcome-tag">③ AI 搜尋</span>
           <span class="welcome-desc">說出需求，AI 幫你精準配對</span>
         </div>
         <div class="welcome-row">
-          <span class="welcome-tag">標記</span>
-          <span class="welcome-desc">記下想約 1-1 或合作的人</span>
-        </div>
-        <div class="welcome-row">
-          <span class="welcome-tag">成果</span>
-          <span class="welcome-desc">查看今天的標記進度</span>
+          <span class="welcome-tag">④ 標記</span>
+          <span class="welcome-desc">記下想約 1-1 或合作的人，目標 5 位</span>
         </div>
       </div>
       <div class="welcome-fs">
-        <div class="welcome-fs-label">字體大小（可隨時在右上角調整）</div>
+        <div class="welcome-fs-label">字體大小</div>
         <div class="welcome-fs-opts">
           <button class="welcome-fs-btn" data-fs="fs-s">標準</button>
           <button class="welcome-fs-btn" data-fs="fs-m">大</button>
@@ -122,7 +153,6 @@ function showWelcome() {
   `;
   document.body.appendChild(overlay);
 
-  // Font-size chooser — applies live so the choice is felt immediately
   const fsButtons = overlay.querySelectorAll('.welcome-fs-btn');
   const markActive = () => fsButtons.forEach(b =>
     b.setAttribute('data-active', String(b.dataset.fs === window.BNI_FONT)));
@@ -132,15 +162,54 @@ function showWelcome() {
     markActive();
   }));
 
-  document.getElementById('welcome-start').addEventListener('click', () => {
+  document.getElementById('welcome-start').addEventListener('click', async () => {
+    try { await completeTutorial(); } catch (e) { console.warn(e); }
     overlay.style.transition = 'opacity 0.22s';
     overlay.style.opacity = '0';
     setTimeout(() => overlay.remove(), 230);
   });
 }
 
+async function boot() {
+  appReady = false;
+  app.innerHTML = '<div class="boot-loading">載入中…</div>';
+  setChromeVisible(false);
+
+  await initAuth();
+  isAdmin = await checkIsAdmin();
+
+  try {
+    await loadMembersFromDb(fetchAllMembers);
+  } catch (e) {
+    console.warn('DB members load failed, using static fallback:', e.message);
+    if (!window.BNI_MEMBERS?.length) {
+      app.innerHTML = '<div class="boot-loading">會員資料載入失敗，請重新整理</div>';
+      return;
+    }
+  }
+
+  const user = getCurrentUser();
+  if (!user) {
+    renderLoginGate(app);
+    return;
+  }
+
+  if (!isBound()) {
+    renderOnboard(app, { onComplete: afterBindComplete });
+    return;
+  }
+
+  appReady = true;
+  setChromeVisible(true);
+  showWelcomeIfNeeded();
+  navigate();
+}
+
 window.addEventListener('hashchange', navigate);
+window.addEventListener('unhandledrejection', event => {
+  console.error('Unhandled promise rejection:', event.reason);
+});
+
 initLangToggle();
 initFontToggle();
-showWelcome();
-navigate();
+boot();

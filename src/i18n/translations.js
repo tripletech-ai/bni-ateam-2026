@@ -5,6 +5,7 @@ export const translations = {
     tab_marks:   '我的標記',
     tab_result:  '我的成果',
     tab_leaders: '領導層',
+    tab_admin:   '管理',
 
     hero_eyebrow: 'BNI · 20 YEARS TAIWAN',
     hero_title:   'A Team 商務連結行動',
@@ -45,12 +46,15 @@ export const translations = {
     stat_marks:    '我的標記',
 
     home_leaders:    '區域領導者',
+    home_contributor: 'Contributor',
     home_view:       '查看領導層',
     home_branches:   '20 分會陣容',
     home_view_all:   '查看所有夥伴',
     home_video:      'A Team 20 分會共同影片',
     home_watch:      '觀看影片',
     home_video_soon: '影片即將上線',
+
+    contributor_desc: '運用愛來製作整套系統，AI 相關整合由本人負責',
 
     marks_title:       '我的標記',
     marks_empty_title: '還沒有標記',
@@ -99,6 +103,7 @@ export const translations = {
     tab_marks:   'Saved',
     tab_result:  'Results',
     tab_leaders: 'Leaders',
+    tab_admin:   'Admin',
 
     hero_eyebrow: 'BNI · 20 YEARS TAIWAN',
     hero_title:   'A Team Business Connect',
@@ -139,12 +144,15 @@ export const translations = {
     stat_marks:    'Saved',
 
     home_leaders:    'Regional Leadership',
+    home_contributor: 'Contributor',
     home_view:       'View Leaders',
     home_branches:   '20 BNI Chapters',
     home_view_all:   'View All Members',
     home_video:      'A Team 20 Chapters Video',
     home_watch:      'Watch Video',
     home_video_soon: 'Coming Soon',
+
+    contributor_desc: 'Built this system with care. AI integration led by Chuan Wang.',
 
     marks_title:       'Saved Members',
     marks_empty_title: 'No saved members yet',

@@ -1,0 +1,247 @@
+import { escHtml } from '../utils/html.js';
+import {
+  checkIsAdmin,
+  fetchAllMembers,
+  adminUpdateMember,
+  adminCreateMember,
+  fetchAdminDashboard,
+  adminUnbindMember,
+} from '../services/auth.js';
+import { applyMemberToCache } from '../services/membersApi.js';
+import { showToast } from '../utils/toast.js';
+
+let adminTab = 'stats';
+
+export async function renderAdmin(container) {
+  const ok = await checkIsAdmin();
+  if (!ok) {
+    container.innerHTML = `
+      <div class="admin-wrap">
+        <h2 class="section-title">管理員後台</h2>
+        <p class="admin-denied">你沒有管理員權限。僅限授權的 Google 帳號可進入（b1993614@gmail.com、tripletech.ai@gmail.com）。</p>
+      </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="admin-wrap">
+      <h2 class="section-title">管理員後台</h2>
+      <div class="admin-tabs">
+        <button type="button" class="admin-tab" data-tab="stats">使用現況</button>
+        <button type="button" class="admin-tab" data-tab="members">會員管理</button>
+      </div>
+      <div id="admin-panel"></div>
+    </div>
+  `;
+
+  container.querySelectorAll('.admin-tab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      adminTab = btn.dataset.tab;
+      container.querySelectorAll('.admin-tab').forEach(b =>
+        b.classList.toggle('active', b.dataset.tab === adminTab));
+      renderPanel(container.querySelector('#admin-panel'));
+    });
+  });
+  container.querySelector('.admin-tab[data-tab="stats"]').classList.add('active');
+  await renderPanel(container.querySelector('#admin-panel'));
+}
+
+async function renderPanel(panel) {
+  if (adminTab === 'stats') await renderStatsPanel(panel);
+  else await renderMembersPanel(panel);
+}
+
+async function renderStatsPanel(panel) {
+  panel.innerHTML = '<div class="bind-loading">載入統計…</div>';
+  try {
+    const data = await fetchAdminDashboard();
+    const m = data.members || {};
+    const o = data.onboarding || {};
+    const recent = data.recent_bindings || [];
+
+    panel.innerHTML = `
+      <p class="admin-sub">即時統計（僅管理員可見）</p>
+      <div class="admin-stats-grid">
+        <div class="admin-stat-card"><div class="admin-stat-num">${m.total ?? 0}</div><div class="admin-stat-label">名單總數</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num">${m.bound ?? 0}</div><div class="admin-stat-label">已綁定 Google</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num">${m.unbound ?? 0}</div><div class="admin-stat-label">尚未綁定</div></div>
+        <div class="admin-stat-card"><div class="admin-stat-num">${o.tutorial_done ?? 0}</div><div class="admin-stat-label">完成新手教學</div></div>
+      </div>
+      <div class="admin-breakdown">
+        <span>名單 roster：${m.roster ?? 0}</span>
+        <span>已認領 claimed：${m.claimed ?? 0}</span>
+        <span>自填 self：${m.self_registered ?? 0}</span>
+        <span>啟用：${m.active ?? 0}</span>
+        <span>停用：${m.inactive ?? 0}</span>
+      </div>
+      <h3 class="admin-section-title">最近綁定（最多 50 筆）</h3>
+      <div class="admin-recent-list">
+        ${recent.length ? recent.map(r => `
+          <div class="admin-recent-row">
+            <div>
+              <strong>${escHtml(r.name)}</strong>
+              <span class="admin-row-meta">${escHtml(r.branch)} · ${escHtml(r.status)}</span>
+            </div>
+            <div class="admin-recent-email">${escHtml(r.google_email || '—')}</div>
+            <div class="admin-recent-meta">
+              ${r.tutorial_done ? '✓ 教學完成' : '教學未完成'}
+              · ${formatTime(r.bound_at)}
+            </div>
+          </div>
+        `).join('') : '<div class="bind-empty">尚無綁定紀錄</div>'}
+      </div>
+      <button type="button" id="admin-refresh-stats" class="btn-outline" style="margin-top:12px">重新整理</button>
+    `;
+    panel.querySelector('#admin-refresh-stats').addEventListener('click', () => renderStatsPanel(panel));
+  } catch (err) {
+    panel.innerHTML = `<div class="bind-empty">${escHtml(err.message)}</div>`;
+  }
+}
+
+async function renderMembersPanel(panel) {
+  panel.innerHTML = `
+    <p class="admin-sub">編輯名單、解除錯誤綁定</p>
+    <div class="admin-toolbar">
+      <input id="admin-search" class="field-input" placeholder="搜尋姓名、分會、產業…">
+      <label class="field-check"><input type="checkbox" id="admin-show-inactive"> 顯示停用</label>
+      <button type="button" id="admin-add" class="btn-ai">新增會員</button>
+    </div>
+    <div id="admin-list" class="admin-list"><div class="bind-loading">載入中…</div></div>
+  `;
+
+  let members = [];
+  const listEl = panel.querySelector('#admin-list');
+  const searchEl = panel.querySelector('#admin-search');
+  const inactiveEl = panel.querySelector('#admin-show-inactive');
+
+  async function loadMembers() {
+    listEl.innerHTML = '<div class="bind-loading">載入中…</div>';
+    try {
+      members = await fetchAllMembers({ includeInactive: inactiveEl.checked });
+      members.forEach(m => applyMemberToCache(m));
+      renderList(searchEl.value);
+    } catch (err) {
+      listEl.innerHTML = `<div class="bind-empty">${escHtml(err.message)}</div>`;
+    }
+  }
+
+  function renderList(filter = '') {
+    const q = filter.trim().toLowerCase();
+    const filtered = q
+      ? members.filter(m =>
+          [m.name, m.branch, m.profession, m.google_email, m.have].join(' ').toLowerCase().includes(q))
+      : members;
+    listEl.innerHTML = filtered.map(m => adminRowHTML(m)).join('') ||
+      '<div class="bind-empty">沒有符合的會員</div>';
+    bindRowEvents();
+  }
+
+  function adminRowHTML(m) {
+    const bound = m.auth_user_id ? `已綁定 ${escHtml(m.google_email || '')}` : '未綁定';
+    return `
+      <details class="admin-row" data-id="${escHtml(m.id)}">
+        <summary>
+          <span class="admin-row-name">${escHtml(m.name)}</span>
+          <span class="admin-row-meta">${escHtml(m.branch)} · ${escHtml(m.profession || '—')}</span>
+          <span class="admin-badge ${m.status}">${escHtml(m.status)}</span>
+          <span class="admin-bind-hint">${bound}</span>
+        </summary>
+        <form class="admin-form" data-id="${escHtml(m.id)}">
+          <input name="name" value="${escHtml(m.name)}" class="field-input" required>
+          <input name="branch" value="${escHtml(m.branch)}" class="field-input" required>
+          <input name="profession" value="${escHtml(m.profession || '')}" class="field-input">
+          <textarea name="have" class="field-input" rows="2">${escHtml(m.have || '')}</textarea>
+          <textarea name="want_meet" class="field-input" rows="2">${escHtml(m.want_meet || '')}</textarea>
+          <textarea name="want_referral" class="field-input" rows="2">${escHtml(m.want_referral || '')}</textarea>
+          <input name="line_id" value="${escHtml(m.line_id || '')}" class="field-input">
+          <input name="line_link" value="${escHtml(m.line_link || '')}" class="field-input">
+          <label class="field-check"><input type="checkbox" name="active" ${m.active ? 'checked' : ''}> 啟用</label>
+          <div class="admin-form-actions">
+            <button type="submit" class="btn-ai">儲存</button>
+            ${m.auth_user_id ? `<button type="button" class="btn-outline admin-unbind" data-id="${escHtml(m.id)}">解除 Google 綁定</button>` : ''}
+          </div>
+        </form>
+      </details>`;
+  }
+
+  function bindRowEvents() {
+    listEl.querySelectorAll('.admin-form').forEach(form => {
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+        const id = form.dataset.id;
+        const fd = new FormData(form);
+        const patch = {
+          name: fd.get('name'),
+          branch: fd.get('branch'),
+          profession: fd.get('profession'),
+          have: fd.get('have'),
+          want_meet: fd.get('want_meet'),
+          want_referral: fd.get('want_referral'),
+          line_id: fd.get('line_id'),
+          line_link: fd.get('line_link'),
+          active: form.querySelector('[name=active]').checked,
+        };
+        try {
+          const updated = await adminUpdateMember(id, patch);
+          const idx = members.findIndex(x => x.id === id);
+          if (idx >= 0) members[idx] = updated;
+          applyMemberToCache(updated);
+          showToast('已儲存');
+          renderList(searchEl.value);
+        } catch (err) {
+          showToast(err.message || '儲存失敗');
+        }
+      });
+    });
+    listEl.querySelectorAll('.admin-unbind').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('確定解除此會員的 Google 綁定？')) return;
+        try {
+          await adminUnbindMember(btn.dataset.id);
+          showToast('已解除綁定');
+          await loadMembers();
+        } catch (err) {
+          showToast(err.message || '解除失敗');
+        }
+      });
+    });
+  }
+
+  searchEl.addEventListener('input', () => renderList(searchEl.value));
+  inactiveEl.addEventListener('change', loadMembers);
+
+  panel.querySelector('#admin-add').addEventListener('click', async () => {
+    const name = prompt('新會員姓名');
+    if (!name?.trim()) return;
+    const branch = prompt('分會（例如：長輝分會）');
+    if (!branch?.trim()) return;
+    try {
+      const row = await adminCreateMember({
+        name: name.trim(),
+        branch: branch.trim(),
+        region: branch.includes('金') ? 'sanlu' : 'zhongshan',
+        profession: '',
+        status: 'self_registered',
+        active: true,
+        tags: [],
+      });
+      members.push(row);
+      applyMemberToCache(row);
+      renderList(searchEl.value);
+      showToast('已新增');
+    } catch (err) {
+      showToast(err.message || '新增失敗');
+    }
+  });
+
+  await loadMembers();
+}
+
+function formatTime(ts) {
+  if (!ts) return '—';
+  try {
+    return new Date(ts).toLocaleString('zh-TW', { hour12: false });
+  } catch {
+    return String(ts);
+  }
+}

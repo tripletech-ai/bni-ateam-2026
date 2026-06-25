@@ -50,6 +50,22 @@ export function renderHome(container) {
       </div>
     </div>
 
+    <div class="section-header"><div class="section-title">${escHtml(t('home_contributor'))}</div></div>
+    <div class="contributor-card">
+      <div class="contributor-photo">
+        <img src="assets/photos/王銓.jpg" alt="王銓" loading="lazy" onerror="this.style.display='none'">
+      </div>
+      <div class="contributor-info">
+        <div class="contributor-name serif">王銓</div>
+        <div class="contributor-role">長輝白金分會 · AI學習整合</div>
+        <p class="contributor-desc">${escHtml(t('contributor_desc'))}</p>
+        <div class="contributor-companies">
+          <span class="company-chip">三人科技</span>
+          <span class="company-chip">琢奧科技</span>
+        </div>
+      </div>
+    </div>
+
     <div class="section-header"><div class="section-title">${escHtml(t('home_leaders'))}</div></div>
     <div class="yang-card" style="cursor:pointer" onclick="location.hash='leaders'">
       <div class="yang-photo" aria-hidden="true" style="color:rgba(250,199,117,0.7)">
