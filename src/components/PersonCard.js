@@ -52,7 +52,7 @@ export function personCardHTML(member, opts = {}) {
         </div>
       </div>
     </div>
-    <div class="person-card-body" style="display:none">
+    <div class="person-card-body">
       ${haveSection}${wantSection}${kwSection}
       <div class="person-actions">
         <button class="btn btn-line"
@@ -74,10 +74,9 @@ export function bindCardEvents(container, members) {
     // Card expand/collapse — click anywhere except action buttons
     const card = e.target.closest('.person-card');
     if (card && !e.target.closest('[data-action]')) {
-      const expanded = card.dataset.expanded === 'true';
+      const expanded = card.classList.contains('expanded');
+      card.classList.toggle('expanded', !expanded);
       card.dataset.expanded = String(!expanded);
-      const body = card.querySelector('.person-card-body');
-      if (body) body.style.display = expanded ? 'none' : 'block';
       const cue = card.querySelector('.cue-text');
       if (cue) cue.textContent = expanded ? t('card_more') : t('card_less');
       return;

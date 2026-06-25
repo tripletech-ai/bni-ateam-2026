@@ -13,8 +13,11 @@ import {
   isTutorialDone,
   checkIsAdmin,
   fetchAllMembers,
+  fetchPublicStats,
   getCurrentUser,
 } from './services/auth.js';
+import { renderUserBar } from './components/UserBar.js';
+import { bootSkeletonHTML } from './utils/skeleton.js';
 import { showWelcomeTutorial } from './pages/WelcomeTutorial.js';
 import { loadMembersFromDb } from './services/membersApi.js';
 import { withRetry } from './utils/retry.js';
@@ -30,7 +33,14 @@ function initLangToggle() {
     window.BNI_LANG = window.BNI_LANG === 'zh' ? 'en' : 'zh';
     localStorage.setItem('bni_lang', window.BNI_LANG);
     btn.textContent = t('lang_toggle');
-    boot();
+    if (appReady) {
+      const hash = window.location.hash || '';
+      navigate();
+      renderTabBar(tabBar, hash, { isAdmin });
+      renderUserBar(userBar);
+    } else {
+      boot();
+    }
   });
 }
 
@@ -62,6 +72,7 @@ applyFontSize(window.BNI_FONT);
 // ── App state ─────────────────────────────────────
 const app = document.getElementById('app');
 const tabBar = document.getElementById('tab-bar');
+const userBar = document.getElementById('user-bar');
 let isAdmin = false;
 let appReady = false;
 
@@ -79,6 +90,8 @@ function setChromeVisible(showTabs) {
   tabBar.style.display = showTabs ? 'flex' : 'none';
   document.getElementById('font-toggle').style.display = showTabs ? '' : 'none';
   document.getElementById('lang-toggle').style.display = showTabs ? '' : 'none';
+  if (showTabs && isBound()) renderUserBar(userBar);
+  else if (userBar) userBar.classList.add('hidden');
 }
 
 function navigate() {
@@ -93,6 +106,7 @@ function navigate() {
     app.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#f87171">頁面載入失敗，請重新整理</div>';
   }
   renderTabBar(tabBar, hash, { isAdmin });
+  renderUserBar(userBar);
   window.scrollTo(0, 0);
 }
 
@@ -131,9 +145,19 @@ async function loadMembersWithRetry() {
   );
 }
 
+async function loadPublicStatsWithRetry() {
+  try {
+    window.BNI_PUBLIC_STATS = await withRetry(() => fetchPublicStats(), {
+      retries: 2, delayMs: 500, label: 'publicStats',
+    });
+  } catch (e) {
+    console.warn('Public stats failed:', e.message);
+  }
+}
+
 async function boot() {
   appReady = false;
-  app.innerHTML = '<div class="boot-loading">載入中…</div>';
+  app.innerHTML = bootSkeletonHTML();
   setChromeVisible(false);
 
   try {
@@ -148,6 +172,7 @@ async function boot() {
 
   try {
     await loadMembersWithRetry();
+    await loadPublicStatsWithRetry();
   } catch (e) {
     console.warn('DB members load failed:', e.message);
     if (!window.BNI_MEMBERS?.length) {

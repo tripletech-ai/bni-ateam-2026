@@ -1,6 +1,7 @@
 import { getMarks, removeMark } from '../utils/storage.js';
 import { showToast }            from '../utils/toast.js';
 import { renderTabBar }         from '../components/TabBar.js';
+import { goalProgressHTML }     from '../components/GoalProgress.js';
 import { escHtml, escAttr }     from '../utils/html.js';
 import { avatarInner }          from '../utils/avatar.js';
 import { t }                    from '../i18n/translations.js';
@@ -55,11 +56,8 @@ export function renderMarks(container) {
   }).join('');
 
   container.innerHTML = `
-    <div class="section-header">
-      <div class="section-title">${escHtml(t('marks_title'))}
-        <span style="color:var(--dark-muted);font-size:14px;font-weight:400"> ${marks.length} 位</span>
-      </div>
-    </div>
+    <div class="section-header"><div class="section-title">${escHtml(t('marks_title'))}</div></div>
+    ${goalProgressHTML()}
     <div id="marks-list">${cards}</div>
     <div style="height:24px"></div>`;
 

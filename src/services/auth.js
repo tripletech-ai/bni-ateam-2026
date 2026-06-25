@@ -117,7 +117,15 @@ export async function checkIsAdmin() {
   }
 }
 
-export async function fetchTutorialSteps() {
+export async function fetchPublicStats() {
+  return withRetry(async () => {
+    const { data, error } = await getClient().database.rpc('bni_get_public_stats');
+    if (error) throw error;
+    return data;
+  }, { label: 'fetchPublicStats' });
+}
+
+export async function fetchPublicStats() {
   return withRetry(async () => {
     const { data, error } = await getClient().database
       .from('bni_tutorial_steps')
@@ -161,16 +169,12 @@ export async function searchUnboundMembers(keyword) {
   const q = keyword.trim();
   if (q.length < 1) return [];
   return withRetry(async () => {
-    const { data, error } = await getClient().database
-      .from('bni_members')
-      .select('*')
-      .eq('active', true)
-      .is('auth_user_id', null)
-      .or(`name.ilike.%${q}%,branch.ilike.%${q}%`)
-      .order('name', { ascending: true })
-      .limit(20);
+    const { data, error } = await getClient().database.rpc('bni_search_unbound_members', {
+      p_query: q,
+      p_limit: 20,
+    });
     if (error) throw error;
-    return data || [];
+    return Array.isArray(data) ? data : [];
   }, { label: 'searchUnboundMembers' });
 }
 

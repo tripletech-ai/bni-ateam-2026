@@ -133,6 +133,9 @@ CREATE POLICY bni_tutorial_admin_all ON bni_tutorial_steps FOR ALL TO authentica
   const tutorialSeed = readFileSync(join(__dirname, 'tutorial-steps-seed.sql'), 'utf8');
   await run('tutorial steps seed', tutorialSeed);
 
+  const dbStrengthen = readFileSync(join(__dirname, 'db-strengthen.sql'), 'utf8');
+  await run('db strengthen', dbStrengthen);
+
   await seedMembers();
 
   const anon = await getAnonToken();

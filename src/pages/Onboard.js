@@ -24,6 +24,11 @@ function buildHTML(user) {
     <div class="onboard-wrap">
       <div class="onboard-card">
         <div class="onboard-eyebrow">BNI A Team · 會員認領</div>
+        <div class="onboard-steps-hint">
+          <span class="onboard-step-pill done">① Google 登入</span>
+          <span class="onboard-step-pill active">② 認領身分</span>
+          <span class="onboard-step-pill">③ 新手教學</span>
+        </div>
         <h1 class="onboard-title serif">歡迎加入商務連結</h1>
         <p class="onboard-sub">已登入：<strong>${escHtml(email)}</strong></p>
         <p class="onboard-hint">請選擇：若你已在名單上請「綁定舊會員」；若不在名單請「認領新會員」填寫資料。</p>

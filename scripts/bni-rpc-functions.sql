@@ -25,9 +25,11 @@ DECLARE v_user_id uuid := auth.uid(); v_email text; v_id uuid;
 BEGIN
   IF v_user_id IS NULL THEN RAISE EXCEPTION 'NOT_AUTHENTICATED'; END IF;
   IF EXISTS (SELECT 1 FROM bni_members WHERE auth_user_id = v_user_id) THEN RAISE EXCEPTION 'ALREADY_BOUND'; END IF;
+  IF trim(p_name) = '' OR length(trim(p_name)) > 80 THEN RAISE EXCEPTION 'INVALID_NAME'; END IF;
+  IF trim(p_branch) = '' THEN RAISE EXCEPTION 'INVALID_BRANCH'; END IF;
   SELECT bni_current_jwt_email() INTO v_email;
   INSERT INTO bni_members (name, branch, region, profession, have, want_meet, want_referral, line_id, line_link, tags, auth_user_id, google_email, status, active)
-  VALUES (trim(p_name), trim(p_branch), p_region, p_profession, p_have, p_want_meet, p_want_referral, p_line_id, p_line_link, COALESCE(p_tags,'[]'::jsonb), v_user_id, v_email, 'self_registered', true)
+  VALUES (trim(p_name), trim(p_branch), p_region, left(p_profession, 200), left(p_have, 8000), left(p_want_meet, 2000), left(p_want_referral, 2000), left(p_line_id, 100), left(p_line_link, 500), COALESCE(p_tags,'[]'::jsonb), v_user_id, v_email, 'self_registered', true)
   RETURNING id INTO v_id;
   INSERT INTO bni_onboarding (auth_user_id, bound_member_id, tutorial_done, updated_at)
     VALUES (v_user_id, v_id, false, now())

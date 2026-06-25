@@ -55,6 +55,15 @@ export const translations = {
     home_video_soon: '影片即將上線',
 
     contributor_desc: '運用愛來製作整套系統，AI 相關整合由本人負責',
+    contributor_wangqi_role: '三人科技顧問共同創辦人',
+    contributor_wangqi_p1: '我做的事很簡單：幫台灣的中小企業把 AI 真正用在生意上，變成能帶來營收、節省時間的工具。從策略、流程自動化到系統導入，我陪客戶從第一次對話一路走到上線。',
+    contributor_wangqi_p2: '我有量化金融與科技管理的背景、8 年教學經驗，以及多張 AI 應用證照。這讓我能同時聽懂老闆要的成果，也接得住工程端的細節，把兩邊翻譯成一個可以落地的方案。',
+    contributor_wangqi_p3: 'AI 時代，工具人人都拿得到，真正的差別在判斷力：知道哪個問題值得解、用什麼方式解。這也是我和團隊一直在做的事。',
+    contributor_wangqi_cta: '想知道 AI 能為你的公司做什麼，歡迎跟我聊聊。',
+    contributor_company_tripletech: '三人科技顧問',
+    contributor_limengyi_role: '長輝分會 · 魔術方塊教學',
+    contributor_cocreator_tag: '共同開發',
+    contributor_limengyi_p1: '與王祈共同打造本次年會商務連結系統，專注現場學員體驗、新手教學與活動流程設計。',
 
     marks_title:       '我的標記',
     marks_empty_title: '還沒有標記',
@@ -95,6 +104,10 @@ export const translations = {
     toast_line_none:   '這位夥伴沒有填 LINE 連結',
 
     lang_toggle: 'EN',
+
+    user_bar_hello:   '你好',
+    user_bar_member:  '會員',
+    user_bar_signout: '登出',
   },
 
   en: {
@@ -153,6 +166,15 @@ export const translations = {
     home_video_soon: 'Coming Soon',
 
     contributor_desc: 'Built this system with care. AI integration led by Chuan Wang.',
+    contributor_wangqi_role: 'Co-founder, Tripletech Consultant',
+    contributor_wangqi_p1: 'I help Taiwanese SMEs put AI to work in real business—driving revenue and saving time—from strategy and workflow automation through to go-live.',
+    contributor_wangqi_p2: 'Background in quant finance and tech management, 8 years teaching, and multiple AI certifications—bridging business goals and engineering execution.',
+    contributor_wangqi_p3: 'In the AI era, tools are everywhere; judgment matters—knowing which problems to solve and how. That is what our team focuses on.',
+    contributor_wangqi_cta: 'Curious what AI can do for your company? Let’s talk.',
+    contributor_company_tripletech: 'Tripletech Consultant',
+    contributor_limengyi_role: 'Changhui Chapter · Rubik\'s Cube Education',
+    contributor_cocreator_tag: 'Co-developer',
+    contributor_limengyi_p1: 'Co-built this event networking app with Wang Qi—focused on on-site UX, onboarding, and event flow.',
 
     marks_title:       'Saved Members',
     marks_empty_title: 'No saved members yet',
@@ -193,6 +215,10 @@ export const translations = {
     toast_line_none:   'No LINE contact for this member',
 
     lang_toggle: '中',
+
+    user_bar_hello:   'Hi',
+    user_bar_member:  'Member',
+    user_bar_signout: 'Sign out',
   }
 };
 

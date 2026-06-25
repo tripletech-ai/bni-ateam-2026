@@ -314,6 +314,35 @@ html { scroll-behavior: smooth; }
 .boot-error-title { font-size: 18px; font-weight: 700; color: #f87171; margin-bottom: 10px; }
 .boot-error-msg { font-size: 15px; color: var(--muted); line-height: 1.5; margin-bottom: 20px; }
 
+/* Boot skeleton */
+.boot-skeleton { padding: 0 0 24px; }
+.boot-loading-text { text-align: center; color: var(--muted); font-size: 13px; padding: 16px; }
+.skel {
+  background: linear-gradient(90deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 100%);
+  background-size: 200% 100%;
+  animation: skel-shimmer 1.2s ease infinite;
+  border-radius: var(--r-sm);
+}
+.skel-hero { height: 140px; margin-bottom: 12px; }
+.skel-line { height: 14px; margin: 8px 16px; }
+.skel-w80 { width: 80%; }
+.skel-w60 { width: 60%; }
+.skel-box { height: 88px; margin: 12px 16px; border-radius: var(--r); }
+.skel-row { display: flex; gap: 10px; padding: 0 16px; margin-top: 12px; }
+.skel-stat { flex: 1; height: 64px; border-radius: var(--r); }
+@keyframes skel-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.onboard-steps-hint { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.onboard-step-pill {
+  font-size: 11px; padding: 5px 10px; border-radius: 20px;
+  border: 1px solid var(--border); color: var(--muted); background: var(--bg);
+}
+.onboard-step-pill.active { border-color: var(--gold); color: var(--gold); background: var(--gold-light); }
+.onboard-step-pill.done { border-color: var(--green); color: var(--green); background: var(--green-light); }
+
 /* Onboard / Login */
 .onboard-wrap { padding: 20px 16px 32px; min-height: 70vh; }
 .onboard-card {
@@ -360,19 +389,44 @@ html { scroll-behavior: smooth; }
 .bind-loading, .bind-empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
 
 /* Contributor */
+.contributor-stack {
+  display: flex; flex-direction: column; gap: 12px;
+  margin: 0 16px 8px;
+}
 .contributor-card {
-  display: flex; gap: 14px; padding: 16px; margin: 0 16px 8px;
+  display: flex; gap: 14px; padding: 16px;
   background: var(--surface); border-radius: var(--r); box-shadow: var(--shadow);
 }
 .contributor-photo {
-  width: 88px; height: 110px; flex-shrink: 0; border-radius: var(--r-sm);
-  overflow: hidden; background: #0a0f1e;
+  width: 96px; height: 120px; flex-shrink: 0; border-radius: var(--r-sm);
+  overflow: hidden; background: #0a0f1e; position: relative;
 }
 .contributor-photo img { width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+.contributor-photo-fallback {
+  position: absolute; inset: 0;
+  display: none; align-items: center; justify-content: center;
+  font-family: 'Noto Serif TC', serif; font-size: 32px; font-weight: 700;
+  color: var(--gold); background: rgba(4,44,83,0.9);
+}
+.contributor-photo.no-photo .contributor-photo-fallback { display: flex; }
+.contributor-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .contributor-name { font-size: 20px; font-weight: 700; color: var(--navy); }
-.contributor-role { font-size: 13px; color: var(--gold); margin-top: 2px; }
-.contributor-desc { font-size: 13px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
-.contributor-companies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.contributor-tag {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  padding: 3px 8px; border-radius: 999px;
+  background: var(--gold-light); color: var(--gold); border: 1px solid rgba(186,117,23,0.35);
+}
+.contributor-role { font-size: 13px; color: var(--gold); margin-top: 4px; font-weight: 600; }
+.contributor-bio { margin-top: 10px; }
+.contributor-bio-p {
+  font-size: 13px; color: var(--muted); line-height: 1.65;
+  margin: 0 0 8px;
+}
+.contributor-cta {
+  font-size: 13px; font-weight: 600; color: var(--navy);
+  margin: 4px 0 0; line-height: 1.5;
+}
+.contributor-companies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
 .company-chip {
   font-size: 11px; padding: 4px 10px; border-radius: 999px;
   background: var(--navy-light); color: var(--navy); font-weight: 600;

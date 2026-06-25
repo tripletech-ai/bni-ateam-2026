@@ -3,13 +3,64 @@ import { BRANCHES }     from '../data/branches.js';
 import { PHOTOS }       from '../data/photos.js';
 import { escHtml }      from '../utils/html.js';
 import { t }            from '../i18n/translations.js';
+import { goalProgressHTML } from '../components/GoalProgress.js';
+import { CONTRIBUTORS } from '../data/contributors.js';
 
 const VIDEO_URL = ''; // Fill in when YouTube link is provided
 
+function contributorCardHTML(c) {
+  const initial = (c.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
+  const paragraphs = c.paragraphKeys.map(k => `<p class="contributor-bio-p">${escHtml(t(k))}</p>`).join('');
+  const cta = c.ctaKey ? `<p class="contributor-cta">${escHtml(t(c.ctaKey))}</p>` : '';
+  const tag = c.tagKey
+    ? `<span class="contributor-tag">${escHtml(t(c.tagKey))}</span>` : '';
+  const companies = c.companyKeys
+    ? `<div class="contributor-companies">${c.companyKeys.map(k =>
+        `<span class="company-chip">${escHtml(t(k))}</span>`).join('')}</div>` : '';
+
+  return `
+    <article class="contributor-card" data-contributor="${escHtml(c.id)}">
+      <div class="contributor-photo">
+        <img src="assets/photos/${encodeURIComponent(c.photo)}"
+          alt="${escHtml(c.name)}" loading="lazy"
+          onerror="this.style.display='none';this.parentElement.classList.add('no-photo')">
+        <span class="contributor-photo-fallback" aria-hidden="true">${escHtml(initial)}</span>
+      </div>
+      <div class="contributor-info">
+        <div class="contributor-head">
+          <div class="contributor-name serif">${escHtml(c.name)}</div>
+          ${tag}
+        </div>
+        <div class="contributor-role">${escHtml(t(c.roleKey))}</div>
+        <div class="contributor-bio">${paragraphs}${cta}</div>
+        ${companies}
+      </div>
+    </article>`;
+}
+
+function resolveBranchLists() {
+  const rows = window.BNI_PUBLIC_STATS?.branches;
+  if (rows?.length) {
+    const map = (region) => rows
+      .filter(b => b.region === region)
+      .map(b => ({
+        name: String(b.branch).replace(/分會$/, ''),
+        count: b.count ?? 0,
+      }))
+      .filter(b => b.count > 0);
+    return { zhongshan: map('zhongshan'), sanlu: map('sanlu') };
+  }
+  return {
+    zhongshan: BRANCHES.zhongshan.filter(b => b.count > 0),
+    sanlu: BRANCHES.sanlu.filter(b => b.count > 0),
+  };
+}
+
 export function renderHome(container) {
   const markCount = getMarkCount();
-  const zhongshan = BRANCHES.zhongshan.filter(b => b.count > 0);
-  const sanlu     = BRANCHES.sanlu.filter(b => b.count > 0);
+  const { zhongshan, sanlu } = resolveBranchLists();
+  const totalMembers = window.BNI_PUBLIC_STATS?.total_members ?? (window.BNI_MEMBERS || []).length;
+  const branchCount = window.BNI_PUBLIC_STATS?.branch_count ?? 20;
 
   container.innerHTML = `
     <div class="hero">
@@ -37,11 +88,11 @@ export function renderHome(container) {
 
     <div class="stats-strip" role="list">
       <div class="stat-item" role="listitem">
-        <div class="stat-num serif">20</div>
+        <div class="stat-num serif">${branchCount}</div>
         <div class="stat-label">${escHtml(t('stat_branches'))}</div>
       </div>
       <div class="stat-item" role="listitem">
-        <div class="stat-num serif">${(window.BNI_MEMBERS || []).length}</div>
+        <div class="stat-num serif">${totalMembers}</div>
         <div class="stat-label">${escHtml(t('stat_members'))}</div>
       </div>
       <div class="stat-item" role="listitem">
@@ -50,20 +101,11 @@ export function renderHome(container) {
       </div>
     </div>
 
+    ${goalProgressHTML({ compact: true })}
+
     <div class="section-header"><div class="section-title">${escHtml(t('home_contributor'))}</div></div>
-    <div class="contributor-card">
-      <div class="contributor-photo">
-        <img src="assets/photos/王銓.jpg" alt="王銓" loading="lazy" onerror="this.style.display='none'">
-      </div>
-      <div class="contributor-info">
-        <div class="contributor-name serif">王銓</div>
-        <div class="contributor-role">長輝白金分會 · AI學習整合</div>
-        <p class="contributor-desc">${escHtml(t('contributor_desc'))}</p>
-        <div class="contributor-companies">
-          <span class="company-chip">三人科技</span>
-          <span class="company-chip">琢奧科技</span>
-        </div>
-      </div>
+    <div class="contributor-stack">
+      ${CONTRIBUTORS.map(contributorCardHTML).join('')}
     </div>
 
     <div class="section-header"><div class="section-title">${escHtml(t('home_leaders'))}</div></div>
