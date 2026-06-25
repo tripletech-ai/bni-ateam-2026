@@ -1,6 +1,11 @@
 import { escHtml } from '../utils/html.js';
-import { BRANCHES } from '../data/branches.js';
-import { referralPlaceholder } from '../utils/profileHints.js';
+import { getAteamBranchSummary, isAteamBranch } from '../data/branches.js';
+import { fieldPlaceholder, referralPlaceholder } from '../utils/profileHints.js';
+import {
+  profileTemplatePanelHTML,
+  profileFieldApplyButtonHTML,
+  bindProfileTemplatePanel,
+} from '../components/ProfileTemplatePanel.js';
 import {
   signInWithGoogle,
   bindExistingMember,
@@ -26,50 +31,59 @@ function buildHTML(user) {
     <div class="onboard-wrap onboard-flow-wrap">
       <header class="login-hero login-hero-compact">
         <div class="login-hero-eyebrow">BNI · ANDERSON TEAM · 2026 年會</div>
-        <h1 class="login-hero-title serif">會員認領</h1>
+        <h1 class="login-hero-title serif">${escHtml(t('onboard_title'))}</h1>
       </header>
       <div class="onboard-card">
         <div class="onboard-steps-hint">
           <span class="onboard-step-pill done">① Google 登入</span>
           <span class="onboard-step-pill active">② 認領身分</span>
-          <span class="onboard-step-pill">③ 新手教學</span>
+          <span class="onboard-step-pill">③ 新手教學＋填寫資料</span>
         </div>
-        <h2 class="onboard-title serif">歡迎加入商務連結</h2>
-        <p class="onboard-sub">已登入：<strong>${escHtml(email)}</strong></p>
-        <p class="onboard-hint">請選擇：若你已在名單上請「綁定舊會員」；若不在名單請「認領新會員」填寫資料。</p>
+        <h2 class="onboard-title serif">${escHtml(t('onboard_welcome'))}</h2>
+        <p class="onboard-sub">${escHtml(t('onboard_logged_in'))}<strong>${escHtml(email)}</strong></p>
+        <p class="onboard-hint">${escHtml(t('onboard_hint'))}</p>
+        <p class="onboard-scope-hint">${escHtml(getAteamBranchSummary())}</p>
 
-        <div id="onboard-choose" class="onboard-panel" ${mode !== 'choose' ? 'hidden' : ''}>
-          <button type="button" class="btn-ai onboard-btn" data-mode="bind">我在名單上 · 綁定舊會員</button>
-          <button type="button" class="btn-outline onboard-btn" data-mode="register">我不在名單 · 認領新會員</button>
+        <div id="onboard-choose" class="onboard-panel${mode !== 'choose' ? ' hidden' : ''}">
+          <button type="button" class="btn-ai onboard-btn" data-mode="bind">${escHtml(t('onboard_bind_btn'))}</button>
+          <button type="button" class="btn-outline onboard-btn" data-mode="register">${escHtml(t('onboard_register_btn'))}</button>
         </div>
 
-        <div id="onboard-bind" class="onboard-panel" ${mode !== 'bind' ? 'hidden' : ''}>
-          <label class="field-label">搜尋你的名字或分會</label>
-          <input id="bind-search" class="field-input" placeholder="例如：王銓、長輝分會" autocomplete="name">
+        <div id="onboard-bind" class="onboard-panel${mode !== 'bind' ? ' hidden' : ''}">
+          <p class="field-hint">${escHtml(t('onboard_bind_scope'))}</p>
+          <label class="field-label">${escHtml(t('onboard_bind_search_lbl'))}</label>
+          <input id="bind-search" class="field-input" placeholder="${escHtml(t('onboard_bind_search_ph'))}" autocomplete="name">
           <div id="bind-results" class="bind-results"></div>
-          <button type="button" class="btn-text" data-back>← 返回選擇</button>
+          <button type="button" class="btn-text" data-back>${escHtml(t('onboard_back'))}</button>
         </div>
 
-        <div id="onboard-register" class="onboard-panel" ${mode !== 'register' ? 'hidden' : ''}>
+        <div id="onboard-register" class="onboard-panel${mode !== 'register' ? ' hidden' : ''}">
           <form id="register-form" class="register-form">
             <label class="field-label">姓名 *</label>
             <input name="name" class="field-input" required maxlength="50">
-            <label class="field-label">分會 *</label>
-            <select name="branch" class="field-input" required>
-              ${branchOptions()}
-            </select>
+            <label class="field-label">${escHtml(t('onboard_register_branch_lbl'))}</label>
+            <p class="field-hint">${escHtml(t('onboard_register_branch_hint'))}</p>
+            <input name="branch" class="field-input" required maxlength="80"
+              placeholder="${escHtml(t('onboard_register_branch_ph'))}">
+            ${profileTemplatePanelHTML()}
             <label class="field-label">${escHtml(t('profile_profession_label'))} *</label>
             <p class="field-hint">${escHtml(t('profile_profession_hint'))}</p>
+            ${profileFieldApplyButtonHTML('profession', 'profile_template_field_profession')}
             <input name="profession" class="field-input" maxlength="120" required
-              placeholder="${escHtml(t('profile_profession_ph'))}">
+              placeholder="${escHtml(fieldPlaceholder('profession'))}">
             <label class="field-label">${escHtml(t('card_have'))}</label>
             <p class="field-hint">${escHtml(t('profile_have_hint'))}</p>
-            <textarea name="have" class="field-input" rows="2"></textarea>
+            ${profileFieldApplyButtonHTML('have', 'profile_template_field_have')}
+            <textarea name="have" class="field-input" rows="2"
+              placeholder="${escHtml(fieldPlaceholder('have'))}"></textarea>
             <label class="field-label">${escHtml(t('card_want'))}</label>
             <p class="field-hint">${escHtml(t('profile_want_hint'))}</p>
-            <textarea name="wantMeet" class="field-input" rows="2"></textarea>
+            ${profileFieldApplyButtonHTML('wantMeet', 'profile_template_field_want')}
+            <textarea name="wantMeet" class="field-input" rows="2"
+              placeholder="${escHtml(fieldPlaceholder('wantMeet'))}"></textarea>
             <label class="field-label">${escHtml(t('profile_referral_label'))}</label>
             <p class="field-hint">${escHtml(t('profile_referral_hint'))}</p>
+            ${profileFieldApplyButtonHTML('wantReferral', 'profile_template_field_referral')}
             <textarea name="wantReferral" class="field-input" rows="4"
               placeholder="${escHtml(referralPlaceholder())}"></textarea>
             <label class="field-label">LINE ID</label>
@@ -78,26 +92,34 @@ function buildHTML(user) {
             <input name="lineLink" class="field-input" placeholder="https://line.me/...">
             <button type="submit" class="btn-ai onboard-btn">送出並完成認領</button>
           </form>
-          <button type="button" class="btn-text" data-back>← 返回選擇</button>
+          <button type="button" class="btn-text" data-back>${escHtml(t('onboard_back'))}</button>
         </div>
       </div>
     </div>
   `;
 }
 
-function branchOptions() {
-  const names = new Set();
-  BRANCHES.zhongshan.forEach(b => names.add(`${b.name}分會`));
-  BRANCHES.sanlu.forEach(b => names.add(`${b.name}分會`));
-  return [...names].sort((a, b) => a.localeCompare(b, 'zh-TW'))
-    .map(n => `<option value="${escHtml(n)}">${escHtml(n)}</option>`).join('');
-}
-
 function setMode(next) {
   mode = next;
-  document.getElementById('onboard-choose').classList.toggle('hidden', mode !== 'choose');
-  document.getElementById('onboard-bind').classList.toggle('hidden', mode !== 'bind');
-  document.getElementById('onboard-register').classList.toggle('hidden', mode !== 'register');
+  const panels = {
+    choose: 'onboard-choose',
+    bind: 'onboard-bind',
+    register: 'onboard-register',
+  };
+  for (const [key, id] of Object.entries(panels)) {
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.classList.toggle('hidden', mode !== key);
+    if (mode === key) el.removeAttribute('hidden');
+    else el.setAttribute('hidden', '');
+  }
+}
+
+function mapAuthError(err) {
+  const msg = err?.message || '';
+  if (msg.includes('ALREADY_CLAIMED')) return t('onboard_err_claimed');
+  if (msg.includes('USE_BIND_EXISTING')) return t('onboard_err_use_bind');
+  return msg || '操作失敗';
 }
 
 function bindEvents(container, onComplete) {
@@ -107,6 +129,8 @@ function bindEvents(container, onComplete) {
   container.querySelectorAll('[data-back]').forEach(btn => {
     btn.addEventListener('click', () => setMode('choose'));
   });
+
+  bindProfileTemplatePanel(container, '#register-form');
 
   const searchInput = container.querySelector('#bind-search');
   let searchTimer;
@@ -118,13 +142,16 @@ function bindEvents(container, onComplete) {
   container.querySelector('#register-form')?.addEventListener('submit', async e => {
     e.preventDefault();
     const fd = new FormData(e.target);
-    const branch = fd.get('branch');
-    const region = branch.includes('金') && !branch.includes('中山') ? 'sanlu' : 'zhongshan';
+    const branch = String(fd.get('branch') || '').trim();
+    if (isAteamBranch(branch)) {
+      showToast(t('onboard_err_use_bind'));
+      return;
+    }
     try {
       await registerNewMember({
         name: fd.get('name'),
         branch,
-        region,
+        region: 'guest',
         profession: fd.get('profession'),
         have: fd.get('have'),
         wantMeet: fd.get('wantMeet'),
@@ -135,7 +162,7 @@ function bindEvents(container, onComplete) {
       showToast('認領成功！');
       onComplete();
     } catch (err) {
-      showToast(err.message || '認領失敗');
+      showToast(mapAuthError(err));
     }
   });
 }
@@ -151,7 +178,7 @@ async function runBindSearch(keyword, onComplete) {
   try {
     const rows = await searchUnboundMembers(keyword);
     if (!rows.length) {
-      box.innerHTML = '<div class="bind-empty">找不到未綁定的會員，可改選「認領新會員」</div>';
+      box.innerHTML = `<div class="bind-empty">${escHtml(t('onboard_bind_empty'))}</div>`;
       return;
     }
     box.innerHTML = rows.map(r => {
@@ -169,9 +196,7 @@ async function runBindSearch(keyword, onComplete) {
           showToast('綁定成功！');
           onComplete();
         } catch (err) {
-          const msg = err.message || '';
-          if (msg.includes('ALREADY_CLAIMED')) showToast('此人已被其他人認領');
-          else showToast(msg || '綁定失敗');
+          showToast(mapAuthError(err));
         }
       });
     });
@@ -199,14 +224,14 @@ export function renderLoginGate(container) {
         <div class="onboard-steps-hint" aria-label="使用步驟">
           <span class="onboard-step-pill active">① Google 登入</span>
           <span class="onboard-step-pill">② 認領身分</span>
-          <span class="onboard-step-pill">③ 新手教學</span>
+          <span class="onboard-step-pill">③ 新手教學＋填寫資料</span>
         </div>
         <p class="onboard-sub login-lead">掃描進入後需登入，才能認領／綁定會員身分並使用媒合功能。</p>
         <button type="button" id="google-login-btn" class="btn-google">
           ${GOOGLE_ICON_SVG}
           <span class="btn-google-label">使用 Google 帳號登入</span>
         </button>
-        <p class="onboard-foot">登入後可綁定名單上的舊會員，或填寫資料認領新會員。</p>
+        <p class="onboard-foot">${escHtml(t('login_foot'))}</p>
       </div>
     </div>
   `;

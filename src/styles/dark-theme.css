@@ -1185,8 +1185,83 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   margin-bottom: 16px;
 }
 .profile-edit-form .field-hint {
-  font-size: 12px; color: var(--dark-muted);
-  margin: -4px 0 8px; line-height: 1.45;
+  margin-bottom: 4px;
+}
+
+.profile-template-panel {
+  margin: 0 0 18px;
+  padding: 14px;
+  border-radius: var(--r-sm);
+  background: rgba(250, 199, 117, 0.08);
+  border: 1px solid rgba(250, 199, 117, 0.22);
+}
+.profile-template-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gold-bright);
+  margin-bottom: 6px;
+}
+.profile-template-sub {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--dark-muted);
+  margin: 0 0 10px;
+}
+.profile-template-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.profile-preset-chip {
+  font-size: 12px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.05);
+  color: var(--dark-text);
+  cursor: pointer;
+}
+.profile-preset-chip-primary {
+  border-color: rgba(250, 199, 117, 0.45);
+  background: rgba(250, 199, 117, 0.12);
+  color: var(--gold-bright);
+  font-weight: 600;
+}
+.field-apply-example {
+  display: inline-block;
+  margin: 0 0 6px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: rgba(96, 165, 250, 0.95);
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.welcome-profile-box {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(250, 199, 117, 0.1);
+  border: 1px solid rgba(250, 199, 117, 0.25);
+}
+.welcome-profile-preview {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255,255,255,0.75);
+  white-space: pre-line;
+  margin-bottom: 10px;
+}
+.welcome-btn-profile {
+  width: 100%;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(250, 199, 117, 0.45);
+  background: rgba(250, 199, 117, 0.15);
+  color: var(--gold-bright);
+  font-weight: 600;
+  cursor: pointer;
 }
 .profile-save-btn { width: 100%; margin-top: 8px; }
 
@@ -1313,3 +1388,9 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .onboard-wrap .bind-meta { color: var(--dark-muted); }
 .onboard-wrap .bind-empty,
 .onboard-wrap .bind-loading { color: var(--dark-muted); }
+.onboard-scope-hint {
+  font-size: 12px;
+  line-height: 1.55;
+  color: rgba(250,199,117,0.65);
+  margin: -4px 0 14px;
+}

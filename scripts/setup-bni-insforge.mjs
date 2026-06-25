@@ -142,6 +142,9 @@ CREATE POLICY bni_tutorial_admin_all ON bni_tutorial_steps FOR ALL TO authentica
   const profileUpdate = readFileSync(join(__dirname, 'member-profile-update.sql'), 'utf8');
   await run('member profile update', profileUpdate);
 
+  const claimPolicy = readFileSync(join(__dirname, 'claim-policy.sql'), 'utf8');
+  await run('claim policy (20-branch bind)', claimPolicy);
+
   await seedMembers();
 
   const anon = await getAnonToken();

@@ -1,5 +1,6 @@
 import { escHtml } from '../utils/html.js';
 import { completeTutorial, fetchTutorialSteps, getMyStatus } from '../services/auth.js';
+import { profileTemplatePreviewText } from '../utils/profileHints.js';
 
 function tStep(step, field) {
   const lang = window.BNI_LANG === 'en' ? 'en' : 'zh';
@@ -20,7 +21,7 @@ function personalize(text, member) {
 /**
  * 多步驟新手教學 — 內容從 bni_tutorial_steps 讀取，完成狀態寫入 bni_onboarding。
  */
-export async function showWelcomeTutorial({ onDone, applyFontSize }) {
+export async function showWelcomeTutorial({ onDone, applyFontSize, onGoProfile }) {
   const overlay = document.createElement('div');
   overlay.id = 'welcome-overlay';
   overlay.setAttribute('role', 'dialog');
@@ -71,6 +72,8 @@ export async function showWelcomeTutorial({ onDone, applyFontSize }) {
     const step = steps[stepIndex];
     const isLast = stepIndex === steps.length - 1;
     const isSettings = step.step_key === 'settings';
+    const isProfile = step.step_key === 'profile';
+    const langEn = window.BNI_LANG === 'en';
 
     card.innerHTML = `
       <div class="welcome-eyebrow">BNI · ANDERSON TEAM · 2026 年會</div>
@@ -83,6 +86,14 @@ export async function showWelcomeTutorial({ onDone, applyFontSize }) {
         ? `<div class="welcome-goal">${escHtml(personalize(tStep(step, 'body'), member))}</div>`
         : `<p class="welcome-desc-block">${escHtml(personalize(tStep(step, 'body'), member))}</p>`}
       ${tStep(step, 'tip') ? `<div class="welcome-tip">${escHtml(personalize(tStep(step, 'tip'), member))}</div>` : ''}
+      ${isProfile ? `
+        <div class="welcome-profile-box">
+          <div class="welcome-profile-preview">${escHtml(profileTemplatePreviewText())}</div>
+          <button type="button" class="welcome-btn-profile" id="welcome-go-profile">
+            ${langEn ? 'Fill profile now (with templates)' : '現在去填寫（有範本）'}
+          </button>
+        </div>
+      ` : ''}
       ${isSettings ? `
         <div class="welcome-fs">
           <div class="welcome-fs-label">${window.BNI_LANG === 'en' ? 'Font size' : '字體大小'}</div>
@@ -121,18 +132,22 @@ export async function showWelcomeTutorial({ onDone, applyFontSize }) {
       stepIndex = Math.min(steps.length - 1, stepIndex + 1);
       render();
     });
+    card.querySelector('#welcome-go-profile')?.addEventListener('click', () =>
+      finish(overlay, onDone, { goProfile: true, onGoProfile }),
+    );
     card.querySelector('#welcome-start')?.addEventListener('click', () => finish(overlay, onDone));
   }
 
   render();
 }
 
-async function finish(overlay, onDone) {
+async function finish(overlay, onDone, { goProfile = false, onGoProfile } = {}) {
   try { await completeTutorial(); } catch (e) { console.warn('completeTutorial:', e); }
   overlay.style.transition = 'opacity 0.22s';
   overlay.style.opacity = '0';
   setTimeout(() => {
     overlay.remove();
-    onDone?.();
+    if (goProfile && onGoProfile) onGoProfile();
+    else onDone?.();
   }, 230);
 }

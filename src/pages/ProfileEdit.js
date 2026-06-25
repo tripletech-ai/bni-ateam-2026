@@ -1,7 +1,12 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { getMyStatus, updateMyProfile, fetchAllMembers } from '../services/auth.js';
-import { referralPlaceholder } from '../utils/profileHints.js';
+import { fieldPlaceholder, referralPlaceholder } from '../utils/profileHints.js';
+import {
+  profileTemplatePanelHTML,
+  profileFieldApplyButtonHTML,
+  bindProfileTemplatePanel,
+} from '../components/ProfileTemplatePanel.js';
 import { showToast } from '../utils/toast.js';
 import { loadMembersFromDb } from '../services/membersApi.js';
 
@@ -30,28 +35,36 @@ export function renderProfileEdit(container) {
       </div>
 
       <div class="profile-edit-tip">${escHtml(t('profile_tip'))}</div>
+      ${profileTemplatePanelHTML()}
 
       <form id="profile-form" class="profile-edit-form">
         <label class="field-label">${escHtml(t('profile_profession_label'))} *</label>
         <p class="field-hint">${escHtml(t('profile_profession_hint'))}</p>
+        ${profileFieldApplyButtonHTML('profession', 'profile_template_field_profession')}
         <input name="profession" class="field-input" maxlength="120" required
-          value="${escHtml(f.profession)}" placeholder="${escHtml(t('profile_profession_ph'))}">
+          value="${escHtml(f.profession)}" placeholder="${escHtml(fieldPlaceholder('profession'))}">
 
         <label class="field-label">${escHtml(t('card_have'))}</label>
         <p class="field-hint">${escHtml(t('profile_have_hint'))}</p>
-        <textarea name="have" class="field-input" rows="3">${escHtml(f.have)}</textarea>
+        ${profileFieldApplyButtonHTML('have', 'profile_template_field_have')}
+        <textarea name="have" class="field-input" rows="3"
+          placeholder="${escHtml(fieldPlaceholder('have'))}">${escHtml(f.have)}</textarea>
 
         <label class="field-label">${escHtml(t('card_want'))}</label>
         <p class="field-hint">${escHtml(t('profile_want_hint'))}</p>
-        <textarea name="wantMeet" class="field-input" rows="3">${escHtml(f.wantMeet)}</textarea>
+        ${profileFieldApplyButtonHTML('wantMeet', 'profile_template_field_want')}
+        <textarea name="wantMeet" class="field-input" rows="3"
+          placeholder="${escHtml(fieldPlaceholder('wantMeet'))}">${escHtml(f.wantMeet)}</textarea>
 
         <label class="field-label">${escHtml(t('profile_referral_label'))}</label>
         <p class="field-hint">${escHtml(t('profile_referral_hint'))}</p>
+        ${profileFieldApplyButtonHTML('wantReferral', 'profile_template_field_referral')}
         <textarea name="wantReferral" class="field-input" rows="5"
           placeholder="${escHtml(referralPlaceholder())}">${escHtml(f.wantReferral)}</textarea>
 
         <label class="field-label">LINE ID</label>
-        <input name="lineId" class="field-input" value="${escHtml(f.lineId)}">
+        <input name="lineId" class="field-input" value="${escHtml(f.lineId)}"
+          placeholder="your.line.id">
 
         <label class="field-label">${escHtml(t('profile_line_link'))}</label>
         <input name="lineLink" class="field-input" value="${escHtml(f.lineLink)}"
@@ -61,6 +74,8 @@ export function renderProfileEdit(container) {
       </form>
     </div>
   `;
+
+  bindProfileTemplatePanel(container);
 
   container.querySelector('#profile-back')?.addEventListener('click', () => {
     location.hash = 'home';

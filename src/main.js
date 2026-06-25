@@ -126,7 +126,17 @@ async function afterBindComplete() {
 }
 
 function showWelcomeIfNeeded() {
-  if (!isTutorialDone()) showWelcomeTutorial({ applyFontSize });
+  if (!isTutorialDone()) {
+    showWelcomeTutorial({
+      applyFontSize,
+      onGoProfile: () => {
+        appReady = true;
+        setChromeVisible(true);
+        location.hash = 'profile';
+        navigate();
+      },
+    });
+  }
 }
 
 function showBootError(message, { canRetry = true } = {}) {
