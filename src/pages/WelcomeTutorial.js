@@ -23,6 +23,9 @@ function personalize(text, member) {
 export async function showWelcomeTutorial({ onDone, applyFontSize }) {
   const overlay = document.createElement('div');
   overlay.id = 'welcome-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', window.BNI_LANG === 'en' ? 'Welcome tutorial' : '新手教學');
   overlay.innerHTML = `
     <div id="welcome-card" class="welcome-card-tutorial">
       <div class="welcome-loading">載入教學內容…</div>

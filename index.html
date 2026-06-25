@@ -1,22 +1,23 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" style="color-scheme: dark">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0a0f1e">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="A Team">
 
   <title>BNI A Team 商務連結系統</title>
-  <meta name="description" content="BNI 20 週年年會 A Team 商務連結系統 — 台北市北區 Anderson Team。用一句話說出需求，AI 幫你在 120 位夥伴中找到對的人脈，現場標記 1-1 與合作對象。">
+  <meta name="description" content="BNI A Team 年會商務連結 — 800 人現場媒合。Google 登入、AI 找人、標記 1-1。台北市北區 Anderson Team。">
   <!-- Private event tool — keep out of search engines -->
   <meta name="robots" content="noindex, nofollow">
 
   <!-- Social share preview (LINE / Facebook). Set og:url & og:image to the full https URL after deploy. -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="BNI A Team 商務連結系統">
-  <meta property="og:description" content="台北市北區 Anderson Team · 20 分會 120 位夥伴。AI 幫你找到對的人脈，現場標記 1-1 與合作對象。">
+  <meta property="og:description" content="800 人現場媒合 · AI 找人 · 標記 1-1。台北市北區 Anderson Team。">
   <meta property="og:image" content="assets/photos/楊日陞.jpg">
   <meta property="og:locale" content="zh_TW">
   <meta name="twitter:card" content="summary_large_image">
@@ -32,8 +33,9 @@
   <link rel="stylesheet" href="src/styles/animations.css">
 </head>
 <body>
+  <a class="skip-link" href="#app">跳至主內容</a>
   <div id="user-bar" class="user-bar hidden" role="banner" aria-label="會員狀態"></div>
-  <div id="app"></div>
+  <main id="app" tabindex="-1"></main>
   <nav id="tab-bar" role="tablist" aria-label="主導覽"></nav>
   <div id="toast" class="toast" role="alert" aria-live="polite"></div>
   <button id="font-toggle" aria-label="字體大小"><span class="fs-a-small">A</span><span class="fs-a-big">A</span></button>

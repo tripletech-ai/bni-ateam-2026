@@ -92,6 +92,12 @@ export function renderHome(container) {
       <button id="home-ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
     </div>
 
+    <nav class="home-quick-nav" aria-label="${escHtml(t('home_quick_label'))}">
+      <button type="button" class="home-quick-btn" data-hash="search">${escHtml(t('home_quick_search'))}</button>
+      <button type="button" class="home-quick-btn" data-hash="marks">${escHtml(t('home_quick_marks'))}</button>
+      <button type="button" class="home-quick-btn" data-hash="profile">${escHtml(t('home_quick_profile'))}</button>
+    </nav>
+
     <div class="stats-strip" role="list">
       <div class="stat-item" role="listitem">
         <div class="stat-num serif">${branchCount}</div>
@@ -115,7 +121,7 @@ export function renderHome(container) {
     </div>
 
     <div class="section-header"><div class="section-title">${escHtml(t('home_leaders'))}</div></div>
-    <div class="yang-card" style="cursor:pointer" onclick="location.hash='leaders'">
+    <div class="yang-card yang-card-link" role="link" tabindex="0" data-hash="leaders">
       <div class="yang-photo" aria-hidden="true" style="color:rgba(250,199,117,0.7)">
         <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
           <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
@@ -128,7 +134,7 @@ export function renderHome(container) {
       <div class="yang-info">
         <div class="yang-name">楊日陞</div>
         <div class="yang-title">區域資深董事<br>${escHtml(t('hero_region'))}</div>
-        <button class="btn-yang" onclick="event.stopPropagation();location.hash='leaders'">
+        <button type="button" class="btn-yang" data-hash="leaders">
           ${escHtml(t('home_view'))}
         </button>
       </div>
@@ -136,7 +142,7 @@ export function renderHome(container) {
 
     <div class="section-header"><div class="section-title">${escHtml(t('home_video'))}</div></div>
     <div class="video-placeholder">
-      <div class="video-thumb" id="home-video-btn">
+      <div class="video-thumb ${VIDEO_URL ? '' : 'video-thumb-disabled'}" id="home-video-btn" ${VIDEO_URL ? '' : 'aria-disabled="true"'}>
         <div class="video-play-btn" aria-hidden="true">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
         </div>
@@ -174,6 +180,29 @@ export function renderHome(container) {
     </div>
     <div style="height:24px"></div>
   `;
+
+  container.querySelectorAll('.home-quick-btn[data-hash]').forEach(btn => {
+    const go = () => { location.hash = btn.dataset.hash; };
+    btn.addEventListener('click', go);
+  });
+
+  const yangCard = container.querySelector('.yang-card-link');
+  if (yangCard) {
+    const goLeaders = () => { location.hash = 'leaders'; };
+    yangCard.addEventListener('click', e => {
+      if (e.target.closest('.btn-yang')) return;
+      goLeaders();
+    });
+    yangCard.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goLeaders(); }
+    });
+  }
+  container.querySelectorAll('.btn-yang[data-hash]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      location.hash = btn.dataset.hash;
+    });
+  });
 
   container.querySelectorAll('.branch-chip[data-branch]').forEach(chip => {
     const go = () => {

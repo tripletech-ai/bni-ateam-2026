@@ -23,6 +23,23 @@
 .stagger-5 { animation-delay: 200ms; }
 .stagger-6 { animation-delay: 250ms; }
 
+@media (prefers-reduced-motion: reduce) {
+  #app > *,
+  .person-card,
+  .mark-card,
+  .director-card,
+  .stagger-1, .stagger-2, .stagger-3, .stagger-4, .stagger-5, .stagger-6 {
+    animation: none !important;
+    transition: none !important;
+  }
+  .ai-scan-line,
+  .ai-particle,
+  .ai-shimmer-fill,
+  .hero-title-shimmer {
+    animation: none !important;
+  }
+}
+
 .btn, .btn-ai, .btn-sm,
 .branch-chip, .ai-example-chip {
   transition: transform 0.1s, box-shadow 0.1s, opacity 0.1s;

@@ -80,7 +80,7 @@ async function triggerSearch(input) {
   aiBox.style.display      = 'none';
   resultArea.style.display = 'none';
   searchArea.style.display = 'none';
-  branchArea.style.display = 'none';
+  if (branchArea) branchArea.style.display = 'none';
   loading.style.display    = 'block';
 
   // Premium AI loading animation
@@ -124,7 +124,7 @@ async function triggerSearch(input) {
   // Auto-search immediately (no manual button)
   const results = searchMembers(keywords);
   showResults(results, searchArea, keywords);
-  branchArea.style.display = 'block';
+  if (branchArea) branchArea.style.display = 'none';
 }
 
 const REFINE_HINT = () => `
@@ -235,7 +235,9 @@ function renderBranchBrowse(container) {
 function showBranchMembers(branchName) {
   const members   = getMembersByBranch(branchName);
   const container = document.getElementById('search-results-area');
+  const branchArea = document.getElementById('branch-browse-area');
   if (!container) return;
+  if (branchArea) branchArea.style.display = 'none';
   container.style.display = 'block';
 
   if (members.length === 0) {

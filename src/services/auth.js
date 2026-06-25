@@ -153,7 +153,7 @@ export async function updateMyProfile(payload) {
   return myStatus;
 }
 
-export async function fetchPublicStats() {
+export async function fetchTutorialSteps() {
   return withRetry(async () => {
     const { data, error } = await getClient().database
       .from('bni_tutorial_steps')

@@ -22,12 +22,14 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html { font-size: 16px; -webkit-text-size-adjust: 100%; }
+html { font-size: 16px; -webkit-text-size-adjust: 100%; color-scheme: dark; }
 body {
   font-family: 'Noto Sans TC', sans-serif;
   background: var(--bg);
   color: var(--text);
   min-height: 100vh;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(250, 199, 117, 0.2);
   /* iOS safe area for home bar */
   padding-bottom: calc(72px + env(safe-area-inset-bottom));
   max-width: var(--mobile-max);
@@ -41,7 +43,21 @@ body {
   body { box-shadow: 0 0 40px rgba(0,0,0,0.15); }
 }
 h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
-#app { min-height: calc(100vh - 72px); }
+#app { min-height: calc(100vh - 72px); display: block; }
+
+.skip-link {
+  position: absolute; left: 8px; top: -48px;
+  z-index: 300; padding: 10px 14px;
+  background: var(--navy); color: #fff;
+  border-radius: 8px; font-size: 14px;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+.skip-link:focus {
+  top: 8px;
+  outline: 2px solid var(--gold-mid);
+  outline-offset: 2px;
+}
 
 /* Tab Bar */
 #tab-bar {

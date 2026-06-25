@@ -1,5 +1,6 @@
 /**
- * BNI A Team — standalone InsForge backend (NOT shared with UIC / other projects).
+ * BNI A Team — 獨立 InsForge 後端（a-team 專用）。
+ * 與夢想一號魔術方塊學院、UIC 等其他 InsForge 專案完全分離。
  * Hosted at https://a-team9204.zeabur.app (Zeabur).
  */
 export const INSFORGE_BASE_URL = 'https://a-team9204.zeabur.app';

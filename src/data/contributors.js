@@ -19,6 +19,12 @@ export const CONTRIBUTORS = [
     photo: '李孟一.jpg',
     roleKey: 'contributor_limengyi_role',
     tagKey: 'contributor_cocreator_tag',
-    paragraphKeys: ['contributor_limengyi_p1'],
+    paragraphKeys: [
+      'contributor_limengyi_p1',
+      'contributor_limengyi_p2',
+      'contributor_limengyi_p3',
+      'contributor_limengyi_p4',
+    ],
+    ctaKey: 'contributor_limengyi_cta',
   },
 ];

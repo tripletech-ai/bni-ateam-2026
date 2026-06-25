@@ -47,7 +47,7 @@ function initLangToggle() {
 
 // ── Font size ─────────────────────────────────────
 const FONT_SIZES = ['fs-s', 'fs-m', 'fs-l'];
-const FONT_LABELS = { 'fs-s': '標準', 'fs-m': '大字', 'fs-l': '特大' };
+const FONT_LABEL_KEYS = { 'fs-s': 'font_s', 'fs-m': 'font_m', 'fs-l': 'font_l' };
 window.BNI_FONT = localStorage.getItem('bni_font') || 'fs-s';
 
 function applyFontSize(cls) {
@@ -64,7 +64,7 @@ function initFontToggle() {
   btn.addEventListener('click', () => {
     const next = FONT_SIZES[(FONT_SIZES.indexOf(window.BNI_FONT) + 1) % FONT_SIZES.length];
     applyFontSize(next);
-    import('./utils/toast.js').then(({ showToast }) => showToast(`字體：${FONT_LABELS[next]}`));
+    import('./utils/toast.js').then(({ showToast }) => showToast(`${t('font_label')}${t(FONT_LABEL_KEYS[next])}`));
   });
 }
 
