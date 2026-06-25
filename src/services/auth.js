@@ -1,5 +1,6 @@
 import { createClient } from 'https://esm.sh/@insforge/sdk@latest';
 import { INSFORGE_BASE_URL, INSFORGE_ANON_KEY } from '../config/insforge.js';
+import { withRetry } from '../utils/retry.js';
 
 let client = null;
 let currentUser = null;
@@ -29,10 +30,12 @@ export function isTutorialDone() {
 }
 
 async function loadStatus() {
-  const { data, error } = await getClient().database.rpc('bni_get_my_status');
-  if (error) throw error;
-  myStatus = data;
-  return myStatus;
+  return withRetry(async () => {
+    const { data, error } = await getClient().database.rpc('bni_get_my_status');
+    if (error) throw error;
+    myStatus = data;
+    return myStatus;
+  }, { label: 'bni_get_my_status' });
 }
 
 export async function initAuth() {
@@ -114,16 +117,30 @@ export async function checkIsAdmin() {
   }
 }
 
+export async function fetchTutorialSteps() {
+  return withRetry(async () => {
+    const { data, error } = await getClient().database
+      .from('bni_tutorial_steps')
+      .select('step_order, step_key, title_zh, title_en, body_zh, body_en, tip_zh, tip_en')
+      .eq('active', true)
+      .order('step_order', { ascending: true });
+    if (error) throw error;
+    return data || [];
+  }, { label: 'fetchTutorialSteps' });
+}
+
 export async function fetchAllMembers({ includeInactive = false } = {}) {
-  let query = getClient().database
-    .from('bni_members')
-    .select('*')
-    .order('roster_id', { ascending: true })
-    .limit(1000);
-  if (!includeInactive) query = query.eq('active', true);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data || [];
+  return withRetry(async () => {
+    let query = getClient().database
+      .from('bni_members')
+      .select('*')
+      .order('roster_id', { ascending: true })
+      .limit(1000);
+    if (!includeInactive) query = query.eq('active', true);
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  }, { label: 'fetchAllMembers' });
 }
 
 export async function fetchAdminDashboard() {
@@ -143,16 +160,18 @@ export async function adminUnbindMember(memberId) {
 export async function searchUnboundMembers(keyword) {
   const q = keyword.trim();
   if (q.length < 1) return [];
-  const { data, error } = await getClient().database
-    .from('bni_members')
-    .select('*')
-    .eq('active', true)
-    .is('auth_user_id', null)
-    .or(`name.ilike.%${q}%,branch.ilike.%${q}%`)
-    .order('name', { ascending: true })
-    .limit(20);
-  if (error) throw error;
-  return data || [];
+  return withRetry(async () => {
+    const { data, error } = await getClient().database
+      .from('bni_members')
+      .select('*')
+      .eq('active', true)
+      .is('auth_user_id', null)
+      .or(`name.ilike.%${q}%,branch.ilike.%${q}%`)
+      .order('name', { ascending: true })
+      .limit(20);
+    if (error) throw error;
+    return data || [];
+  }, { label: 'searchUnboundMembers' });
 }
 
 export async function adminUpdateMember(id, patch) {

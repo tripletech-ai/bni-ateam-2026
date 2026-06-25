@@ -11,12 +11,13 @@ import {
   initAuth,
   isBound,
   isTutorialDone,
-  completeTutorial,
   checkIsAdmin,
   fetchAllMembers,
   getCurrentUser,
 } from './services/auth.js';
+import { showWelcomeTutorial } from './pages/WelcomeTutorial.js';
 import { loadMembersFromDb } from './services/membersApi.js';
+import { withRetry } from './utils/retry.js';
 
 // ── Language ──────────────────────────────────────
 window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
@@ -97,7 +98,7 @@ function navigate() {
 
 async function afterBindComplete() {
   try {
-    await loadMembersFromDb(fetchAllMembers);
+    await loadMembersWithRetry();
   } catch (e) {
     console.warn('Reload members failed:', e);
   }
@@ -109,65 +110,25 @@ async function afterBindComplete() {
 }
 
 function showWelcomeIfNeeded() {
-  if (!isTutorialDone()) showWelcome();
+  if (!isTutorialDone()) showWelcomeTutorial({ applyFontSize });
 }
 
-function showWelcome() {
-  const overlay = document.createElement('div');
-  overlay.id = 'welcome-overlay';
-  overlay.innerHTML = `
-    <div id="welcome-card">
-      <div class="welcome-eyebrow">BNI · ANDERSON TEAM · 2026 年會</div>
-      <div class="welcome-title hero-title-shimmer">新手教學</div>
-      <div class="welcome-lang-hint">右上角可切換 <strong>中文 / EN</strong></div>
-      <div class="welcome-rule"></div>
-      <div class="welcome-guide">
-        <div class="welcome-row">
-          <span class="welcome-tag">① 登入</span>
-          <span class="welcome-desc">Google 登入並認領／綁定你的會員身分</span>
-        </div>
-        <div class="welcome-row">
-          <span class="welcome-tag">② 找人脈</span>
-          <span class="welcome-desc">搜尋或瀏覽分會，找到想認識的夥伴</span>
-        </div>
-        <div class="welcome-row">
-          <span class="welcome-tag">③ AI 搜尋</span>
-          <span class="welcome-desc">說出需求，AI 幫你精準配對</span>
-        </div>
-        <div class="welcome-row">
-          <span class="welcome-tag">④ 標記</span>
-          <span class="welcome-desc">記下想約 1-1 或合作的人，目標 5 位</span>
-        </div>
-      </div>
-      <div class="welcome-fs">
-        <div class="welcome-fs-label">字體大小</div>
-        <div class="welcome-fs-opts">
-          <button class="welcome-fs-btn" data-fs="fs-s">標準</button>
-          <button class="welcome-fs-btn" data-fs="fs-m">大</button>
-          <button class="welcome-fs-btn" data-fs="fs-l">特大</button>
-        </div>
-      </div>
-      <div class="welcome-goal">今天目標：標記 5 位以上夥伴</div>
-      <button id="welcome-start">開始使用</button>
+function showBootError(message, { canRetry = true } = {}) {
+  app.innerHTML = `
+    <div class="boot-error">
+      <p class="boot-error-title">載入失敗</p>
+      <p class="boot-error-msg">${message}</p>
+      ${canRetry ? '<button type="button" id="boot-retry-btn" class="btn-ai">重試</button>' : ''}
     </div>
   `;
-  document.body.appendChild(overlay);
+  document.getElementById('boot-retry-btn')?.addEventListener('click', () => boot());
+}
 
-  const fsButtons = overlay.querySelectorAll('.welcome-fs-btn');
-  const markActive = () => fsButtons.forEach(b =>
-    b.setAttribute('data-active', String(b.dataset.fs === window.BNI_FONT)));
-  markActive();
-  fsButtons.forEach(b => b.addEventListener('click', () => {
-    applyFontSize(b.dataset.fs);
-    markActive();
-  }));
-
-  document.getElementById('welcome-start').addEventListener('click', async () => {
-    try { await completeTutorial(); } catch (e) { console.warn(e); }
-    overlay.style.transition = 'opacity 0.22s';
-    overlay.style.opacity = '0';
-    setTimeout(() => overlay.remove(), 230);
-  });
+async function loadMembersWithRetry() {
+  return withRetry(
+    () => loadMembersFromDb(fetchAllMembers),
+    { retries: 3, delayMs: 800, label: 'loadMembers' },
+  );
 }
 
 async function boot() {
@@ -175,15 +136,22 @@ async function boot() {
   app.innerHTML = '<div class="boot-loading">載入中…</div>';
   setChromeVisible(false);
 
-  await initAuth();
+  try {
+    await withRetry(() => initAuth(), { retries: 2, delayMs: 500, label: 'initAuth' });
+  } catch (e) {
+    console.error('initAuth failed:', e);
+    showBootError('登入狀態載入失敗，請檢查網路後重試');
+    return;
+  }
+
   isAdmin = await checkIsAdmin();
 
   try {
-    await loadMembersFromDb(fetchAllMembers);
+    await loadMembersWithRetry();
   } catch (e) {
-    console.warn('DB members load failed, using static fallback:', e.message);
+    console.warn('DB members load failed:', e.message);
     if (!window.BNI_MEMBERS?.length) {
-      app.innerHTML = '<div class="boot-loading">會員資料載入失敗，請重新整理</div>';
+      showBootError('會員資料載入失敗，週六現場請確認網路後重試');
       return;
     }
   }
@@ -208,6 +176,9 @@ async function boot() {
 window.addEventListener('hashchange', navigate);
 window.addEventListener('unhandledrejection', event => {
   console.error('Unhandled promise rejection:', event.reason);
+  import('./utils/toast.js').then(({ showToast }) => {
+    showToast('操作失敗，請稍後再試');
+  }).catch(() => {});
 });
 
 initLangToggle();

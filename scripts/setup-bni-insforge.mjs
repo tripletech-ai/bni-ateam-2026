@@ -82,8 +82,22 @@ CREATE TABLE IF NOT EXISTS bni_onboarding (
   bound_member_id uuid REFERENCES bni_members(id) ON DELETE SET NULL,
   created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now()
 );
+CREATE TABLE IF NOT EXISTS bni_tutorial_steps (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  step_order int NOT NULL,
+  step_key varchar(40) NOT NULL UNIQUE,
+  title_zh varchar(120) NOT NULL,
+  title_en varchar(120) NOT NULL,
+  body_zh text NOT NULL,
+  body_en text NOT NULL,
+  tip_zh text,
+  tip_en text,
+  active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
 ALTER TABLE bni_members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE bni_onboarding ENABLE ROW LEVEL SECURITY;
+ALTER TABLE bni_tutorial_steps ENABLE ROW LEVEL SECURITY;
   `);
 
   await run('admin helpers', `
@@ -107,10 +121,17 @@ DROP POLICY IF EXISTS bni_onboarding_admin_read ON bni_onboarding;
 CREATE POLICY bni_onboarding_admin_read ON bni_onboarding FOR SELECT TO authenticated USING (bni_is_admin());
 DROP POLICY IF EXISTS bni_onboarding_admin_write ON bni_onboarding;
 CREATE POLICY bni_onboarding_admin_write ON bni_onboarding FOR ALL TO authenticated USING (bni_is_admin()) WITH CHECK (bni_is_admin());
+DROP POLICY IF EXISTS bni_tutorial_public_read ON bni_tutorial_steps;
+CREATE POLICY bni_tutorial_public_read ON bni_tutorial_steps FOR SELECT TO anon, authenticated USING (active = true);
+DROP POLICY IF EXISTS bni_tutorial_admin_all ON bni_tutorial_steps;
+CREATE POLICY bni_tutorial_admin_all ON bni_tutorial_steps FOR ALL TO authenticated USING (bni_is_admin()) WITH CHECK (bni_is_admin());
   `);
 
   const rpcSql = readFileSync(join(__dirname, 'bni-rpc-functions.sql'), 'utf8');
   await run('rpc functions', rpcSql);
+
+  const tutorialSeed = readFileSync(join(__dirname, 'tutorial-steps-seed.sql'), 'utf8');
+  await run('tutorial steps seed', tutorialSeed);
 
   await seedMembers();
 

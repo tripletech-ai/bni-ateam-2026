@@ -310,6 +310,9 @@ html { scroll-behavior: smooth; }
 
 .hidden { display: none !important; }
 .boot-loading { padding: 48px 20px; text-align: center; color: var(--muted); }
+.boot-error { padding: 40px 24px; text-align: center; max-width: 360px; margin: 0 auto; }
+.boot-error-title { font-size: 18px; font-weight: 700; color: #f87171; margin-bottom: 10px; }
+.boot-error-msg { font-size: 15px; color: var(--muted); line-height: 1.5; margin-bottom: 20px; }
 
 /* Onboard / Login */
 .onboard-wrap { padding: 20px 16px 32px; min-height: 70vh; }

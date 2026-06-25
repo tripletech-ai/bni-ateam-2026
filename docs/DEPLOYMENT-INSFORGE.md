@@ -1,5 +1,7 @@
 # BNI A Team — 獨立 InsForge 後端
 
+> **完整重建手冊**（程式碼全失仍可還原）：[REBUILD-FROM-ZERO.md](./REBUILD-FROM-ZERO.md)
+
 此專案的會員資料與登入**只**存在下方 InsForge 實例，與其他 InsForge 專案（例如 UIC）**完全分離**。
 
 | 項目 | 值 |
@@ -27,7 +29,25 @@ node scripts/seed-sql-batches.mjs   # 若名單未滿 116 筆時執行
 
 `BNI_API_KEY` 僅用於本機腳本，**不要** commit 或放進前端。
 
-## InsForge 後台必設
+## 邊緣案例測試（週六前建議跑一遍）
+
+```powershell
+$env:BNI_API_KEY = "你的 ik_..."
+node scripts/edge-case-tests.mjs
+```
+
+涵蓋：整批名單載入、未登入 RPC 拒絕、特殊字元搜尋、停用會員隱藏、`roster_id` 唯一、超長欄位、非管理員禁看統計、分會篩選等。
+
+## 舊 InsForge 清理（僅限誤建在 UIC 專案時）
+
+若曾在 `6cepnfaz.us-east.insforge.app` 誤建 BNI 表，用 UIC 專案的 admin key 執行一次即可：
+
+```powershell
+$env:LEGACY_INSFORGE_URL = "https://6cepnfaz.us-east.insforge.app"
+$env:LEGACY_INSFORGE_API_KEY = "UIC 專案 ik_..."
+node scripts/cleanup-legacy-insforge.mjs
+```
+
 
 1. **Google OAuth**  
    在 InsForge 管理後台啟用 Google，並把 Netlify 正式網址加入 `allowedRedirectUrls`。
@@ -59,7 +79,7 @@ node scripts/seed-sql-batches.mjs   # 若名單未滿 116 筆時執行
 
 ## 使用者流程
 
-掃 QR → Google 登入 → 綁定舊會員 / 認領新會員 → 新手教學 → 搜尋與媒合
+掃 QR → Google 登入 → 綁定舊會員 / 認領新會員 → **7 步新手教學（內容來自 `bni_tutorial_steps`）** → 搜尋與媒合
 
 ## 管理後台
 
