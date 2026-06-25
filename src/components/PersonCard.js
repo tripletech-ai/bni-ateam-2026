@@ -27,6 +27,12 @@ export function personCardHTML(member, opts = {}) {
         <div class="person-section-text">${escHtml(member.wantMeet)}</div>
        </div>` : '';
 
+  const referralSection = member.wantReferral
+    ? `<div class="person-section">
+        <div class="person-section-label">${escHtml(t('card_referral'))}</div>
+        <div class="person-section-text">${escHtml(member.wantReferral)}</div>
+       </div>` : '';
+
   const kwSection = matchedKeywords.length > 0
     ? `<div class="person-keywords">${matchedKeywords.map(k => escHtml(k)).join('、')}</div>` : '';
 
@@ -53,7 +59,7 @@ export function personCardHTML(member, opts = {}) {
       </div>
     </div>
     <div class="person-card-body">
-      ${haveSection}${wantSection}${kwSection}
+      ${haveSection}${wantSection}${referralSection}${kwSection}
       <div class="person-actions">
         <button class="btn btn-line"
           data-action="line" data-key="${escAttr(key)}"

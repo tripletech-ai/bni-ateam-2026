@@ -1,5 +1,6 @@
 import { escHtml } from '../utils/html.js';
 import { BRANCHES } from '../data/branches.js';
+import { referralPlaceholder } from '../utils/profileHints.js';
 import {
   signInWithGoogle,
   bindExistingMember,
@@ -9,6 +10,7 @@ import {
 } from '../services/auth.js';
 import { mapDbMember } from '../services/membersApi.js';
 import { showToast } from '../utils/toast.js';
+import { t } from '../i18n/translations.js';
 
 let mode = 'choose'; // choose | bind | register
 
@@ -53,14 +55,20 @@ function buildHTML(user) {
             <select name="branch" class="field-input" required>
               ${branchOptions()}
             </select>
-            <label class="field-label">產業 / 專業</label>
-            <input name="profession" class="field-input" maxlength="120">
-            <label class="field-label">我有的資源</label>
+            <label class="field-label">${escHtml(t('profile_profession_label'))} *</label>
+            <p class="field-hint">${escHtml(t('profile_profession_hint'))}</p>
+            <input name="profession" class="field-input" maxlength="120" required
+              placeholder="${escHtml(t('profile_profession_ph'))}">
+            <label class="field-label">${escHtml(t('card_have'))}</label>
+            <p class="field-hint">${escHtml(t('profile_have_hint'))}</p>
             <textarea name="have" class="field-input" rows="2"></textarea>
-            <label class="field-label">想認識的對象</label>
+            <label class="field-label">${escHtml(t('card_want'))}</label>
+            <p class="field-hint">${escHtml(t('profile_want_hint'))}</p>
             <textarea name="wantMeet" class="field-input" rows="2"></textarea>
-            <label class="field-label">想引薦的對象</label>
-            <textarea name="wantReferral" class="field-input" rows="2"></textarea>
+            <label class="field-label">${escHtml(t('profile_referral_label'))}</label>
+            <p class="field-hint">${escHtml(t('profile_referral_hint'))}</p>
+            <textarea name="wantReferral" class="field-input" rows="4"
+              placeholder="${escHtml(referralPlaceholder())}"></textarea>
             <label class="field-label">LINE ID</label>
             <input name="lineId" class="field-input">
             <label class="field-label">LINE 連結</label>

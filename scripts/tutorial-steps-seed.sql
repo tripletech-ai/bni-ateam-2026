@@ -14,7 +14,7 @@ INSERT INTO bni_tutorial_steps (step_order, step_key, title_zh, title_en, body_z
  '② 搜尋 · 找人脈', '② Search · Find People',
  '「搜尋」分頁可用姓名、分會、產業關鍵字篩選。點卡片可看詳情與 LINE 聯絡方式。',
  'Search tab: filter by name, branch, or profession. Tap a card for details and LINE.',
- '週六尖峰建議先用關鍵字縮小範圍。', 'On busy day, narrow with keywords first.'),
+ '建議大家填寫產業別與引薦對象（好的／理想／夢幻引薦），搜尋會更準。', 'Encourage peers to fill industry and referral fields for better search.'),
 (4, 'ai',
  '③ AI · 智慧配對', '③ AI · Smart Match',
  '說出你的需求（例如「想找做室內設計的會員」），AI 會從名單中推薦最合適的人。',

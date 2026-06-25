@@ -5,6 +5,8 @@ import { escHtml }      from '../utils/html.js';
 import { t }            from '../i18n/translations.js';
 import { goalProgressHTML } from '../components/GoalProgress.js';
 import { CONTRIBUTORS } from '../data/contributors.js';
+import { eventPulseHTML, bindEventPulse } from '../components/EventPulseGame.js';
+import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 
 const VIDEO_URL = ''; // Fill in when YouTube link is provided
 
@@ -73,6 +75,10 @@ export function renderHome(container) {
         ${escHtml(t('hero_region'))}
       </div>
     </div>
+
+    ${eventPulseHTML()}
+
+    ${profileEnrichBannerHTML()}
 
     <div class="ai-box">
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
@@ -187,4 +193,7 @@ export function renderHome(container) {
   document.getElementById('home-video-btn').addEventListener('click', () => {
     if (VIDEO_URL) window.open(VIDEO_URL, '_blank', 'noopener');
   });
+
+  bindEventPulse();
+  bindProfileEnrichBanner();
 }

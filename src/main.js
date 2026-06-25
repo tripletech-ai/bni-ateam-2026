@@ -6,6 +6,7 @@ import { renderResult } from './pages/Result.js';
 import { renderLeaders }from './pages/Leaders.js';
 import { renderOnboard, renderLoginGate } from './pages/Onboard.js';
 import { renderAdmin }  from './pages/Admin.js';
+import { renderProfileEdit } from './pages/ProfileEdit.js';
 import { t }            from './i18n/translations.js';
 import {
   initAuth,
@@ -83,6 +84,7 @@ const routes = {
   '#marks'   : renderMarks,
   '#result'  : renderResult,
   '#leaders' : renderLeaders,
+  '#profile' : renderProfileEdit,
   '#admin'   : (c) => renderAdmin(c),
 };
 

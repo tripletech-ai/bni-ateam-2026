@@ -94,6 +94,8 @@ function directorCardHTML(p) {
     ? `<div class="dir-section"><span class="dir-section-label">${escHtml(t('card_have'))}</span><span class="dir-section-text">${escHtml(p.have)}</span></div>` : '';
   const wantSection = p.wantMeet
     ? `<div class="dir-section"><span class="dir-section-label">${escHtml(t('card_want'))}</span><span class="dir-section-text">${escHtml(p.wantMeet)}</span></div>` : '';
+  const referralSection = p.wantReferral
+    ? `<div class="dir-section"><span class="dir-section-label">${escHtml(t('card_referral'))}</span><span class="dir-section-text">${escHtml(p.wantReferral)}</span></div>` : '';
 
   return `<div class="director-card-v2" data-expanded="false">
     <div class="dir-header">
@@ -113,7 +115,7 @@ function directorCardHTML(p) {
       </div>
     </div>
     <div class="dir-expand-body" style="display:none">
-      ${haveSection}${wantSection}
+      ${haveSection}${wantSection}${referralSection}
       <div class="dir-actions">
         <button class="btn btn-line btn-sm"
           data-action="dir-line"

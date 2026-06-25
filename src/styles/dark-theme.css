@@ -987,6 +987,16 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   display: flex; align-items: center; justify-content: center;
   padding: 0 6px;
 }
+.user-bar-edit {
+  font-size: 11px; font-weight: 700;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  background: rgba(96, 165, 250, 0.15);
+  color: #93c5fd;
+  cursor: pointer;
+}
+.user-bar-edit:active { background: rgba(96, 165, 250, 0.28); }
 .user-bar-signout {
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
@@ -1027,6 +1037,157 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .goal-progress-fill.done { background: linear-gradient(90deg, #3B6D11, #6ee7b7); }
 .goal-progress-hint {
   margin-top: 8px; font-size: 12px; color: var(--dark-muted); line-height: 1.45;
+}
+
+/* ── Event pulse game (800 人挑戰) ── */
+.event-pulse-card {
+  position: relative;
+  margin: 0 16px 20px;
+  padding: 20px 18px 18px;
+  background: linear-gradient(145deg, rgba(186,117,23,0.14), rgba(250,199,117,0.06));
+  border: 1px solid rgba(250,199,117,0.28);
+  border-radius: var(--r);
+  overflow: hidden;
+}
+.event-pulse-glow {
+  position: absolute;
+  top: -40%; right: -20%;
+  width: 55%; height: 120%;
+  background: radial-gradient(circle, rgba(250,199,117,0.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.event-pulse-eyebrow {
+  font-size: 12px; letter-spacing: 1.5px;
+  color: var(--gold-bright); opacity: 0.9;
+  margin-bottom: 6px;
+}
+.event-pulse-title {
+  font-size: 22px; line-height: 1.35;
+  color: var(--dark-text);
+  margin: 0 0 6px;
+}
+.event-pulse-sub {
+  font-size: 14px; color: var(--dark-muted);
+  margin: 0 0 14px; line-height: 1.45;
+}
+.event-pulse-count-row {
+  display: flex; align-items: baseline; gap: 4px;
+  margin-bottom: 10px;
+}
+.event-pulse-num {
+  font-size: 42px; font-weight: 800;
+  color: var(--gold-bright);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.event-pulse-goal {
+  font-size: 15px; color: var(--dark-muted);
+}
+.event-pulse-track {
+  height: 10px; border-radius: 99px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.event-pulse-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #BA7517, #FAC775);
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+.event-pulse-msg {
+  font-size: 13px; color: var(--dark-text);
+  line-height: 1.5; margin: 0 0 8px;
+}
+.event-pulse-taps-line {
+  font-size: 12px; color: var(--dark-muted);
+  margin: 0 0 14px;
+}
+.event-pulse-taps-line strong { color: var(--gold-bright); }
+.event-pulse-actions {
+  display: flex; flex-direction: column; gap: 10px;
+}
+.btn-pulse-main {
+  width: 100%;
+  padding: 14px 16px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #BA7517, #E8A84A);
+  color: #1a1208;
+  font-size: 16px; font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.15s;
+}
+.btn-pulse-main:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn-pulse-main:not(:disabled):active { transform: scale(0.98); }
+.btn-pulse-nudge {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(250,199,117,0.35);
+  border-radius: 12px;
+  background: rgba(255,255,255,0.04);
+  color: var(--gold-bright);
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+}
+.btn-pulse-nudge:active { background: rgba(255,255,255,0.08); }
+.event-pulse-card.pulse-bump {
+  animation: pulse-bump 0.4s ease;
+}
+@keyframes pulse-bump {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+
+/* ── Profile enrich banner ── */
+.profile-enrich-banner {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin: 0 16px 16px;
+  padding: 14px 14px 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  border-radius: var(--r);
+}
+.profile-enrich-icon { font-size: 22px; line-height: 1; flex-shrink: 0; }
+.profile-enrich-body { flex: 1; min-width: 0; }
+.profile-enrich-title { font-size: 14px; font-weight: 700; color: var(--dark-text); margin-bottom: 4px; }
+.profile-enrich-text { font-size: 12px; color: var(--dark-muted); line-height: 1.45; margin: 0; }
+.profile-enrich-btn {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 10px;
+  background: rgba(96, 165, 250, 0.2);
+  color: #93c5fd;
+  font-size: 12px; font-weight: 700;
+  cursor: pointer;
+}
+.profile-enrich-btn:active { background: rgba(96, 165, 250, 0.35); }
+
+/* ── Profile edit page ── */
+.profile-edit-wrap { padding: 12px 16px 32px; }
+.profile-edit-back { margin-bottom: 8px; }
+.profile-edit-title { font-size: 24px; margin: 0 0 4px; }
+.profile-edit-sub { font-size: 14px; color: var(--dark-muted); margin: 0 0 12px; }
+.profile-edit-tip {
+  font-size: 13px; line-height: 1.5;
+  color: var(--gold-bright);
+  background: rgba(186,117,23,0.12);
+  border: 1px solid rgba(250,199,117,0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+}
+.profile-edit-form .field-hint {
+  font-size: 12px; color: var(--dark-muted);
+  margin: -4px 0 8px; line-height: 1.45;
+}
+.profile-save-btn { width: 100%; margin-top: 8px; }
+
+.field-hint {
+  font-size: 12px; color: var(--dark-muted);
+  margin: -4px 0 8px; line-height: 1.45;
 }
 
 /* ── Onboard step pills ── */

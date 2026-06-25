@@ -1,6 +1,7 @@
 import { escHtml } from '../utils/html.js';
 import { getMyStatus, signOut } from '../services/auth.js';
 import { getMarkCount } from '../utils/storage.js';
+import { profileNeedsEnrichment } from '../utils/profileHints.js';
 import { t } from '../i18n/translations.js';
 import { showToast } from '../utils/toast.js';
 
@@ -26,6 +27,7 @@ export function renderUserBar(el) {
         <div class="user-bar-meta">${escHtml(member.branch)} · ${escHtml(member.profession || t('user_bar_member'))}</div>
       </div>
       <div class="user-bar-actions">
+        ${profileNeedsEnrichment(member) ? `<button type="button" class="user-bar-edit" id="user-profile-btn">${escHtml(t('profile_enrich_btn'))}</button>` : ''}
         ${marks > 0 ? `<span class="user-bar-marks" aria-label="${marks} 標記">${marks}</span>` : ''}
         <button type="button" class="user-bar-signout" id="user-signout-btn" aria-label="${escHtml(t('user_bar_signout'))}">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
@@ -33,6 +35,10 @@ export function renderUserBar(el) {
       </div>
     </div>
   `;
+
+  el.querySelector('#user-profile-btn')?.addEventListener('click', () => {
+    location.hash = 'profile';
+  });
 
   el.querySelector('#user-signout-btn')?.addEventListener('click', async () => {
     try {

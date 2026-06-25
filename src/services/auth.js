@@ -125,6 +125,34 @@ export async function fetchPublicStats() {
   }, { label: 'fetchPublicStats' });
 }
 
+export async function fetchEventPulse() {
+  return withRetry(async () => {
+    const { data, error } = await getClient().database.rpc('bni_get_event_pulse');
+    if (error) throw error;
+    return data;
+  }, { label: 'fetchEventPulse' });
+}
+
+export async function recordEventPulse() {
+  const { data, error } = await getClient().database.rpc('bni_record_event_pulse');
+  if (error) throw error;
+  return data;
+}
+
+export async function updateMyProfile(payload) {
+  const { data, error } = await getClient().database.rpc('bni_update_my_profile', {
+    p_profession: payload.profession || '',
+    p_have: payload.have || '',
+    p_want_meet: payload.wantMeet || '',
+    p_want_referral: payload.wantReferral || '',
+    p_line_id: payload.lineId || '',
+    p_line_link: payload.lineLink || '',
+  });
+  if (error) throw error;
+  myStatus = data;
+  return myStatus;
+}
+
 export async function fetchPublicStats() {
   return withRetry(async () => {
     const { data, error } = await getClient().database
