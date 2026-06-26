@@ -2,13 +2,13 @@ import { getMarkCount } from '../utils/storage.js';
 import { escHtml }      from '../utils/html.js';
 import { t }            from '../i18n/translations.js';
 import { DEVELOPERS } from '../data/contributors.js';
+import { developerPhotoHTML } from '../utils/avatar.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 import { leadersEmbedHTML, bindLeaderEvents } from '../pages/Leaders.js';
 import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 
 function developerCardHTML(d) {
-  const initial = (d.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
   const tags = (d.tagKeys || []).map(k =>
     `<span class="developer-tag">${escHtml(t(k))}</span>`).join('');
   const highlights = (d.highlightKeys || []).map(k =>
@@ -22,12 +22,7 @@ function developerCardHTML(d) {
   return `
     <article class="developer-card" data-developer="${escHtml(d.id)}">
       <div class="developer-card-top">
-        <div class="developer-photo">
-          <img src="assets/photos/${encodeURIComponent(d.photo)}"
-            alt="" loading="lazy"
-            onerror="this.style.display='none';this.parentElement.classList.add('no-photo')">
-          <span class="developer-photo-fallback" aria-hidden="true">${escHtml(initial)}</span>
-        </div>
+        ${developerPhotoHTML(d.name, d.photo)}
         <div class="developer-head-block">
           <div class="developer-name serif">${escHtml(d.name)}</div>
           ${branchLine}

@@ -1,4 +1,5 @@
 import { escHtml } from '../utils/html.js';
+import { heroPhotoHTML } from '../utils/avatar.js';
 
 // Yang's contact info — to be filled when provided
 const YANG_INFO = {
@@ -12,6 +13,7 @@ export function renderYang(container) {
   container.innerHTML = `
     <div class="yang-hero">
       <div class="yang-hero-photo" aria-hidden="true">
+        ${heroPhotoHTML('楊日陞', { className: 'yang-hero-photo-img' })}
         <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" stroke-width="1.2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
       <div class="yang-hero-name serif">楊董</div>
