@@ -6,7 +6,7 @@ import {
   extractSeekFromPlainText,
 } from './searchIntent.js';
 
-const SEARCH_TIMEOUT_MS = 8000;
+const SEARCH_TIMEOUT_MS = 18000;
 
 /**
  * @param {string} input
@@ -29,7 +29,11 @@ export async function getSearchIntentFromAI(input) {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
     if (data.ok && !intentIsEmpty(data)) {
-      return mergeIntent(data, structured);
+      const merged = mergeIntent(data, structured);
+      if (typeof data.analysis === 'string' && data.analysis.trim()) {
+        merged.analysis = data.analysis.trim().slice(0, 400);
+      }
+      return merged;
     }
     throw new Error('empty intent');
   } catch (err) {

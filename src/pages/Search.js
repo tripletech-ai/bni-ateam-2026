@@ -42,7 +42,7 @@ function buildSearchUI() {
       </ul>
       <textarea id="ai-input" class="ai-textarea"
         placeholder="${escHtml(t('search_placeholder'))}"
-        rows="6" aria-label="${escHtml(t('search_label'))}" maxlength="400"></textarea>
+        rows="6" aria-label="${escHtml(t('search_label'))}" maxlength="500"></textarea>
       <button id="ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
       <div class="ai-examples" aria-label="搜尋範例">
         <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example1'))}</div>
@@ -151,6 +151,7 @@ async function triggerSearch(input) {
       <div class="ai-result-query" style="font-size:12px;margin-bottom:8px;opacity:0.7">
         ${escHtml(input.length > 60 ? input.substring(0, 60) + '…' : input)}
       </div>
+      ${intent.analysis ? `<p class="ai-result-analysis"><span class="ai-result-analysis-label">${escHtml(t('search_ai_analysis'))}</span>${escHtml(intent.analysis)}</p>` : ''}
       <div class="intent-parse">${intentTagsHTML(intent)}</div>
       <button id="btn-reset-search" class="btn-reset">${escHtml(t('search_reset'))}</button>
     </div>`;

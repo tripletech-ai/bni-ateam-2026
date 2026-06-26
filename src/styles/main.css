@@ -167,6 +167,14 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
   border-radius: var(--r); padding: 16px; margin: 16px;
 }
 .ai-result-query { font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+.ai-result-analysis {
+  font-size: 13px; line-height: 1.65; color: var(--text);
+  margin: 0 0 12px; padding: 10px 12px;
+  border-radius: var(--r-sm);
+  background: rgba(255,255,255,0.55);
+  border-left: 3px solid var(--gold);
+}
+.ai-result-analysis-label { font-weight: 700; color: var(--gold); margin-right: 4px; }
 .keyword-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .keyword-tag {
   background: var(--gold); color: #fff;

@@ -477,6 +477,12 @@ body {
 .video-caption         { color: rgba(255,255,255,0.78); }
 .yang-title            { color: rgba(255,255,255,0.80); }
 .ai-result-query       { color: rgba(255,255,255,0.78); }
+.ai-result-analysis {
+  color: rgba(255,255,255,0.88);
+  background: rgba(255,255,255,0.06);
+  border-left-color: var(--gold-bright);
+}
+.ai-result-analysis-label { color: var(--gold-bright); }
 .progress-bar-wrap + div { color: rgba(255,255,255,0.75); }
 .person-section-text   { font-size: 13px; line-height: 1.65; color: rgba(255,255,255,0.88); }
 .leaders-hero-sub      { opacity: 0.80; }
