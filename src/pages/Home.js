@@ -3,9 +3,7 @@ import { escHtml, escAttr } from '../utils/html.js';
 import { t }            from '../i18n/translations.js';
 import { DEVELOPERS } from '../data/contributors.js';
 import { developerPhotoHTML } from '../utils/avatar.js';
-import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 import { collect800HTML, bindCollect800Game } from '../components/Collect800Game.js';
-import { homeQuestStripHTML, bindHomeQuestStrip } from '../components/HomeQuestStrip.js';
 import { yangIntroHTML } from '../components/YangIntroCard.js';
 import { homeLeadersSectionsHTML, homeSectionAccordion, bindLeaderEvents } from '../pages/Leaders.js';
 import { isBound } from '../services/auth.js';
@@ -55,10 +53,6 @@ export function renderHome(container) {
       <a href="#search" class="btn-ai home-primary-cta">${escHtml(t('home_primary_cta'))}</a>
     </div>
 
-    ${profileEnrichBannerHTML()}
-
-    ${isBound() && !isGuestTrial() ? homeQuestStripHTML() : ''}
-
     ${collect800HTML({ context: 'home' })}
 
     ${yangIntroHTML()}
@@ -80,8 +74,6 @@ export function renderHome(container) {
   `;
 
   bindLeaderEvents(container);
-  bindProfileEnrichBanner();
-  bindHomeQuestStrip(container);
   bindCollect800Game(container);
   if (isGuestTrial()) {
     bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });

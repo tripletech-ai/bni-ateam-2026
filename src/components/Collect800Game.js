@@ -1,7 +1,8 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { memberProfileFilled } from '../utils/rosterPick.js';
-import { isBound } from '../services/auth.js';
+import { getMyStatus, isBound } from '../services/auth.js';
+import { profileNeedsEnrichment } from '../utils/profileHints.js';
 import { copyPageUrl } from '../utils/inAppBrowser.js';
 import { goToPage } from '../utils/nav.js';
 import { showToast } from '../utils/toast.js';
@@ -15,10 +16,35 @@ export function getCollect800Stats() {
   return { registered, enriched, goal: COLLECT800_GOAL };
 }
 
-function secondaryActionHTML(context = 'home') {
-  if (context === 'login') return '';
-  if (!isBound()) return '';
-  return `<button type="button" class="btn-ai collect800-secondary" id="collect800-profile">${escHtml(t('collect800_profile_cta'))}</button>`;
+function questChecklistHTML(context = 'home') {
+  if (context !== 'home' || !isBound()) return '';
+  const member = getMyStatus()?.member;
+  if (!member) return '';
+  const needProfile = profileNeedsEnrichment(member);
+  return `
+    <p class="collect800-quest-label">${escHtml(t('claim_game_quest_title'))}</p>
+    <ul class="collect800-quests">
+      <li class="${needProfile ? 'active' : 'done'}">${escHtml(t('claim_game_quest_1'))}</li>
+      <li class="active">${escHtml(t('claim_game_quest_2'))}</li>
+      <li class="active">${escHtml(t('claim_game_quest_3'))}</li>
+    </ul>`;
+}
+
+function actionsHTML(context = 'home') {
+  const copyBtn = `<button type="button" class="btn-gold-outline collect800-copy-link" id="collect800-copy-link">
+    ${escHtml(t('search_invite_copy'))}
+  </button>`;
+  if (context === 'login') {
+    return `<div class="collect800-actions collect800-actions-single">${copyBtn}</div>`;
+  }
+  if (!isBound()) {
+    return `<div class="collect800-actions collect800-actions-single">${copyBtn}</div>`;
+  }
+  return `
+    <div class="collect800-actions">
+      ${copyBtn}
+      <button type="button" class="btn-ai collect800-secondary" id="collect800-profile">${escHtml(t('collect800_profile_cta'))}</button>
+    </div>`;
 }
 
 export function collect800HTML({ context = 'home' } = {}) {
@@ -33,8 +59,6 @@ export function collect800HTML({ context = 'home' } = {}) {
         ? 'collect800_msg_mid'
         : 'collect800_msg_low';
   const subKey = context === 'login' ? 'collect800_sub_login' : 'collect800_sub';
-  const secondary = secondaryActionHTML(context);
-  const actionsClass = secondary ? 'collect800-actions' : 'collect800-actions collect800-actions-single';
 
   return `
     <section class="collect800-card" aria-label="${escHtml(t('collect800_title'))}">
@@ -64,12 +88,8 @@ export function collect800HTML({ context = 'home' } = {}) {
       </div>
 
       <p class="collect800-msg">${escHtml(t(context === 'login' ? 'collect800_msg_login' : msgKey))}</p>
-      <div class="${actionsClass}">
-        <button type="button" class="btn-gold-outline collect800-copy-link" id="collect800-copy-link">
-          ${escHtml(t('search_invite_copy'))}
-        </button>
-        ${secondary}
-      </div>
+      ${questChecklistHTML(context)}
+      ${actionsHTML(context)}
     </section>`;
 }
 

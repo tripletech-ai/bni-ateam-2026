@@ -1,4 +1,4 @@
-import { getMark, setMark, memberKey, isMutuallyConnected } from '../utils/storage.js';
+import { getMark, setMark, setPendingMark, memberKey, isMutuallyConnected } from '../utils/storage.js';
 import { syncMarkToServer } from '../utils/markSync.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
 import { showToast }                   from '../utils/toast.js';
@@ -125,10 +125,11 @@ export function bindCardEvents(container, members) {
       handleLine({ lineLink, lineId });
     } else if (action === 'one' || action === 'biz') {
       if (isGuestTrial()) {
-        showToast(t('guest_mark_login'));
-        return;
+        setPendingMark(member, action);
+        showToast(t('guest_mark_pending'));
+      } else {
+        setMark(member, action);
       }
-      setMark(member, action);
       const updated = getMark(member);
       syncMarkToServer(member, action, updated[action]);
       const card = container.querySelector(`.person-card[data-key="${CSS.escape(key)}"]`);

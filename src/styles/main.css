@@ -1770,8 +1770,15 @@ body.guest-trial-mode #user-bar { display: none !important; }
 .first-run-game-quests li.done::after { content: ' ✓'; color: var(--green); font-weight: 700; }
 .first-run-invite-btn { width: 100%; margin: 0; padding: 12px; }
 
-body.first-run-open .home-quest-strip { display: none !important; }
+body.first-run-open .home-quest-strip,
+body.first-run-open .collect800-card,
+body.first-run-open .profile-enrich-banner { display: none !important; }
 body.first-run-open #tab-bar { visibility: hidden; }
+
+.first-run-hint-next {
+  font-size: calc(12px * var(--fs-k, 0.78)); line-height: 1.5;
+  color: var(--muted, rgba(255,255,255,0.55)); margin: 0 0 14px;
+}
 
 .home-quest-strip {
   position: relative; margin: 12px 16px 0; padding: 16px 14px 14px;
@@ -1965,6 +1972,18 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 .collect800-fill-gold { background: linear-gradient(90deg, #c9a227, #fac775); }
 .collect800-fill-blue { background: linear-gradient(90deg, #185fa5, #60a5fa); }
 .collect800-msg { font-size: calc(13px * var(--fs-k, 0.78)); line-height: 1.55; opacity: 0.75; margin: 4px 0 14px; }
+.collect800-quest-label {
+  font-size: calc(12px * var(--fs-k, 0.78)); font-weight: 700; letter-spacing: 0.5px;
+  opacity: 0.7; margin: 0 0 6px;
+}
+.collect800-quests {
+  list-style: none; margin: 0 0 14px; padding: 0;
+  font-size: calc(12px * var(--fs-k, 0.78)); line-height: 1.55;
+}
+.collect800-quests li { padding: 3px 0; opacity: 0.55; }
+.collect800-quests li.active { opacity: 1; font-weight: 600; color: var(--gold, #fac775); }
+.collect800-quests li.done { opacity: 0.8; }
+.collect800-quests li.done::after { content: ' ✓'; color: #86efac; font-weight: 700; }
 .collect800-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .collect800-actions .btn-outline,
 .collect800-actions .btn-gold-outline,

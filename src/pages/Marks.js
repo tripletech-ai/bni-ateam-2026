@@ -1,11 +1,11 @@
-import { getMarks, removeMark, getOneMarkCount, getConnectionCount } from '../utils/storage.js';
+import { getMarks, getPendingMarks, removeMark, getOneMarkCount, getConnectionCount } from '../utils/storage.js';
 import { showToast } from '../utils/toast.js';
 import { renderTabBar } from '../components/TabBar.js';
 import { goalProgressHTML, MARK_PARTNER_GOAL, MARK_ONE_GOAL } from '../components/GoalProgress.js';
 import { escHtml, escAttr }     from '../utils/html.js';
 import { t }                    from '../i18n/translations.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
-import { guestBlockedPageHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
+import { bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 import { endGuestTrial } from '../utils/guestTrial.js';
 import { fetchIncomingMarks, ackIncomingMarks } from '../services/auth.js';
 import {
@@ -235,14 +235,33 @@ export function refreshIncomingMarksSection(container) {
 
 export function renderMarks(container) {
   if (isGuestTrial()) {
+    const marks = getPendingMarks().filter(m => m.one || m.biz);
     container.innerHTML = `
       <div class="marks-page guest-marks-page">
-        ${guestBlockedPageHTML('marks')}
+        <section class="guest-pending-marks-banner" aria-live="polite">
+          <h2 class="guest-blocked-title">${escHtml(t('guest_marks_pending_title'))}</h2>
+          <p class="guest-blocked-body">${escHtml(t('guest_marks_pending_body'))}</p>
+          <div class="guest-blocked-actions">
+            <button type="button" class="btn-ai guest-trial-login-btn">${escHtml(t('guest_banner_login'))}</button>
+            <button type="button" class="btn-outline guest-blocked-secondary" data-hash="search">${escHtml(t('marks_go'))}</button>
+          </div>
+        </section>
+        ${marks.length ? `
+          <div class="section-header marks-list-header">
+            <div class="section-title">${escHtml(t('marks_list_title'))}</div>
+          </div>
+          <div id="marks-list">${marks.map(markCardHTML).join('')}</div>` : `
+          <div class="marks-empty-inline">
+            <div class="empty-state-title">${escHtml(t('guest_marks_blocked_title'))}</div>
+            <div class="empty-state-sub">${escHtml(t('guest_marks_blocked_body'))}</div>
+          </div>`}
+        <div style="height:24px"></div>
       </div>`;
     container.querySelector('[data-hash="search"]')?.addEventListener('click', () => {
       location.hash = 'search';
     });
     bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
+    if (marks.length) bindMarksList(container);
     return;
   }
 

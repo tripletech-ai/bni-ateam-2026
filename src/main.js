@@ -39,6 +39,8 @@ import { showGuestTrialIntro } from './components/GuestTrialIntro.js';
 import { showToast } from './utils/toast.js';
 import { notifyProfileMilestone } from './utils/profileMilestone.js';
 import { clearPendingClaim } from './utils/memberClaim.js';
+import { mergePendingMarks } from './utils/storage.js';
+import { syncAllMarksToServer } from './utils/markSync.js';
 import { normalizeAppUrl } from './utils/appUrl.js';
 import { profileBackendEmpty } from './utils/profileHints.js';
 import { registerNavigator, goToPage } from './utils/nav.js';
@@ -221,6 +223,11 @@ async function afterBindComplete() {
   } catch (e) {
     console.warn('Reload members failed:', e);
   }
+  const mergedCount = mergePendingMarks();
+  syncAllMarksToServer(window.BNI_MEMBERS || []).catch(e => {
+    console.warn('syncAllMarksToServer:', e.message);
+  });
+  if (mergedCount > 0) showToast(t('marks_pending_merged', { n: mergedCount }));
   isAdmin = await checkIsAdmin();
   await finishOnboardingTutorial();
   sessionStorage.setItem('bni_show_first_run', '1');
@@ -416,6 +423,13 @@ async function boot() {
 
   if (wantsAdmin && isAdmin && isAdminRoute()) {
     location.hash = '#admin';
+  }
+  const mergedPending = mergePendingMarks();
+  if (mergedPending > 0) {
+    syncAllMarksToServer(window.BNI_MEMBERS || []).catch(e => {
+      console.warn('syncAllMarksToServer:', e.message);
+    });
+    showToast(t('marks_pending_merged', { n: mergedPending }));
   }
   appReady = true;
   setChromeVisible(true);
