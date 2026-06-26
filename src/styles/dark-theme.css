@@ -116,9 +116,10 @@ body {
   border: 1px solid rgba(24,95,165,0.4);
 }
 .btn-one.active {
-  background: var(--navy-accent);
-  color: #fff;
-  border-color: var(--navy-accent);
+  background: rgba(59, 130, 246, 0.55);
+  color: #ffffff;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.35);
 }
 .btn-biz {
   background: rgba(163,45,45,0.20);

@@ -1,24 +1,26 @@
-import { getMarkCount } from '../utils/storage.js';
+import { getOneMarkCount } from '../utils/storage.js';
 import { getIncomingUnseenCount } from '../utils/incomingMarks.js';
 import { goToPage } from '../utils/nav.js';
 import { escHtml } from '../utils/html.js';
 import { profileBackendEmpty } from '../utils/profileHints.js';
-import { getMyStatus } from '../services/auth.js';
+import { getMyStatus, isBound } from '../services/auth.js';
 import { t } from '../i18n/translations.js';
 
 export function renderTabBar(el, currentHash, opts = {}) {
   if (!el) return;
+  const bound = opts.isBound !== undefined ? opts.isBound : isBound();
   const markCount = getMarkCount();
+  const oneMarkCount = getOneMarkCount();
   const incomingUnseen = getIncomingUnseenCount();
-  const marksBadgeCount = incomingUnseen > 0 ? incomingUnseen : markCount;
-  const profileNeedsFill = opts.isBound && profileBackendEmpty(getMyStatus()?.member);
+  const marksBadgeCount = incomingUnseen > 0 ? incomingUnseen : oneMarkCount;
+  const profileNeedsFill = bound && profileBackendEmpty(getMyStatus()?.member);
   const TABS = [
     { hash: '#home',    label: t('tab_home'),    icon: homeIcon()   },
     { hash: '#search',  label: t('tab_search'),  icon: searchIcon() },
     { hash: '#marks',   label: t('tab_marks'),   icon: marksTabIcon() },
     { hash: '#live',    label: t('tab_live'),    icon: liveIcon()   },
   ];
-  if (opts.isBound) {
+  if (bound) {
     TABS.splice(3, 0, {
       hash: '#profile',
       label: t('tab_profile'),
@@ -33,7 +35,7 @@ export function renderTabBar(el, currentHash, opts = {}) {
       (currentHash === '' && tab.hash === '#home');
     const badgeLabel = incomingUnseen > 0
       ? t('tab_badge_incoming', { n: incomingUnseen })
-      : t('tab_badge_marks', { n: markCount });
+      : t('tab_badge_marks', { n: oneMarkCount });
     const badge = isMarks && marksBadgeCount > 0
       ? `<span class="tab-badge${incomingUnseen > 0 ? ' tab-badge-incoming' : ''}" aria-label="${escHtml(badgeLabel)}">${marksBadgeCount}</span>` : '';
     const warnDot = tab.warn

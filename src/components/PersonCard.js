@@ -133,11 +133,23 @@ export function bindCardEvents(container, members) {
       syncMarkToServer(member, action, updated[action]);
       const card = container.querySelector(`.person-card[data-key="${CSS.escape(key)}"]`);
       if (card) {
-        card.querySelector('[data-action="one"]')?.classList.toggle('active', updated.one);
+        const oneBtn = card.querySelector('[data-action="one"]');
+        oneBtn?.classList.toggle('active', updated.one);
         card.querySelector('[data-action="biz"]')?.classList.toggle('active', updated.biz);
+        const header = card.querySelector('.person-card-header > div');
+        const mutual = isMutuallyConnected(member);
+        header?.querySelector('.marked-badge')?.remove();
+        if (updated.one && !mutual) {
+          header?.insertAdjacentHTML('beforeend',
+            `<span class="marked-badge">${escHtml(t('card_marked'))}</span>`);
+        }
+        if (oneBtn) {
+          oneBtn.textContent = mutual ? t('card_mutual') : t('card_one');
+          oneBtn.classList.toggle('mutual', mutual);
+        }
       }
       import('../components/TabBar.js').then(({ renderTabBar }) => {
-        renderTabBar(document.getElementById('tab-bar'), window.location.hash);
+        renderTabBar(document.getElementById('tab-bar'), window.location.hash || '#search');
       });
     }
   });
