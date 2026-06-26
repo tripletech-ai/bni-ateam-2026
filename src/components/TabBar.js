@@ -1,4 +1,5 @@
 import { getMarkCount } from '../utils/storage.js';
+import { getIncomingUnseenCount } from '../utils/incomingMarks.js';
 import { goToPage } from '../utils/nav.js';
 import { escHtml } from '../utils/html.js';
 import { profileBackendEmpty } from '../utils/profileHints.js';
@@ -8,6 +9,8 @@ import { t } from '../i18n/translations.js';
 export function renderTabBar(el, currentHash, opts = {}) {
   if (!el) return;
   const markCount = getMarkCount();
+  const incomingUnseen = getIncomingUnseenCount();
+  const marksBadgeCount = incomingUnseen > 0 ? incomingUnseen : markCount;
   const profileNeedsFill = opts.isBound && profileBackendEmpty(getMyStatus()?.member);
   const TABS = [
     { hash: '#home',    label: t('tab_home'),    icon: homeIcon()   },
@@ -28,8 +31,11 @@ export function renderTabBar(el, currentHash, opts = {}) {
     const isActive = currentHash === tab.hash ||
       (currentHash === '#result' && tab.hash === '#marks') ||
       (currentHash === '' && tab.hash === '#home');
-    const badge = isMarks && markCount > 0
-      ? `<span class="tab-badge" aria-label="${escHtml(t('tab_badge_marks', { n: markCount }))}">${markCount}</span>` : '';
+    const badgeLabel = incomingUnseen > 0
+      ? t('tab_badge_incoming', { n: incomingUnseen })
+      : t('tab_badge_marks', { n: markCount });
+    const badge = isMarks && marksBadgeCount > 0
+      ? `<span class="tab-badge${incomingUnseen > 0 ? ' tab-badge-incoming' : ''}" aria-label="${escHtml(badgeLabel)}">${marksBadgeCount}</span>` : '';
     const warnDot = tab.warn
       ? `<span class="tab-warn-dot" aria-hidden="true"></span>` : '';
     return `<button

@@ -1,7 +1,7 @@
 import { renderTabBar } from './components/TabBar.js';
 import { renderHome }   from './pages/Home.js';
 import { renderSearch } from './pages/Search.js';
-import { renderMarks }  from './pages/Marks.js';
+import { renderMarks, refreshIncomingMarksSection } from './pages/Marks.js';
 import { renderLeaders }from './pages/Leaders.js';
 import { renderLive, stopLivePoll } from './pages/Live.js';
 import { renderOnboard, renderLoginGate, tryPendingClaim } from './pages/Onboard.js';
@@ -130,6 +130,7 @@ function navigate() {
   }
   renderTabBar(tabBar, hash, { isBound: isBound() });
   renderUserBar(userBar);
+  if (hash === '#marks' || hash === '#result') dismissIncomingOverlay();
   window.scrollTo(0, 0);
 }
 
@@ -138,10 +139,9 @@ registerNavigator(navigate);
 let incomingPollTimer = null;
 let incomingMarksUnavailable = false;
 
-function cacheIncomingKeys(rows) {
-  window.BNI_INCOMING_ONE_KEYS = new Set(
-    (rows || []).map(r => `${r.name}||${r.branch}`),
-  );
+function isMarksRoute() {
+  const hash = window.location.hash || '';
+  return hash === '#marks' || hash === '#result';
 }
 
 async function syncMutualStats() {
@@ -176,10 +176,24 @@ async function preloadLiveData() {
 async function pollIncomingMarks() {
   if (!isBound() || incomingMarksUnavailable) return;
   try {
-    const rows = await fetchIncomingMarks(true);
-    cacheIncomingKeys(rows);
+    const [unseen, all] = await Promise.all([
+      fetchIncomingMarks(true),
+      fetchIncomingMarks(false),
+    ]);
+    cacheIncomingOneKeys(all);
+    setIncomingUnseenCount(unseen.length);
     await syncMutualStats();
-    if (rows?.length) showIncomingOneOverlay(rows);
+
+    if (isMarksRoute()) {
+      dismissIncomingOverlay();
+      refreshIncomingMarksSection(app);
+    } else if (unseen.length) {
+      showIncomingOneOverlay(unseen);
+    }
+
+    if (tabBar) {
+      renderTabBar(tabBar, window.location.hash || '#home', { isBound: isBound() });
+    }
   } catch (e) {
     if (e.code === 'RPC_NOT_DEPLOYED' || /could not find the function/i.test(e.message || '')) {
       incomingMarksUnavailable = true;

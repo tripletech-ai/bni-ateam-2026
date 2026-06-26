@@ -1730,7 +1730,7 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 
 /* ── Incoming 1-1 overlay ── */
 .incoming-one-overlay {
-  position: fixed; inset: 0; z-index: 500;
+  position: fixed; inset: 0; z-index: 10003;
   background: rgba(2,8,20,0.72); backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center; padding: 20px;
 }
@@ -1750,6 +1750,41 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .incoming-one-name { font-weight: 600; color: var(--dark-text); }
 .incoming-one-meta { font-size: 12px; color: var(--dark-muted); margin-top: 2px; }
 .incoming-one-ok { width: 100%; }
+
+/* ── Marks page: incoming 1-1 ── */
+.marks-incoming-header { padding-bottom: 4px; }
+.marks-incoming-sub {
+  font-size: 13px; color: var(--dark-muted); line-height: 1.5;
+  margin: 4px 16px 0; padding: 0;
+}
+.marks-incoming-list { margin-bottom: 4px; }
+.marks-incoming-card.marks-incoming-new {
+  border-color: rgba(250,199,117,0.45);
+  box-shadow: 0 0 0 1px rgba(250,199,117,0.12);
+}
+.marks-incoming-badge {
+  display: inline-block; margin-left: 6px; padding: 1px 6px;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+  color: #101629; background: var(--gold-bright); border-radius: 4px;
+  vertical-align: middle;
+}
+.marks-incoming-empty,
+.marks-incoming-loading {
+  margin: 0 16px 12px; padding: 14px 16px;
+  font-size: 13px; color: var(--dark-muted); line-height: 1.5;
+  background: var(--dark-surface); border: 1px solid var(--dark-border);
+  border-radius: var(--r);
+}
+.marks-incoming-actions {
+  display: flex; justify-content: flex-end;
+  padding: 0 16px 8px;
+}
+.marks-incoming-ack-all {
+  color: var(--gold-bright); border-color: rgba(250,199,117,0.35);
+}
+.tab-badge-incoming {
+  background: #f59e0b; color: #101629;
+}
 
 /* ── Chips / browse (fix white-on-white) ── */
 .industry-stat-chip,
