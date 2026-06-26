@@ -34,9 +34,15 @@ function buildSearchUI() {
     <div id="search-ai-box" class="ai-box">
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
       <p class="search-format-hint">${escHtml(t('search_format_hint'))}</p>
+      <ul class="search-format-guide" aria-label="${escHtml(t('search_format_hint'))}">
+        <li><strong>【${escHtml(t('search_intent_iam'))}】</strong>${escHtml(t('search_format_iam'))}</li>
+        <li><strong>【${escHtml(t('search_intent_offer'))}】</strong>${escHtml(t('search_format_offer'))}</li>
+        <li><strong>【${escHtml(t('search_intent_seek'))}】</strong>${escHtml(t('search_format_seek'))}</li>
+        <li><strong>【${escHtml(t('search_intent_exclude'))}】</strong>${escHtml(t('search_format_exclude'))}</li>
+      </ul>
       <textarea id="ai-input" class="ai-textarea"
         placeholder="${escHtml(t('search_placeholder'))}"
-        rows="5" aria-label="${escHtml(t('search_label'))}" maxlength="400"></textarea>
+        rows="6" aria-label="${escHtml(t('search_label'))}" maxlength="400"></textarea>
       <button id="ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
       <div class="ai-examples" aria-label="搜尋範例">
         <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example1'))}</div>

@@ -215,6 +215,17 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 }
 .home-quick-btn:active { opacity: 0.75; }
 
+.search-format-hint { font-size: 13px; color: var(--muted); margin: 0 0 8px; line-height: 1.5; }
+.search-format-guide {
+  margin: 0 0 12px; padding: 12px 14px; list-style: none;
+  border-radius: var(--r-sm); border: 1px solid rgba(201,162,39,0.25);
+  background: rgba(201,162,39,0.06); font-size: 12px; line-height: 1.55; color: var(--text);
+}
+.search-format-guide li { margin: 0 0 8px; }
+.search-format-guide li:last-child { margin-bottom: 0; }
+.search-format-guide strong { color: var(--gold, #c9a227); font-weight: 700; }
+.home-search-hint { margin: 0 0 10px; }
+
 /* Profile enrich banner */
 .profile-enrich-banner {
   display: flex; align-items: center; gap: 12px;

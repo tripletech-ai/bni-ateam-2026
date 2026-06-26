@@ -104,11 +104,12 @@ export function renderHome(container) {
 
     <div class="ai-box">
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
+      <p class="search-format-hint home-search-hint"><strong>【${escHtml(t('search_intent_seek'))}】</strong>${escHtml(t('search_format_seek'))}</p>
       <textarea
         id="home-ai-input"
         class="ai-textarea"
         placeholder="${escHtml(t('search_placeholder'))}"
-        rows="2"
+        rows="4"
         aria-label="${escHtml(t('search_label'))}"
         maxlength="200"></textarea>
       <button id="home-ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>

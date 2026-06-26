@@ -24,6 +24,7 @@ const SYNONYM_GROUPS = [
   ['人資', '人力資源', '招募', '獵頭'],
   ['物理治療', '復健'],
   ['醫美', '醫學美容', '微整'],
+  ['醫療', '醫學', '醫師', '診所', '美容', '美容醫學', '整形', '健康', '保健', '長照', '預防醫學', '牙科', '牙醫', '醫療器材', '醫療設備', '醫療用品'],
   ['美業', '美髮', '美甲', '美睫', '沙龍'],
   ['理財', '財務規劃', '資產配置', '財富傳承'],
   ['投資', '融資', '貸款'],
@@ -48,15 +49,36 @@ const SYN_INDEX = (() => {
   return m;
 })();
 
+const SEEK_SUFFIX_RE = /(廠商|業者|商家|供應商|供應|經銷|代理商|公司|老闆|負責人|決策者)$/u;
+
+function decomposeKeyword(kw) {
+  const parts = new Set([kw]);
+  const stripped = kw.replace(SEEK_SUFFIX_RE, '').trim();
+  if (stripped.length >= 2 && stripped !== kw) parts.add(stripped);
+  return [...parts];
+}
+
+function expandMedicalCluster(terms) {
+  const blob = [...terms].join(' ');
+  if (/醫|診所|美容|整形|牙|健康|保健|長照/.test(blob)) {
+    ['醫學', '醫美', '醫療', '美容', '診所', '整形', '健康', '保健'].forEach(t => terms.add(t));
+  }
+}
+
 function expandKeyword(k) {
-  const lk = k.toLowerCase().trim();
-  const terms = new Set([lk]);
-  if (SYN_INDEX.has(lk)) SYN_INDEX.get(lk).forEach(t => terms.add(t));
-  for (const [term, group] of SYN_INDEX) {
-    if (term.length >= 2 && lk.includes(term)) {
-      group.forEach(t => terms.add(t));
+  const terms = new Set();
+  for (const part of decomposeKeyword(k)) {
+    const lk = part.toLowerCase().trim();
+    if (lk.length < 2) continue;
+    terms.add(lk);
+    if (SYN_INDEX.has(lk)) SYN_INDEX.get(lk).forEach(t => terms.add(t));
+    for (const [term, group] of SYN_INDEX) {
+      if (term.length >= 2 && lk.includes(term)) {
+        group.forEach(t => terms.add(t));
+      }
     }
   }
+  expandMedicalCluster(terms);
   return [...terms];
 }
 
@@ -94,7 +116,36 @@ function memberFields(member) {
 }
 
 function fieldHit(text, terms) {
-  return terms.some(t => t.length >= 2 && text.includes(t));
+  return terms.some(t => {
+    if (t.length < 2) return false;
+    if (text.includes(t)) return true;
+    // 醫療 ↔ 美容醫學：共用「醫」族根
+    if (t.startsWith('醫') && t.length >= 2 && /醫/.test(text)) {
+      const tail = t.slice(1);
+      if (tail.length >= 1 && text.includes(tail)) return true;
+    }
+    return false;
+  });
+}
+
+function professionMatchBonus(member, terms) {
+  const prof = (member.profession || '').toLowerCase();
+  if (!prof) return 0;
+  for (const t of terms) {
+    if (t.length >= 2 && prof.includes(t)) return 3;
+  }
+  return 0;
+}
+
+/** 醫療/醫美類搜尋：直接醫療供應方優先於僅引薦或標籤沾醫療字 */
+function medicalSeekBonus(member, kw, terms) {
+  const blob = [kw, ...terms].join(' ');
+  if (!/醫|診所|美容|整形|健康|保健|牙/.test(blob)) return 0;
+  const prof = member.profession || '';
+  if (/美容醫學|醫美|醫學美容|整形|微整/.test(prof)) return 8;
+  if (/牙|診所|醫師|醫療|長照|復健|物理治療|OSA/.test(prof)) return 4;
+  if (/保健食品|健康食品|營養品|生活保健/.test(prof)) return -3;
+  return 0;
 }
 
 function isDecisionMaker(member) {
@@ -131,6 +182,7 @@ function scoreMemberByIntent(member, intent) {
   let complementScore = 0;
   let peerPenalty = 0;
   let demandPenalty = 0;
+  let contextBonus = 0;
   /** @type {{ type: string, text: string }[]} */
   const matchReasons = [];
   const matchedKeywords = [];
@@ -141,9 +193,10 @@ function scoreMemberByIntent(member, intent) {
   for (const { kw, terms } of allSeek) {
     let hit = false;
     if (fieldHit(f.profession, terms)) {
-      seekScore += 12;
+      seekScore += 14;
       seekSupplyHits++;
       hit = true;
+      seekScore += professionMatchBonus(member, terms);
       matchReasons.push({ type: 'seek', text: `${kw} ↔ 產業「${member.profession}」` });
     } else if (fieldHit(f.have, terms)) {
       seekScore += 8;
@@ -178,6 +231,9 @@ function scoreMemberByIntent(member, intent) {
     }
 
     if (hit) matchedKeywords.push(kw);
+
+    const medBonus = medicalSeekBonus(member, kw, terms);
+    if (medBonus) contextBonus = Math.max(contextBonus, medBonus);
 
     if (terms.some(t => DECISION_MAKER_RE.test(t)) && isDecisionMaker(member)) {
       seekScore += 4;
@@ -226,7 +282,7 @@ function scoreMemberByIntent(member, intent) {
     matchReasons.push({ type: 'branch', text: `同分會（${myBranch}）` });
   }
 
-  const total = seekScore + referralScore + complementScore + socialBonus - peerPenalty - demandPenalty;
+  const total = seekScore + referralScore + complementScore + socialBonus + contextBonus - peerPenalty - demandPenalty;
   if (total < 3 && !referralScore && !complementScore) return null;
 
   const isPeer = peerPenalty >= 14 && seekSupplyHits === 0;
