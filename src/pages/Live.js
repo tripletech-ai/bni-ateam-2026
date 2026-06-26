@@ -7,6 +7,7 @@ import {
   bindFeedComposer,
   updateFeedList,
   bindFeedAdminActions,
+  bindFeedMemberLinks,
   scrollChatToBottom,
   appendFeedItem,
 } from '../components/FeedChat.js';
@@ -195,6 +196,7 @@ function pushFeedToUI(container, feed) {
   if (!chatRoom) return;
   const opts = { isAdmin: liveIsAdmin, isGuest: isGuestTrial(), myName: myMemberName() };
   updateFeedList(chatRoom, feed, opts);
+  bindFeedMemberLinks(container);
   bindLiveFeedAdmin(container);
   if (liveMainTab === 'chat') scrollChatToBottom(container);
 }

@@ -3,6 +3,7 @@ import { t } from '../i18n/translations.js';
 import { showToast } from '../utils/toast.js';
 import { guestFeedLoginHTML } from './GuestTrialBanner.js';
 import { REGION_LABELS, getRegionForBranch } from '../data/branches.js';
+import { openMemberProfile, resolveFeedMember } from '../utils/feedMemberNav.js';
 
 /** 與後端 bni_post_feed_message 限速一致 */
 export const FEED_COOLDOWN_MS = 10_000;
@@ -17,7 +18,7 @@ function actorRegionLabel(region, branch) {
 
 function chatActorMetaHTML(item) {
   const name = item.actor_name || t('feed_system');
-  const branch = item.actor_branch || '';
+  const branch = item.actor_branch || item.meta?.branch || '';
   const regionLabel = actorRegionLabel(item.actor_region, branch);
   const parts = [];
   if (regionLabel) parts.push(`<span class="chat-bubble-region">${escHtml(regionLabel)}</span>`);
@@ -27,17 +28,50 @@ function chatActorMetaHTML(item) {
   return parts.join('<span class="chat-bubble-sep" aria-hidden="true">·</span>');
 }
 
+function memberLinkAttrs(name, branch) {
+  if (!name?.trim() || !branch?.trim()) return '';
+  return ` data-member-name="${escAttr(name.trim())}" data-member-branch="${escAttr(branch.trim())}"`;
+}
+
+function chatActorMetaLinkHTML(item) {
+  const inner = chatActorMetaHTML(item);
+  if (!inner) return '';
+  const { name, branch } = resolveFeedMember(item);
+  const attrs = memberLinkAttrs(name, branch);
+  if (!attrs) return inner;
+  return `<button type="button" class="chat-bubble-meta chat-member-link"${attrs} title="${escAttr(t('feed_member_view'))}">${inner}</button>`;
+}
+
+function formatEventBody(item) {
+  const type = item.feed_type || 'message';
+  const name = item.actor_name || '';
+  const branch = item.actor_branch || item.meta?.branch || '';
+
+  if (type === 'login') {
+    return t('feed_login_event', {
+      name: name || t('feed_system'),
+      branch: branch || '—',
+    });
+  }
+  if (type === 'mutual') {
+    const partner = item.meta?.partner_name || '';
+    const partnerBranch = item.meta?.partner_branch || '';
+    if (partner && partnerBranch) {
+      return t('feed_mutual_event_branch', { name, branch, partner, partnerBranch });
+    }
+    return escHtml(item.content || t('feed_mutual_event', { name, partner }));
+  }
+  return escHtml(item.content || '');
+}
+
 function feedItemHTML(item, { isAdmin = false, myName = '' } = {}) {
   const type = item.feed_type || 'message';
   const name = item.actor_name || t('feed_system');
   const time = formatFeedTime(item.created_at);
   const isMine = myName && name === myName && type === 'message';
-  const actorMeta = chatActorMetaHTML(item);
-
-  let body = escHtml(item.content || '');
-  if (type === 'mutual' && item.meta?.partner_name) {
-    body = escHtml(item.content || `${name} 與 ${item.meta.partner_name} 互相連結了！`);
-  }
+  const actorMeta = chatActorMetaLinkHTML(item);
+  const { name: linkName, branch: linkBranch } = resolveFeedMember(item);
+  const linkAttrs = memberLinkAttrs(linkName, linkBranch);
 
   const deleteBtn = isAdmin && item.id
     ? `<button type="button" class="feed-delete-btn feed-delete-btn-icon" data-feed-id="${escAttr(item.id)}"
@@ -45,14 +79,20 @@ function feedItemHTML(item, { isAdmin = false, myName = '' } = {}) {
     : '';
 
   if (type !== 'message') {
+    const body = formatEventBody(item);
+    const tag = linkAttrs ? 'button' : 'div';
+    const extraClass = linkAttrs ? ' chat-event-link chat-member-link' : '';
+    const typeAttr = linkAttrs ? ' type="button"' : '';
     return `
-      <div class="chat-event feed-type-${type}" data-id="${escAttr(item.id || '')}">
+      <${tag}${typeAttr} class="chat-event feed-type-${type}${extraClass}" data-id="${escAttr(item.id || '')}"${linkAttrs}
+        ${linkAttrs ? `title="${escAttr(t('feed_member_view'))}"` : ''}>
         <p class="chat-event-text">${body}</p>
         <time class="chat-event-time">${escHtml(time)}</time>
         ${deleteBtn}
-      </div>`;
+      </${tag}>`;
   }
 
+  const body = escHtml(item.content || '');
   const initial = (name.match(/[一-鿿㐀-䶿]/g) || ['?']).slice(-1)[0];
 
   if (isMine) {
@@ -60,7 +100,7 @@ function feedItemHTML(item, { isAdmin = false, myName = '' } = {}) {
       <article class="chat-bubble chat-bubble-mine" data-id="${escAttr(item.id || '')}">
         <div class="chat-bubble-body">
           <div class="chat-bubble-head chat-bubble-head-mine">
-            ${actorMeta ? `<div class="chat-bubble-meta">${actorMeta}</div>` : ''}
+            ${actorMeta ? `<div class="chat-bubble-meta-wrap">${actorMeta}</div>` : ''}
             <time class="chat-bubble-time">${escHtml(time)}</time>
             ${deleteBtn}
           </div>
@@ -69,12 +109,16 @@ function feedItemHTML(item, { isAdmin = false, myName = '' } = {}) {
       </article>`;
   }
 
+  const avatarInner = linkAttrs
+    ? `<button type="button" class="chat-bubble-avatar chat-member-link"${linkAttrs} title="${escAttr(t('feed_member_view'))}">${escHtml(initial)}</button>`
+    : `<div class="chat-bubble-avatar" aria-hidden="true">${escHtml(initial)}</div>`;
+
   return `
     <article class="chat-bubble" data-id="${escAttr(item.id || '')}">
-      <div class="chat-bubble-avatar" aria-hidden="true">${escHtml(initial)}</div>
+      ${avatarInner}
       <div class="chat-bubble-body">
         <div class="chat-bubble-head">
-          ${actorMeta ? `<div class="chat-bubble-meta">${actorMeta}</div>` : ''}
+          ${actorMeta ? `<div class="chat-bubble-meta-wrap">${actorMeta}</div>` : ''}
           <time class="chat-bubble-time">${escHtml(time)}</time>
           ${deleteBtn}
         </div>
@@ -162,6 +206,23 @@ function bindInputAutoGrow(input) {
   resize();
 }
 
+export function bindFeedMemberLinks(container) {
+  if (!container) return;
+  container.querySelectorAll('.chat-member-link').forEach(btn => {
+    if (btn.dataset.feedMemberBound) return;
+    btn.dataset.feedMemberBound = '1';
+    btn.addEventListener('click', e => {
+      if (e.target.closest('.feed-delete-btn')) return;
+      e.stopPropagation();
+      const name = btn.dataset.memberName;
+      const branch = btn.dataset.memberBranch;
+      if (!openMemberProfile(name, branch)) {
+        showToast(t('feed_member_not_found'));
+      }
+    });
+  });
+}
+
 export function bindFeedComposer(onPost) {
   const btn = document.getElementById('feed-submit');
   const input = document.getElementById('feed-input');
@@ -239,12 +300,14 @@ export function updateFeedList(container, items, { isAdmin = false, isGuest = fa
   const root = container?.closest('.live-page') || container;
   if (el) {
     el.outerHTML = html.trim();
+    bindFeedMemberLinks(root);
     scrollChatToBottom(root);
     return;
   }
   const empty = container?.querySelector('.chat-empty');
   if (empty) {
     empty.outerHTML = html.trim();
+    bindFeedMemberLinks(root);
     scrollChatToBottom(root);
   }
 }

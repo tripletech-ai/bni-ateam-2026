@@ -13,12 +13,12 @@ import { t } from '../i18n/translations.js';
 import { isInAppBrowser } from '../utils/inAppBrowser.js';
 import { inAppBrowserGateHTML, bindInAppBrowserGate } from '../components/InAppBrowserGate.js';
 import { startGuestTrial } from '../utils/guestTrial.js';
-import {
-  claimByNameBranch,
+import { claimByNameBranch,
   isValidChineseName,
   loadPendingClaim,
   clearPendingClaim,
 } from '../utils/memberClaim.js';
+import { describeClaimOutcome } from '../utils/claimFeedback.js';
 import { collect800HTML, bindCollect800Game, getCollect800Stats } from '../components/Collect800Game.js';
 
 function memberCountLine() {
@@ -65,6 +65,11 @@ export function mapAuthError(err) {
     return t('onboard_err_session');
   }
   if (msg.includes('ALREADY_BOUND')) return t('onboard_err_already_device');
+  if (msg.includes('NOT_AUTHENTICATED')) return t('onboard_err_session');
+  if (msg.includes('MEMBER_NOT_FOUND')) return t('claim_err_not_found');
+  if (msg.includes('NOT_ATEAM_BRANCH')) return t('claim_err_not_ateam');
+  if (msg.includes('INVALID_NAME')) return t('onboard_err_name');
+  if (msg.includes('INVALID_BRANCH')) return t('onboard_pick_branch_first');
   if (msg.includes('REGISTER_RPC_MISSING') || /could not find the function.*bni_register/i.test(msg)) {
     return t('onboard_err_register_rpc');
   }
@@ -155,9 +160,12 @@ async function submitClaim(container, { onComplete }) {
     }
     const result = await claimByNameBranch(payload);
     clearPendingClaim();
-    if (result?.matched) {
-      showToast(result.from_roster ? t('claim_matched_roster') : t('claim_matched_new'));
-    }
+    sessionStorage.setItem('bni_last_claim_result', JSON.stringify(result || {}));
+    showToast(describeClaimOutcome(result));
+    const { registered, goal } = getCollect800Stats();
+    setTimeout(() => {
+      showToast(t('claim_game_toast', { n: registered, goal }));
+    }, 1200);
     onComplete?.();
   } catch (err) {
     showToast(mapAuthError(err));
@@ -190,7 +198,7 @@ function renderClaimScreen(container, {
       </header>
       <div class="onboard-card">
         ${memberCountLine()}
-        ${collect800HTML()}
+        ${collect800HTML({ context: 'login' })}
         ${isInAppBrowser() ? inAppBrowserGateHTML() : simpleClaimFormHTML({
           branch: pending?.branch || '',
           name: pending?.name || '',

@@ -5,8 +5,10 @@ import { DEVELOPERS } from '../data/contributors.js';
 import { developerPhotoHTML } from '../utils/avatar.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 import { collect800HTML, bindCollect800Game } from '../components/Collect800Game.js';
+import { homeQuestStripHTML, bindHomeQuestStrip } from '../components/HomeQuestStrip.js';
 import { yangIntroHTML } from '../components/YangIntroCard.js';
 import { leadersEmbedHTML, bindLeaderEvents } from '../pages/Leaders.js';
+import { isBound } from '../services/auth.js';
 import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 
@@ -51,7 +53,9 @@ export function renderHome(container) {
 
     ${profileEnrichBannerHTML()}
 
-    ${collect800HTML()}
+    ${isBound() && !isGuestTrial() ? homeQuestStripHTML() : ''}
+
+    ${collect800HTML({ context: 'home' })}
 
     ${yangIntroHTML()}
 
@@ -80,6 +84,7 @@ export function renderHome(container) {
 
   bindLeaderEvents(container);
   bindProfileEnrichBanner();
+  bindHomeQuestStrip(container);
   bindCollect800Game(container);
   if (isGuestTrial()) {
     bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });

@@ -6,6 +6,7 @@ import { industryLabel, mergeIndustryStatsFromPublic } from '../data/industries.
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { showMemberList } from '../utils/memberList.js';
+import { findMemberByNameBranch } from '../utils/feedMemberNav.js';
 import { industryPieChartHTML } from '../components/IndustryPieChart.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 
@@ -14,9 +15,11 @@ export function renderSearch(container) {
   const pending = sessionStorage.getItem('bni_pending_search');
   const pendingBranch = sessionStorage.getItem('bni_pending_branch');
   const pendingIndustry = sessionStorage.getItem('bni_pending_industry');
+  const pendingMemberRaw = sessionStorage.getItem('bni_pending_member');
   if (pending) sessionStorage.removeItem('bni_pending_search');
   if (pendingBranch) sessionStorage.removeItem('bni_pending_branch');
   if (pendingIndustry) sessionStorage.removeItem('bni_pending_industry');
+  if (pendingMemberRaw) sessionStorage.removeItem('bni_pending_member');
 
   container.innerHTML = buildSearchUI();
   bindSearchEvents(container);
@@ -27,6 +30,12 @@ export function renderSearch(container) {
   if (pending) setTimeout(() => triggerSearch(pending), 50);
   else if (pendingBranch) setTimeout(() => showBranchMembers(pendingBranch), 50);
   else if (pendingIndustry) setTimeout(() => showIndustryMembers(pendingIndustry), 50);
+  else if (pendingMemberRaw) {
+    try {
+      const { name, branch } = JSON.parse(pendingMemberRaw);
+      setTimeout(() => showMemberProfile(name, branch), 50);
+    } catch { /* ignore */ }
+  }
 }
 
 function buildSearchUI() {
@@ -328,5 +337,19 @@ function showBranchMembers(branchName) {
     title: `${branchName} 夥伴`,
     members,
     emptyTitle: `${branchName} 目前沒有夥伴資料`,
+  });
+}
+
+function showMemberProfile(name, branch) {
+  const member = findMemberByNameBranch(name, branch);
+  const container = document.getElementById('search-results-area');
+  if (!container) return;
+  hideBrowseChrome();
+  document.getElementById('ai-result-area').style.display = 'none';
+  const branchLabel = branch || '';
+  showMemberList(container, {
+    title: branchLabel ? `${name} · ${branchLabel}` : name,
+    members: member ? [member] : [],
+    emptyTitle: branchLabel ? `${name} · ${branchLabel} — ${t('feed_member_not_found')}` : t('feed_member_not_found'),
   });
 }
