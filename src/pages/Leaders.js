@@ -4,16 +4,43 @@ import { escHtml, escAttr } from '../utils/html.js';
 import { getCardLink }      from '../data/cardLinks.js';
 import { showToast }        from '../utils/toast.js';
 
-export function leadersEmbedHTML() {
+export function leadersEmbedHTML({ skipPrimary = false } = {}) {
   const { primary, secondary, zhongshan, sanlu } = LEADERS;
   return `
     <div class="home-leaders-embed">
-      ${leaderCardPrimary(primary)}
+      ${skipPrimary ? '' : leaderCardPrimary(primary)}
       ${leaderCardSecondary(secondary)}
       <div style="height:8px"></div>
       ${accordion(t('leaders_section_zh'), zhongshan, 'zh-dir-home')}
       ${accordion(t('leaders_section_san'), sanlu, 'san-dir-home')}
     </div>`;
+}
+
+/** 首頁可摺疊區塊（董顧、顧問群等） */
+export function homeSectionAccordion(title, content, id, { defaultOpen = false } = {}) {
+  const openClass = defaultOpen ? 'open' : '';
+  const display = defaultOpen ? 'block' : 'none';
+  return `
+    <div class="home-section-accordion accordion-wrap">
+      <div class="accordion-header ${openClass}" data-accordion="${id}">
+        <span class="home-section-accordion-title">${escHtml(title)}</span>
+        <svg class="accordion-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+      <div class="accordion-content ${openClass}" id="accordion-${id}" style="display:${display}">${content}</div>
+    </div>`;
+}
+
+/** 首頁領導層：董顧 → 顧問群（預設摺疊） */
+export function homeLeadersSectionsHTML() {
+  const { secondary, zhongshan, sanlu } = LEADERS;
+  const advisorsInner = `
+    <div class="home-advisors-inner">
+      ${accordion(t('leaders_section_zh'), zhongshan, 'zh-dir-home', { defaultOpen: false, nested: true })}
+      ${accordion(t('leaders_section_san'), sanlu, 'san-dir-home', { defaultOpen: false, nested: true })}
+    </div>`;
+  return `
+    ${homeSectionAccordion(t('home_section_donggu'), leaderCardSecondary(secondary), 'home-donggu')}
+    ${homeSectionAccordion(t('home_section_advisors'), advisorsInner, 'home-advisors')}`;
 }
 
 export function renderLeaders(container) {
@@ -137,16 +164,22 @@ function directorCardHTML(p, index) {
   </div>`;
 }
 
-function accordion(title, people, id) {
+function accordion(title, people, id, { defaultOpen = true, nested = false } = {}) {
   const cards = people.map((p, i) => directorCardHTML(p, i + 1)).join('');
+  const openClass = defaultOpen ? 'open' : '';
+  const display = defaultOpen ? 'block' : 'none';
+  const wrapClass = nested ? 'accordion-wrap accordion-nested' : 'accordion-wrap';
+  const wrapStyle = nested
+    ? 'margin:0 0 8px;border-radius:var(--r);border:1px solid var(--dark-border);overflow:hidden'
+    : 'margin:0 16px 10px;border-radius:var(--r);border:1px solid var(--dark-border);overflow:hidden';
 
   return `
-    <div class="accordion-wrap" style="margin:0 16px 10px;border-radius:var(--r);border:1px solid var(--dark-border);overflow:hidden">
-      <div class="accordion-header open" data-accordion="${id}">
+    <div class="${wrapClass}" style="${wrapStyle}">
+      <div class="accordion-header ${openClass}" data-accordion="${id}">
         <span style="font-size:21px;font-weight:600">${escHtml(title)}</span>
         <svg class="accordion-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
-      <div class="accordion-content open" id="accordion-${id}" style="display:block">${cards}</div>
+      <div class="accordion-content ${openClass}" id="accordion-${id}" style="display:${display}">${cards}</div>
     </div>`;
 }
 

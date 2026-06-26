@@ -1,4 +1,4 @@
-import { getSearchIntentFromAI } from '../utils/aiSearch.js';
+import { getSearchIntentFromAI, MIN_THINKING_MS } from '../utils/aiSearch.js';
 import { searchMembersByIntent, getMembersByBranch, getMembersByIndustry } from '../utils/search.js';
 import { personCardHTML, bindCardEvents } from '../components/PersonCard.js';
 import { resolveBranchLists, normalizeBranchName } from '../data/branches.js';
@@ -41,20 +41,22 @@ export function renderSearch(container) {
 function buildSearchUI() {
   return `
     ${profileEnrichBannerHTML()}
-    <div id="search-ai-box" class="ai-box ai-box-compact">
+    <div id="search-ai-box" class="ai-box">
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
+      <p class="search-format-hint">${escHtml(t('search_format_hint'))}</p>
+      <ul class="search-format-guide" aria-label="${escHtml(t('search_format_hint'))}">
+        <li><strong>【${escHtml(t('search_intent_iam'))}】</strong>${escHtml(t('search_format_iam'))}</li>
+        <li><strong>【${escHtml(t('search_intent_offer'))}】</strong>${escHtml(t('search_format_offer'))}</li>
+        <li><strong>【${escHtml(t('search_intent_seek'))}】</strong>${escHtml(t('search_format_seek'))}</li>
+        <li><strong>【${escHtml(t('search_intent_exclude'))}】</strong>${escHtml(t('search_format_exclude'))}</li>
+      </ul>
       <textarea id="ai-input" class="ai-textarea"
         placeholder="${escHtml(t('search_placeholder'))}"
-        rows="3" aria-label="${escHtml(t('search_label'))}" maxlength="500" autofocus></textarea>
+        rows="6" aria-label="${escHtml(t('search_label'))}" maxlength="500" autofocus></textarea>
       <button id="ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
-      <details class="search-format-details">
-        <summary>${escHtml(t('search_format_hint'))}</summary>
-        <ul class="search-format-guide" aria-label="${escHtml(t('search_format_hint'))}">
-          <li><strong>【${escHtml(t('search_intent_iam'))}】</strong>${escHtml(t('search_format_iam'))}</li>
-          <li><strong>【${escHtml(t('search_intent_seek'))}】</strong>${escHtml(t('search_format_seek'))}</li>
-        </ul>
-      </details>
-      <div class="ai-examples ai-examples-compact" aria-label="搜尋範例">
+      <div class="ai-examples" aria-label="搜尋範例">
+        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example1'))}</div>
+        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example2'))}</div>
         <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example3'))}</div>
       </div>
     </div>
@@ -97,6 +99,66 @@ function bindSearchEvents(container) {
   });
 }
 
+function thinkingFallbackSteps() {
+  return [t('search_thinking_1'), t('search_thinking_2'), t('search_thinking_3')];
+}
+
+function searchThinkingLoadingHTML() {
+  return `
+    <div class="search-thinking-panel" role="status" aria-live="polite">
+      <div class="search-thinking-heading">${escHtml(t('search_thinking_title'))}</div>
+      <ol class="search-thinking-steps" id="search-thinking-steps">
+        ${[0, 1, 2].map(i => `
+          <li class="thinking-step" data-step="${i}">
+            <span class="thinking-step-label">${i + 1}</span>
+            <span class="thinking-step-text"></span>
+          </li>`).join('')}
+      </ol>
+      <p class="search-waiting-dev">${escHtml(t('search_waiting_dev'))}</p>
+      <div class="search-loading-spinner" aria-hidden="true"></div>
+    </div>`;
+}
+
+function revealThinkingStep(index, text, { active = false, done = false } = {}) {
+  const list = document.getElementById('search-thinking-steps');
+  if (!list) return;
+  const step = list.querySelector(`.thinking-step[data-step="${index}"]`);
+  if (!step) return;
+  const textEl = step.querySelector('.thinking-step-text');
+  if (textEl) textEl.textContent = text;
+  step.classList.add('visible');
+  step.classList.toggle('active', active);
+  step.classList.toggle('done', done);
+  list.querySelectorAll('.thinking-step').forEach((el, i) => {
+    if (i < index) {
+      el.classList.add('visible', 'done');
+      el.classList.remove('active');
+    }
+  });
+}
+
+function finalizeThinkingSteps(steps) {
+  steps.forEach((text, i) => revealThinkingStep(i, text, { done: true }));
+}
+
+function intentTagsHTML(intent) {
+  const row = (label, items, cls) => {
+    if (!items?.length) return '';
+    return `
+      <div class="intent-row">
+        <span class="intent-row-label">${escHtml(label)}</span>
+        <div class="intent-tags">${items.map(k => `<span class="intent-tag ${cls}">${escHtml(k)}</span>`).join('')}</div>
+      </div>`;
+  };
+  return [
+    row(t('search_intent_iam'), intent.iAm, 'intent-iam'),
+    row(t('search_intent_offer'), intent.iOffer, 'intent-offer'),
+    row(t('search_intent_seek'), intent.iSeek, 'intent-seek'),
+    row(t('search_intent_refer'), intent.iRefer, 'intent-refer'),
+    row(t('search_intent_exclude'), intent.exclude, 'intent-exclude'),
+  ].filter(Boolean).join('');
+}
+
 async function triggerSearch(input) {
   const aiBox = document.getElementById('search-ai-box');
   const loading = document.getElementById('search-loading');
@@ -112,14 +174,28 @@ async function triggerSearch(input) {
   searchArea.style.display = 'none';
   hideBrowseChrome();
   loading.style.display = 'block';
+  loading.innerHTML = searchThinkingLoadingHTML();
 
-  loading.innerHTML = `
-    <div class="search-loading-simple" role="status">
-      <div class="search-loading-spinner" aria-hidden="true"></div>
-      <div class="ai-loading-text">${escHtml(t('search_analyzing'))}</div>
-    </div>`;
+  const fallbacks = thinkingFallbackSteps();
+  const stepTimers = [
+    setTimeout(() => revealThinkingStep(0, fallbacks[0], { active: true }), 0),
+    setTimeout(() => revealThinkingStep(1, fallbacks[1], { active: true }), 1400),
+    setTimeout(() => revealThinkingStep(2, fallbacks[2], { active: true }), 2800),
+  ];
 
-  const intent = await getSearchIntentFromAI(input);
+  const [intent] = await Promise.all([
+    getSearchIntentFromAI(input),
+    new Promise(resolve => setTimeout(resolve, MIN_THINKING_MS)),
+  ]);
+
+  stepTimers.forEach(clearTimeout);
+
+  if (!document.getElementById('search-loading')) return;
+
+  const steps = intent.thinking_steps?.length >= 3 ? intent.thinking_steps : fallbacks;
+  finalizeThinkingSteps(steps);
+
+  await new Promise(resolve => setTimeout(resolve, 600));
 
   if (!document.getElementById('search-loading')) return;
 
@@ -128,8 +204,21 @@ async function triggerSearch(input) {
 
   resultArea.style.display = 'block';
   resultArea.innerHTML = `
-    <div class="ai-result-card ai-result-compact" style="margin:16px">
-      ${intent.analysis ? `<p class="ai-result-analysis">${escHtml(intent.analysis)}</p>` : ''}
+    <div class="ai-result-card" style="margin:16px">
+      <div class="ai-result-query">${escHtml(input.length > 60 ? input.substring(0, 60) + '…' : input)}</div>
+      <div class="search-thinking-recap">
+        <div class="search-thinking-heading">${escHtml(t('search_thinking_title'))}</div>
+        <ol class="search-thinking-steps search-thinking-steps-done">
+          ${steps.map((text, i) => `
+            <li class="thinking-step visible done" data-step="${i}">
+              <span class="thinking-step-label">${i + 1}</span>
+              <span class="thinking-step-text">${escHtml(text)}</span>
+            </li>`).join('')}
+        </ol>
+      </div>
+      ${intent.analysis ? `<p class="ai-result-analysis"><span class="ai-result-analysis-label">${escHtml(t('search_ai_analysis'))}</span>${escHtml(intent.analysis)}</p>` : ''}
+      <div class="intent-parse">${intentTagsHTML(intent)}</div>
+      <p class="search-dev-promo-inline">${escHtml(t('search_waiting_dev'))}</p>
       <button id="btn-reset-search" class="btn-reset">${escHtml(t('search_reset'))}</button>
     </div>`;
 

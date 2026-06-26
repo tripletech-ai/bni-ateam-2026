@@ -21,11 +21,14 @@ function chatActorMetaHTML(item) {
   const branch = item.actor_branch || item.meta?.branch || '';
   const regionLabel = actorRegionLabel(item.actor_region, branch);
   const parts = [];
-  if (regionLabel) parts.push(`<span class="chat-bubble-region">${escHtml(regionLabel)}</span>`);
-  if (branch) parts.push(`<span class="chat-bubble-branch">${escHtml(branch)}</span>`);
   if (name) parts.push(`<span class="chat-bubble-name">${escHtml(name)}</span>`);
+  if (branch) parts.push(`<span class="chat-bubble-branch">${escHtml(branch)}</span>`);
   if (!parts.length) return '';
-  return parts.join('<span class="chat-bubble-sep" aria-hidden="true">·</span>');
+  let html = parts.join('<span class="chat-bubble-sep" aria-hidden="true">·</span>');
+  if (regionLabel) {
+    html += `<span class="chat-bubble-region">${escHtml(regionLabel)}</span>`;
+  }
+  return html;
 }
 
 function memberLinkAttrs(name, branch) {
@@ -48,10 +51,10 @@ function formatEventBody(item) {
   const branch = item.actor_branch || item.meta?.branch || '';
 
   if (type === 'login') {
-    return t('feed_login_event', {
+    return escHtml(t('feed_login_event', {
       name: name || t('feed_system'),
       branch: branch || '—',
-    });
+    }));
   }
   if (type === 'mutual') {
     const partner = item.meta?.partner_name || '';
@@ -64,7 +67,39 @@ function formatEventBody(item) {
   return escHtml(item.content || '');
 }
 
-function feedItemHTML(item, { isAdmin = false, myName = '' } = {}) {
+function feedEventHTML(item, { isAdmin = false } = {}) {
+  const type = item.feed_type || 'message';
+  const time = formatFeedTime(item.created_at);
+  const body = formatEventBody(item);
+  const { name: linkName, branch: linkBranch } = resolveFeedMember(item);
+  const linkAttrs = memberLinkAttrs(linkName, linkBranch);
+
+  const deleteBtn = isAdmin && item.id
+    ? `<button type="button" class="feed-delete-btn feed-delete-btn-icon" data-feed-id="${escAttr(item.id)}"
+        aria-label="${escAttr(t('feed_delete'))}" title="${escAttr(t('feed_delete'))}">×</button>`
+    : '';
+
+  const tag = linkAttrs ? 'button' : 'div';
+  const extraClass = linkAttrs ? ' chat-event-link chat-member-link' : '';
+  const typeAttr = linkAttrs ? ' type="button"' : '';
+  return `
+    <${tag}${typeAttr} class="chat-event feed-type-${type} chat-event-compact${extraClass}" data-id="${escAttr(item.id || '')}"${linkAttrs}
+      ${linkAttrs ? `title="${escAttr(t('feed_member_view'))}"` : ''}>
+      <p class="chat-event-text">${body}<span class="chat-event-time">${escHtml(time)}</span></p>
+      ${deleteBtn}
+    </${tag}>`;
+}
+
+function messageActorKey(item, myName = '') {
+  const type = item.feed_type || 'message';
+  if (type !== 'message') return null;
+  const name = item.actor_name || '';
+  const branch = item.actor_branch || item.meta?.branch || '';
+  const isMine = myName && name === myName;
+  return `${isMine ? 'mine' : 'other'}::${name}::${branch}`;
+}
+
+function feedItemHTML(item, { isAdmin = false, myName = '', isContinued = false, showTime = true } = {}) {
   const type = item.feed_type || 'message';
   const name = item.actor_name || t('feed_system');
   const time = formatFeedTime(item.created_at);
@@ -79,52 +114,87 @@ function feedItemHTML(item, { isAdmin = false, myName = '' } = {}) {
     : '';
 
   if (type !== 'message') {
-    const body = formatEventBody(item);
-    const tag = linkAttrs ? 'button' : 'div';
-    const extraClass = linkAttrs ? ' chat-event-link chat-member-link' : '';
-    const typeAttr = linkAttrs ? ' type="button"' : '';
-    return `
-      <${tag}${typeAttr} class="chat-event feed-type-${type}${extraClass}" data-id="${escAttr(item.id || '')}"${linkAttrs}
-        ${linkAttrs ? `title="${escAttr(t('feed_member_view'))}"` : ''}>
-        <p class="chat-event-text">${body}</p>
-        <time class="chat-event-time">${escHtml(time)}</time>
-        ${deleteBtn}
-      </${tag}>`;
+    return feedEventHTML(item, { isAdmin });
   }
 
   const body = escHtml(item.content || '');
   const initial = (name.match(/[一-鿿㐀-䶿]/g) || ['?']).slice(-1)[0];
+  const continuedCls = isContinued ? ' chat-bubble-continued' : '';
+  const timeHtml = showTime ? `<time class="chat-bubble-time">${escHtml(time)}</time>` : '';
 
   if (isMine) {
     return `
-      <article class="chat-bubble chat-bubble-mine" data-id="${escAttr(item.id || '')}">
+      <article class="chat-bubble chat-bubble-mine${continuedCls}" data-id="${escAttr(item.id || '')}">
         <div class="chat-bubble-body">
+          ${isContinued ? '' : `
           <div class="chat-bubble-head chat-bubble-head-mine">
             ${actorMeta ? `<div class="chat-bubble-meta-wrap">${actorMeta}</div>` : ''}
-            <time class="chat-bubble-time">${escHtml(time)}</time>
+            ${timeHtml}
             ${deleteBtn}
-          </div>
+          </div>`}
           <p class="chat-bubble-text">${body}</p>
+          ${isContinued && showTime ? `<time class="chat-bubble-time chat-bubble-time-foot">${escHtml(time)}</time>` : ''}
         </div>
       </article>`;
   }
 
-  const avatarInner = linkAttrs
-    ? `<button type="button" class="chat-bubble-avatar chat-member-link"${linkAttrs} title="${escAttr(t('feed_member_view'))}">${escHtml(initial)}</button>`
-    : `<div class="chat-bubble-avatar" aria-hidden="true">${escHtml(initial)}</div>`;
+  const avatarInner = isContinued ? ''
+    : linkAttrs
+      ? `<button type="button" class="chat-bubble-avatar chat-member-link"${linkAttrs} title="${escAttr(t('feed_member_view'))}">${escHtml(initial)}</button>`
+      : `<div class="chat-bubble-avatar" aria-hidden="true">${escHtml(initial)}</div>`;
 
   return `
-    <article class="chat-bubble" data-id="${escAttr(item.id || '')}">
+    <article class="chat-bubble${continuedCls}" data-id="${escAttr(item.id || '')}">
       ${avatarInner}
       <div class="chat-bubble-body">
+        ${isContinued ? '' : `
         <div class="chat-bubble-head">
           ${actorMeta ? `<div class="chat-bubble-meta-wrap">${actorMeta}</div>` : ''}
-          <time class="chat-bubble-time">${escHtml(time)}</time>
+          ${timeHtml}
           ${deleteBtn}
-        </div>
+        </div>`}
         <p class="chat-bubble-text">${body}</p>
+        ${isContinued && showTime ? `<time class="chat-bubble-time chat-bubble-time-foot">${escHtml(time)}</time>` : ''}
       </div>
     </article>`;
+}
+
+function feedMessageGroupHTML(items, opts) {
+  if (items.length <= 1) {
+    return feedItemHTML(items[0], opts);
+  }
+  const html = items.map((item, idx) => feedItemHTML(item, {
+    ...opts,
+    isContinued: idx > 0,
+    showTime: idx === 0,
+  })).join('');
+  return `<div class="chat-msg-group">${html}</div>`;
+}
+
+function renderFeedItems(sorted, opts) {
+  const parts = [];
+  let i = 0;
+  while (i < sorted.length) {
+    const item = sorted[i];
+    const type = item.feed_type || 'message';
+    if (type !== 'message') {
+      parts.push(feedEventHTML(item, opts));
+      i += 1;
+      continue;
+    }
+    const key = messageActorKey(item, opts.myName);
+    const group = [item];
+    i += 1;
+    while (i < sorted.length) {
+      const next = sorted[i];
+      if ((next.feed_type || 'message') !== 'message') break;
+      if (messageActorKey(next, opts.myName) !== key) break;
+      group.push(next);
+      i += 1;
+    }
+    parts.push(feedMessageGroupHTML(group, opts));
+  }
+  return parts.join('');
 }
 
 function formatFeedTime(iso) {
@@ -149,7 +219,7 @@ export function feedListHTML(items = [], { isAdmin = false, isGuest = false, myN
   const sorted = [...items].sort((a, b) =>
     new Date(a.created_at || 0) - new Date(b.created_at || 0),
   );
-  return `<div class="chat-messages" id="feed-list">${sorted.map(item => feedItemHTML(item, { isAdmin, myName })).join('')}</div>`;
+  return `<div class="chat-messages" id="feed-list">${renderFeedItems(sorted, { isAdmin, isGuest, myName })}</div>`;
 }
 
 export function chatRoomHTML(feed = [], { isAdmin = false, isGuest = false, myName = '' } = {}) {

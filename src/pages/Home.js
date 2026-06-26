@@ -7,7 +7,7 @@ import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/
 import { collect800HTML, bindCollect800Game } from '../components/Collect800Game.js';
 import { homeQuestStripHTML, bindHomeQuestStrip } from '../components/HomeQuestStrip.js';
 import { yangIntroHTML } from '../components/YangIntroCard.js';
-import { leadersEmbedHTML, bindLeaderEvents } from '../pages/Leaders.js';
+import { homeLeadersSectionsHTML, homeSectionAccordion, bindLeaderEvents } from '../pages/Leaders.js';
 import { isBound } from '../services/auth.js';
 import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
@@ -65,19 +65,12 @@ export function renderHome(container) {
       <a href="#marks" class="home-mark-link">${escHtml(t('home_quick_marks'))}</a>
     </div>` : ''}
 
-    <div class="section-header">
-      <div class="section-title">${escHtml(t('home_developers'))}</div>
-      <p class="section-sub">${escHtml(t('home_developers_sub'))}</p>
-    </div>
-    <div class="developer-stack">
-      ${DEVELOPERS.map(developerCardHTML).join('')}
-    </div>
+    ${homeLeadersSectionsHTML()}
 
-    <div class="section-header">
-      <div class="section-title">${escHtml(t('leaders_title'))}</div>
-      <p class="section-sub">${escHtml(t('leaders_sub'))}</p>
-    </div>
-    ${leadersEmbedHTML()}
+    ${homeSectionAccordion(t('home_section_developers'), `
+      <p class="home-section-sub">${escHtml(t('home_developers_sub'))}</p>
+      <div class="developer-stack home-developer-stack">${DEVELOPERS.map(developerCardHTML).join('')}</div>
+    `, 'home-developers')}
 
     <div style="height:24px"></div>
   `;

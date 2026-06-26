@@ -19,27 +19,33 @@ const SYSTEM_PROMPT = `你是 BNI 年會現場的資深商務媒合顧問。使�
 1. 只回傳純 JSON，不含 markdown
 2. 格式：
 {
-  "analysis": "3-5 句繁體中文，說明你如何理解需求、展開了哪些同義產業、會媒合哪些合作夥伴",
+  "thinking_steps": [
+    "第一層：一句話，說明你如何理解使用者真正想找誰",
+    "第二層：一句話，列出你展開了哪些產業同義詞",
+    "第三層：一句話，說明會怎麼媒合（直接對接／同客群結盟／引薦）"
+  ],
+  "analysis": "3-5 句繁體中文，綜合說明媒合策略（可與 thinking_steps 呼應但更完整）",
   "iAm": ["我的專業/身分，1-4 個"],
   "iOffer": ["我提供的服務或資源，0-4 個"],
   "iSeek": ["我想找的合作對象或客群，3-8 個，最重要，含同義展開"],
   "iRefer": ["希望被引薦給誰，0-3 個"],
   "exclude": ["不要的行業，0-4 個"]
 }
-3. iSeek 權重最高 — 寧可多展開同義詞，不要只回一個模糊詞
+3. thinking_steps 必須剛好 3 句，每句 15-40 字，給使用者看思考過程
+4. iSeek 權重最高 — 寧可多展開同義詞，不要只回一個模糊詞
 4. iAm 只留商業身分；「帥哥」「測試」等口語不算 iAm
 5. 若使用者已用【我是】【想找】【不要】分段，尊重該結構並補充同義展開
 6. 每個詞 2-8 個中文字，台灣商業慣用語
 
 範例：
 輸入：「我是律師，想找企業主，不要保險」
-→ {"analysis":"你是法律服務方，想找決策者客群。展開企業主、創業者、中小企業；排除保險同業推銷。","iAm":["律師","法律顧問"],"iOffer":["商業法律","契約審閱"],"iSeek":["企業主","創業者","中小企業","公司負責人"],"iRefer":[],"exclude":["保險"]}
+→ {"thinking_steps":["第一層：你是法律服務方，想找決策者客群。","第二層：展開企業主、創業者、中小企業、公司負責人。","第三層：精準媒合決策者，並排除保險同業推銷。"],"analysis":"你是法律服務方，想找決策者客群。展開企業主、創業者、中小企業；排除保險同業推銷。","iAm":["律師","法律顧問"],"iOffer":["商業法律","契約審閱"],"iSeek":["企業主","創業者","中小企業","公司負責人"],"iRefer":[],"exclude":["保險"]}
 
 輸入：「我是帥哥 想要找醫療廠商」
-→ {"analysis":"無有效商業身分。想找醫療健康產業夥伴，展開醫美、診所、醫師、美容醫學等同義詞。","iAm":[],"iOffer":[],"iSeek":["醫療","醫美","診所","美容醫學","醫學","健康","醫師"],"iRefer":[],"exclude":[]}
+→ {"thinking_steps":["第一層：無有效商業身分，核心需求是醫療健康產業夥伴。","第二層：展開醫美、診所、醫師、美容醫學、健康等同義詞。","第三層：以 iSeek 比對 profession/have，找可直接對接的醫療夥伴。"],"analysis":"無有效商業身分。想找醫療健康產業夥伴，展開醫美、診所、醫師、美容醫學等同義詞。","iAm":[],"iOffer":[],"iSeek":["醫療","醫美","診所","美容醫學","醫學","健康","醫師"],"iRefer":[],"exclude":[]}
 
 輸入：「【我是】活動策展 【想找】醫美、企業主」
-→ {"analysis":"你是活動策展方，想找醫美機構與企業決策者合作，屬精準媒合。","iAm":["活動策展","活動企劃"],"iOffer":["品牌發表會","企業活動"],"iSeek":["醫美","診所","美容醫學","企業主","公司負責人"],"iRefer":[],"exclude":[]}`;
+→ {"thinking_steps":["第一層：你是活動策展方，想找醫美機構與企業決策者。","第二層：展開醫美、診所、美容醫學、企業主、公司負責人。","第三層：精準媒合同客群夥伴，可結盟開發醫美與企業客戶。"],"analysis":"你是活動策展方，想找醫美機構與企業決策者合作，屬精準媒合。","iAm":["活動策展","活動企劃"],"iOffer":["品牌發表會","企業活動"],"iSeek":["醫美","診所","美容醫學","企業主","公司負責人"],"iRefer":[],"exclude":[]}`;
 
 function sanitizeTerms(arr, max = 10) {
   if (!Array.isArray(arr)) return [];
@@ -53,8 +59,17 @@ function sanitizeAnalysis(text) {
   return text.trim().replace(/\s+/g, " ").slice(0, 400);
 }
 
+function sanitizeThinkingSteps(arr) {
+  if (!Array.isArray(arr)) return [];
+  return arr
+    .filter(s => typeof s === "string" && s.trim().length >= 4)
+    .map(s => s.trim().replace(/\s+/g, " ").slice(0, 120))
+    .slice(0, 3);
+}
+
 function normalizePayload(parsed) {
   const intent = {
+    thinking_steps: sanitizeThinkingSteps(parsed.thinking_steps),
     analysis: sanitizeAnalysis(parsed.analysis),
     iAm: sanitizeTerms(parsed.iAm, 6),
     iOffer: sanitizeTerms(parsed.iOffer, 6),
@@ -106,7 +121,7 @@ export default async (req) => {
   try {
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
-      max_tokens: 720,
+      max_tokens: 900,
       temperature: 0.25,
       response_format: { type: "json_object" },
       messages: [
@@ -119,7 +134,7 @@ export default async (req) => {
     });
 
     const text = completion.choices[0]?.message?.content?.trim() || "";
-    let intent = { analysis: "", iAm: [], iOffer: [], iSeek: [], iRefer: [], exclude: [] };
+    let intent = { thinking_steps: [], analysis: "", iAm: [], iOffer: [], iSeek: [], iRefer: [], exclude: [] };
 
     try {
       const parsed = JSON.parse(text.replace(/^```json\s*|\s*```$/g, ""));

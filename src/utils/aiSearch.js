@@ -6,7 +6,8 @@ import {
   extractSeekFromPlainText,
 } from './searchIntent.js';
 
-const SEARCH_TIMEOUT_MS = 18000;
+const SEARCH_TIMEOUT_MS = 28000;
+const MIN_THINKING_MS = 4500;
 
 /**
  * @param {string} input
@@ -33,6 +34,12 @@ export async function getSearchIntentFromAI(input) {
       if (typeof data.analysis === 'string' && data.analysis.trim()) {
         merged.analysis = data.analysis.trim().slice(0, 400);
       }
+      if (Array.isArray(data.thinking_steps) && data.thinking_steps.length) {
+        merged.thinking_steps = data.thinking_steps
+          .filter(s => typeof s === 'string' && s.trim().length >= 4)
+          .map(s => s.trim().slice(0, 120))
+          .slice(0, 3);
+      }
       return merged;
     }
     throw new Error('empty intent');
@@ -49,6 +56,8 @@ export async function getKeywordsFromAI(input) {
   const intent = await getSearchIntentFromAI(input);
   return [...intent.iSeek, ...intent.iAm, ...intent.iOffer].slice(0, 8);
 }
+
+export { MIN_THINKING_MS };
 
 const STOP_WORDS = new Set([
   '我', '是', '做', '的', '想', '找', '認識', '有', '可以', '幫', '也', '或', '和', '以及',
