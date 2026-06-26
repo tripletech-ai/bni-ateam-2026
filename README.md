@@ -74,6 +74,7 @@ docs/                   部署與重建手冊
 | [docs/REBUILD-FROM-ZERO.md](./docs/REBUILD-FROM-ZERO.md) | 程式全失仍可依此重建 |
 | [docs/DEPLOYMENT-INSFORGE.md](./docs/DEPLOYMENT-INSFORGE.md) | InsForge 日常部署 |
 | [docs/UIUX-GUIDE.md](./docs/UIUX-GUIDE.md) | 介面結構、UX 原則、已知限制 |
+| [docs/CHANGELOG-2026-06-26.md](./docs/CHANGELOG-2026-06-26.md) | **2026-06-26 功能／UX 變更紀錄** |
 | [docs/EVENT-DAY-CHECKLIST.md](./docs/EVENT-DAY-CHECKLIST.md) | 年會當日營運檢查 |
 | [docs/USER-SCENARIOS.md](./docs/USER-SCENARIOS.md) | 現場十種使用者情境（志工／驗收） |
 

@@ -1,4 +1,4 @@
-import { escHtml } from '../utils/html.js';
+import { escHtml, escAttr } from '../utils/html.js';
 import {
   searchEventChapters,
   ATEAM_ROSTER_NAMES,
@@ -223,6 +223,29 @@ function renderClaimScreen(container, {
           name: pending?.name || '',
         })}
         ${showGuestTrial ? `
+        <div class="login-guest-divider" aria-hidden="true">${escHtml(t('login_guest_divider'))}</div>
+        <div class="login-guest-compare" aria-label="${escAttr(t('login_guest_compare_title'))}">
+          <p class="login-guest-compare-title">${escHtml(t('login_guest_compare_title'))}</p>
+          <div class="login-compare-grid">
+            <div class="login-compare-col login-compare-signed">
+              <div class="login-compare-head">${escHtml(t('login_signed_head'))}</div>
+              <ul class="login-compare-list">
+                <li>${escHtml(t('login_signed_li1'))}</li>
+                <li>${escHtml(t('login_signed_li2'))}</li>
+                <li>${escHtml(t('login_signed_li3'))}</li>
+                <li>${escHtml(t('login_signed_li4'))}</li>
+              </ul>
+            </div>
+            <div class="login-compare-col login-compare-guest">
+              <div class="login-compare-head">${escHtml(t('login_guest_head'))}</div>
+              <ul class="login-compare-list">
+                <li>${escHtml(t('login_guest_li1'))}</li>
+                <li>${escHtml(t('login_guest_li2'))}</li>
+                <li>${escHtml(t('login_guest_li3'))}</li>
+              </ul>
+            </div>
+          </div>
+        </div>
         <button type="button" id="guest-trial-btn" class="btn-outline login-guest-trial-btn">
           <span class="login-guest-trial-label">${escHtml(t('login_guest_trial_btn'))}</span>
           <span class="login-guest-trial-sub">${escHtml(t('login_guest_trial_hint'))}</span>

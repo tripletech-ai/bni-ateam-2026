@@ -16,7 +16,7 @@ function loadLastClaimHint(profileEmpty) {
       return describeClaimOutcome(result);
     }
   } catch { /* ignore */ }
-  return profileEmpty ? t('claim_game_body_profile') : t('first_run_body');
+  return profileEmpty ? t('claim_game_body_profile') : t('first_run_subtitle');
 }
 
 function claimGameBlockHTML(profileEmpty) {
@@ -41,12 +41,22 @@ function claimGameBlockHTML(profileEmpty) {
     </div>`;
 }
 
+function firstRunStepsHTML() {
+  return `
+    <ol class="first-run-steps">
+      <li>${escHtml(t('first_run_step1'))}</li>
+      <li>${escHtml(t('first_run_step2'))}</li>
+      <li>${escHtml(t('first_run_step3'))}</li>
+    </ol>`;
+}
+
 /** 認領完成後 — 遊戲化慶祝 + 任務提示 */
 export function showFirstRunHint({ onGoSearch, onGoProfile, profileEmpty = false } = {}) {
   const overlay = document.createElement('div');
   overlay.id = 'first-run-overlay';
   overlay.setAttribute('role', 'dialog');
   overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-labelledby', 'first-run-title');
 
   const titleKey = profileEmpty ? 'claim_game_title' : 'first_run_title';
   const goKey = profileEmpty ? 'profile_enrich_empty_btn' : 'first_run_go';
@@ -54,9 +64,12 @@ export function showFirstRunHint({ onGoSearch, onGoProfile, profileEmpty = false
   const bodyText = loadLastClaimHint(profileEmpty);
 
   overlay.innerHTML = `
-    <div class="first-run-card first-run-card-game${profileEmpty ? ' first-run-card-profile' : ''}">
-      <div class="first-run-title">${escHtml(t(titleKey))}</div>
+    <div class="first-run-card first-run-card-game first-run-card-clear${profileEmpty ? ' first-run-card-profile' : ''}">
+      <div class="first-run-hero-badge" aria-hidden="true">🎯 ${escHtml(t('first_run_badge'))}</div>
+      <div id="first-run-title" class="first-run-title">${escHtml(t(titleKey))}</div>
+      <p class="first-run-subtitle">${escHtml(profileEmpty ? t('profile_fill_after_claim_body') : t('first_run_subtitle'))}</p>
       ${claimGameBlockHTML(profileEmpty)}
+      ${profileEmpty ? '' : firstRunStepsHTML()}
       <p class="first-run-body">${escHtml(bodyText)}</p>
       <button type="button" class="welcome-btn-primary" id="first-run-go">${escHtml(t(goKey))}</button>
       <button type="button" class="btn-outline first-run-invite-btn" id="first-run-invite">${escHtml(t('claim_game_invite_btn'))}</button>

@@ -24,7 +24,7 @@ node scripts/user-simulation-10-rounds.mjs
 - [ ] 最新 `main` 已部署成功
 - [ ] 環境變數 `OPENAI_API_KEY` 已設定
 - [ ] 正式網址可開啟、可 Google 登入
-- [ ] `index.html` 的 `og:url`、`og:image` 改為 **完整 https URL**（LINE 分享預覽）
+- [ ] `index.html` 的 `og:url`、`og:image` 改為 **完整 https URL**（LINE 分享預覽；楊董圖：`/assets/photos/楊日陞.png`）
 
 ### Google OAuth
 
@@ -52,6 +52,17 @@ node scripts/user-simulation-10-rounds.mjs
 - [ ] 開場說明：目標 800 人登入並「刷一下」
 - [ ] 鼓勵使用「提醒旁邊夥伴」複製邀請文案
 - [ ] 可定時宣布進度（首頁數字）
+
+### 搜尋分頁驗收
+
+- [ ] AI 媒合：三層思考 +「有 AI 相關開發請找王祈」文案
+- [ ] 媒合後切 Tab 再回，結果仍保留
+- [ ] 「瀏覽全部分會」金色卡片可點分會
+
+### 首頁驗收
+
+- [ ] 楊董照片正確（`assets/photos/楊日陞.png`）
+- [ ] 董顧（李鴻毅）accordion 可展開、可開名片
 
 ---
 

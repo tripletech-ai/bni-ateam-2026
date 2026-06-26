@@ -17,13 +17,19 @@ export function leadersEmbedHTML({ skipPrimary = false } = {}) {
 }
 
 /** 首頁可摺疊區塊（董顧、顧問群等） */
-export function homeSectionAccordion(title, content, id, { defaultOpen = false } = {}) {
+export function homeSectionAccordion(title, content, id, { defaultOpen = false, subtitle = '' } = {}) {
   const openClass = defaultOpen ? 'open' : '';
   const display = defaultOpen ? 'block' : 'none';
+  const sub = subtitle
+    ? `<span class="home-section-accordion-sub">${escHtml(subtitle)}</span>`
+    : '';
   return `
     <div class="home-section-accordion accordion-wrap">
-      <div class="accordion-header ${openClass}" data-accordion="${id}">
-        <span class="home-section-accordion-title">${escHtml(title)}</span>
+      <div class="accordion-header ${openClass}" data-accordion="${id}" role="button" tabindex="0" aria-expanded="${defaultOpen}" aria-controls="accordion-${id}">
+        <div class="home-section-accordion-head">
+          <span class="home-section-accordion-title">${escHtml(title)}</span>
+          ${sub}
+        </div>
         <svg class="accordion-arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
       </div>
       <div class="accordion-content ${openClass}" id="accordion-${id}" style="display:${display}">${content}</div>
@@ -39,7 +45,12 @@ export function homeLeadersSectionsHTML() {
       ${accordion(t('leaders_section_san'), sanlu, 'san-dir-home', { defaultOpen: false, nested: true })}
     </div>`;
   return `
-    ${homeSectionAccordion(t('home_section_donggu'), leaderCardSecondary(secondary), 'home-donggu')}
+    ${homeSectionAccordion(
+      t('home_section_donggu'),
+      `<div class="home-donggu-body">${leaderCardSecondary(secondary)}</div>`,
+      'home-donggu',
+      { subtitle: `${secondary.name} · ${secondary.title}` },
+    )}
     ${homeSectionAccordion(t('home_section_advisors'), advisorsInner, 'home-advisors')}`;
 }
 
@@ -108,12 +119,12 @@ function leaderCardPrimary(l) {
 function leaderCardSecondary(l) {
   const cardLink = getCardLink(l.name) || l.cardLink || '';
   return `
-    <div class="leader-card-secondary">
+    <div class="leader-card-secondary${cardLink ? ' has-card-link' : ''}" role="${cardLink ? 'button' : 'group'}" tabindex="${cardLink ? '0' : '-1'}">
       <div style="flex:1">
         <div class="leader-name">${escHtml(l.name)}</div>
         <div class="leader-title">${escHtml(l.title)}</div>
       </div>
-      <button class="director-btn-card ${cardLink ? 'has-link' : ''}"
+      <button type="button" class="director-btn-card ${cardLink ? 'has-link' : ''}"
         data-action="leader-card" data-link="${escAttr(cardLink)}">
         ${escHtml(t('leaders_card'))}
       </button>
@@ -183,7 +194,14 @@ function accordion(title, people, id, { defaultOpen = true, nested = false } = {
     </div>`;
 }
 
+/** @type {AbortController | null} */
+let leaderEventsCtrl = null;
+
 export function bindLeaderEvents(container) {
+  leaderEventsCtrl?.abort();
+  leaderEventsCtrl = new AbortController();
+  const { signal } = leaderEventsCtrl;
+
   container.addEventListener('click', e => {
     // Accordion section toggle
     const header = e.target.closest('.accordion-header');
@@ -194,6 +212,16 @@ export function bindLeaderEvents(container) {
       const isOpen  = content.style.display !== 'none';
       content.style.display = isOpen ? 'none' : 'block';
       header.classList.toggle('open', !isOpen);
+      content.classList.toggle('open', !isOpen);
+      header.setAttribute('aria-expanded', String(!isOpen));
+      return;
+    }
+
+    // Secondary leader card — tap row to open name card
+    const secCard = e.target.closest('.leader-card-secondary');
+    if (secCard && !e.target.closest('[data-action]')) {
+      const cardBtn = secCard.querySelector('[data-action="leader-card"]');
+      cardBtn?.click();
       return;
     }
 
@@ -245,5 +273,20 @@ export function bindLeaderEvents(container) {
     } else if (action === 'dir-one' || action === 'dir-biz') {
       showToast(t('leaders_pending'));
     }
-  });
+  }, { signal });
+
+  container.addEventListener('keydown', e => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const header = e.target.closest('.accordion-header');
+    if (header) {
+      e.preventDefault();
+      header.click();
+      return;
+    }
+    const secCard = e.target.closest('.leader-card-secondary.has-card-link');
+    if (secCard) {
+      e.preventDefault();
+      secCard.querySelector('[data-action="leader-card"]')?.click();
+    }
+  }, { signal });
 }

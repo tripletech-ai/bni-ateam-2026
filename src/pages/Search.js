@@ -3,12 +3,13 @@ import { searchMembersByIntent, getMembersByBranch, getMembersByIndustry } from 
 import { personCardHTML, bindCardEvents } from '../components/PersonCard.js';
 import { resolveBranchLists, normalizeBranchName } from '../data/branches.js';
 import { industryLabel, mergeIndustryStatsFromPublic } from '../data/industries.js';
-import { escHtml } from '../utils/html.js';
+import { escHtml, escAttr } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { showMemberList } from '../utils/memberList.js';
 import { findMemberByNameBranch } from '../utils/feedMemberNav.js';
 import { industryPieChartHTML } from '../components/IndustryPieChart.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
+import { saveSearchSession, loadSearchSession, clearSearchSession } from '../utils/searchSession.js';
 
 export function renderSearch(container) {
   container.classList.add('page-root');
@@ -35,6 +36,8 @@ export function renderSearch(container) {
       const { name, branch } = JSON.parse(pendingMemberRaw);
       setTimeout(() => showMemberProfile(name, branch), 50);
     } catch { /* ignore */ }
+  } else {
+    restoreSearchSession();
   }
 }
 
@@ -159,6 +162,60 @@ function intentTagsHTML(intent) {
   ].filter(Boolean).join('');
 }
 
+function buildResultCardHTML(input, steps, intent) {
+  return `
+    <div class="ai-result-card" style="margin:16px">
+      <div class="ai-result-query">${escHtml(input.length > 60 ? input.substring(0, 60) + '…' : input)}</div>
+      <div class="search-thinking-recap">
+        <div class="search-thinking-heading">${escHtml(t('search_thinking_title'))}</div>
+        <ol class="search-thinking-steps search-thinking-steps-done">
+          ${steps.map((text, i) => `
+            <li class="thinking-step visible done" data-step="${i}">
+              <span class="thinking-step-label">${i + 1}</span>
+              <span class="thinking-step-text">${escHtml(text)}</span>
+            </li>`).join('')}
+        </ol>
+      </div>
+      ${intent.analysis ? `<p class="ai-result-analysis"><span class="ai-result-analysis-label">${escHtml(t('search_ai_analysis'))}</span>${escHtml(intent.analysis)}</p>` : ''}
+      <div class="intent-parse">${intentTagsHTML(intent)}</div>
+      <p class="search-dev-promo-inline">${escHtml(t('search_waiting_dev'))}</p>
+      <button id="btn-reset-search" class="btn-reset">${escHtml(t('search_reset'))}</button>
+    </div>`;
+}
+
+function displaySearchResults(input, intent, steps) {
+  const aiBox = document.getElementById('search-ai-box');
+  const loading = document.getElementById('search-loading');
+  const resultArea = document.getElementById('ai-result-area');
+  const searchArea = document.getElementById('search-results-area');
+  const submitBtn = document.getElementById('ai-submit');
+
+  if (!resultArea || !searchArea) return;
+
+  if (loading) loading.style.display = 'none';
+  if (submitBtn) submitBtn.disabled = false;
+  hideBrowseChrome();
+  if (aiBox) aiBox.style.display = 'none';
+
+  const inputEl = document.getElementById('ai-input');
+  if (inputEl) inputEl.value = input;
+
+  resultArea.style.display = 'block';
+  resultArea.innerHTML = buildResultCardHTML(input, steps, intent);
+  document.getElementById('btn-reset-search')?.addEventListener('click', resetSearch);
+  showResults(intent, searchArea);
+  saveSearchSession({ input, intent, steps });
+}
+
+function restoreSearchSession() {
+  const saved = loadSearchSession();
+  if (!saved?.input || !saved?.intent) return;
+  const steps = saved.steps?.length >= 3
+    ? saved.steps
+    : thinkingFallbackSteps();
+  displaySearchResults(saved.input, saved.intent, steps);
+}
+
 async function triggerSearch(input) {
   const aiBox = document.getElementById('search-ai-box');
   const loading = document.getElementById('search-loading');
@@ -199,31 +256,7 @@ async function triggerSearch(input) {
 
   if (!document.getElementById('search-loading')) return;
 
-  loading.style.display = 'none';
-  if (submitBtn) submitBtn.disabled = false;
-
-  resultArea.style.display = 'block';
-  resultArea.innerHTML = `
-    <div class="ai-result-card" style="margin:16px">
-      <div class="ai-result-query">${escHtml(input.length > 60 ? input.substring(0, 60) + '…' : input)}</div>
-      <div class="search-thinking-recap">
-        <div class="search-thinking-heading">${escHtml(t('search_thinking_title'))}</div>
-        <ol class="search-thinking-steps search-thinking-steps-done">
-          ${steps.map((text, i) => `
-            <li class="thinking-step visible done" data-step="${i}">
-              <span class="thinking-step-label">${i + 1}</span>
-              <span class="thinking-step-text">${escHtml(text)}</span>
-            </li>`).join('')}
-        </ol>
-      </div>
-      ${intent.analysis ? `<p class="ai-result-analysis"><span class="ai-result-analysis-label">${escHtml(t('search_ai_analysis'))}</span>${escHtml(intent.analysis)}</p>` : ''}
-      <div class="intent-parse">${intentTagsHTML(intent)}</div>
-      <p class="search-dev-promo-inline">${escHtml(t('search_waiting_dev'))}</p>
-      <button id="btn-reset-search" class="btn-reset">${escHtml(t('search_reset'))}</button>
-    </div>`;
-
-  document.getElementById('btn-reset-search').addEventListener('click', resetSearch);
-  showResults(intent, searchArea);
+  displaySearchResults(input, intent, steps);
 }
 
 const cardsHTML = (list, opts = {}) =>
@@ -298,6 +331,7 @@ function showBrowseChrome() {
 }
 
 function resetSearch() {
+  clearSearchSession();
   const result = document.getElementById('ai-result-area');
   const search = document.getElementById('search-results-area');
   if (result) result.style.display = 'none';
@@ -387,20 +421,28 @@ function renderBranchBrowse(container) {
   };
 
   container.innerHTML = `
-    <details class="branch-browse-details">
-      <summary class="branch-browse-summary">${escHtml(t('search_browse_all_branches'))}</summary>
-      <div class="branch-section">
-        <div class="branch-region-title">${escHtml(t('search_zhongshan'))}</div>
-        <div class="branch-chips">${zhongshan.map(b => chip(b, 'zhongshan')).join('')}</div>
-        <div class="branch-region-title">${escHtml(t('search_sanlu'))}</div>
-        <div class="branch-chips">${sanlu.map(b => chip(b, 'sanlu')).join('')}</div>
-        <div class="branch-region-title">${escHtml(t('search_guest'))}</div>
-        <div class="branch-chips">${guest.length
-          ? guest.map(b => chip(b, 'guest')).join('')
-          : `<p class="branch-empty-hint">${escHtml(t('search_guest_empty'))}</p>`}
+    <section class="branch-browse-card" aria-label="${escAttr(t('search_browse_all_branches'))}">
+      <div class="branch-browse-header">
+        <span class="branch-browse-icon" aria-hidden="true">📋</span>
+        <div class="branch-browse-head-text">
+          <div class="branch-browse-title">${escHtml(t('search_browse_all_branches'))}</div>
+          <div class="branch-browse-sub">${escHtml(t('search_browse_all_branches_sub'))}</div>
         </div>
       </div>
-    </details>`;
+      <div class="branch-browse-body">
+        <div class="branch-section">
+          <div class="branch-region-title">${escHtml(t('search_zhongshan'))}</div>
+          <div class="branch-chips">${zhongshan.map(b => chip(b, 'zhongshan')).join('')}</div>
+          <div class="branch-region-title">${escHtml(t('search_sanlu'))}</div>
+          <div class="branch-chips">${sanlu.map(b => chip(b, 'sanlu')).join('')}</div>
+          <div class="branch-region-title">${escHtml(t('search_guest'))}</div>
+          <div class="branch-chips">${guest.length
+            ? guest.map(b => chip(b, 'guest')).join('')
+            : `<p class="branch-empty-hint">${escHtml(t('search_guest_empty'))}</p>`}
+          </div>
+        </div>
+      </div>
+    </section>`;
 
   container.addEventListener('click', e => {
     const chipEl = e.target.closest('[data-branch]');

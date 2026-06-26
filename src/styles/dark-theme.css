@@ -940,6 +940,33 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .industry-chip-browse .chip-count { color: var(--dark-muted); }
 .quick-filter-label,
 .branch-browse-summary { color: var(--dark-muted); }
+.branch-browse-card {
+  border-color: rgba(250, 199, 117, 0.35);
+  background: linear-gradient(145deg, rgba(250, 199, 117, 0.1), rgba(255, 255, 255, 0.02));
+}
+.branch-browse-header { border-bottom-color: rgba(250, 199, 117, 0.2); }
+.branch-browse-title { color: var(--gold-bright); }
+.branch-browse-sub { color: var(--dark-muted); }
+.login-guest-compare {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: var(--dark-border);
+}
+.login-guest-compare-title { color: var(--dark-text); }
+.login-compare-signed {
+  background: rgba(59, 109, 17, 0.12);
+  border-color: rgba(134, 239, 172, 0.25);
+  color: rgba(255, 255, 255, 0.88);
+}
+.login-compare-guest {
+  background: rgba(163, 45, 45, 0.1);
+  border-color: rgba(248, 113, 113, 0.22);
+  color: rgba(255, 255, 255, 0.82);
+}
+.login-guest-trial-btn {
+  border-color: rgba(250, 199, 117, 0.45) !important;
+  background: rgba(250, 199, 117, 0.08) !important;
+  color: var(--dark-text);
+}
 .inline-results-panel { border-top-color: var(--dark-border); }
 .inline-results-close { color: var(--dark-muted); }
 .branch-chip.active { box-shadow: 0 0 0 2px rgba(250,199,117,0.45); }
@@ -2097,11 +2124,23 @@ textarea.field-input {
 .thinking-step.active .thinking-step-label { background: var(--gold-bright); color: #0a0f1e; }
 .thinking-step.done .thinking-step-label { background: var(--green-light, #3B6D11); color: #fff; }
 .home-section-accordion { border-color: var(--dark-border); }
+.home-section-accordion-sub { color: var(--dark-muted); }
+.home-donggu-body .leader-card-secondary { margin: 0; }
+.leader-card-secondary.has-card-link { cursor: pointer; }
 #first-run-overlay .first-run-card {
   background: var(--dark-surface, #1a1f2e);
   border-color: var(--dark-border);
   color: var(--dark-text, #fff);
 }
+#first-run-overlay .first-run-card-clear {
+  border-color: rgba(250, 199, 117, 0.45);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+#first-run-overlay .first-run-subtitle { color: rgba(255, 255, 255, 0.92); }
+#first-run-overlay .first-run-steps { color: rgba(255, 255, 255, 0.88); }
+#first-run-overlay .first-run-body { color: var(--dark-muted); }
+#first-run-overlay .first-run-game-welcome { color: var(--dark-text); }
+#first-run-overlay .first-run-game-quests li.active { color: var(--gold-bright); }
 .home-mark-link { color: var(--gold-bright); }
 .profile-enrich-minimal {
   background: rgba(255,255,255,0.04);
