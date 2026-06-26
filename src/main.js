@@ -34,7 +34,7 @@ import { isGuestTrial, endGuestTrial } from './utils/guestTrial.js';
 import { guestTrialBannerHTML, bindGuestTrialLogin } from './components/GuestTrialBanner.js';
 import { showToast } from './utils/toast.js';
 import { notifyProfileMilestone } from './utils/profileMilestone.js';
-import { stripLineExternalBrowserParam } from './utils/inAppBrowser.js';
+import { normalizeAppUrl } from './utils/inAppBrowser.js';
 
 // ── Language ──────────────────────────────────────
 window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
@@ -373,5 +373,5 @@ window.addEventListener('unhandledrejection', event => {
 
 initLangToggle();
 initFontToggle();
-stripLineExternalBrowserParam();
+normalizeAppUrl();
 boot();

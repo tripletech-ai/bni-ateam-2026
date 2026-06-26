@@ -34,19 +34,34 @@ export function withLineExternalBrowserParam(url = window.location.href) {
   }
 }
 
-/** 進站後清掉 LINE 參數，避免網址列留著 */
-export function stripLineExternalBrowserParam() {
+/** 正規化網址：修正 // 路徑、清掉 LINE 參數（避免相對資源 404） */
+export function normalizeAppUrl() {
   if (typeof window === 'undefined') return;
   const url = new URL(window.location.href);
-  if (!url.searchParams.has(LINE_EXTERNAL_BROWSER_PARAM)) return;
-  url.searchParams.delete(LINE_EXTERNAL_BROWSER_PARAM);
-  window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+  let changed = false;
+
+  if (url.pathname !== '/' && /^\/+$/.test(url.pathname)) {
+    url.pathname = '/';
+    changed = true;
+  }
+
+  if (url.searchParams.has(LINE_EXTERNAL_BROWSER_PARAM)) {
+    url.searchParams.delete(LINE_EXTERNAL_BROWSER_PARAM);
+    changed = true;
+  }
+
+  if (changed) {
+    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+  }
+}
+
+/** @deprecated use normalizeAppUrl */
+export function stripLineExternalBrowserParam() {
+  normalizeAppUrl();
 }
 
 export function getShareUrl() {
-  return withLineExternalBrowserParam(
-    `${window.location.origin}${window.location.pathname}`,
-  );
+  return withLineExternalBrowserParam(`${window.location.origin}/`);
 }
 
 /** Android 嘗試用 Chrome 開啟；iOS 需使用者手動「在瀏覽器開啟」 */

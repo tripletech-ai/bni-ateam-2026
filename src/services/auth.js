@@ -264,7 +264,7 @@ export async function signInWithGoogle() {
     err.code = 'INAPP_BROWSER';
     throw err;
   }
-  const redirectTo = `${window.location.origin}${window.location.pathname}`;
+  const redirectTo = `${window.location.origin}/`;
   const { data, error } = await getClient().auth.signInWithOAuth('google', {
     redirectTo,
     additionalParams: { prompt: 'select_account' },
