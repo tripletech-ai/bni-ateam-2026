@@ -1,66 +1,54 @@
 import { getMarkCount } from '../utils/storage.js';
-import { BRANCHES }     from '../data/branches.js';
+import { resolveBranchLists } from '../data/branches.js';
 import { PHOTOS }       from '../data/photos.js';
 import { escHtml }      from '../utils/html.js';
 import { t }            from '../i18n/translations.js';
 import { goalProgressHTML } from '../components/GoalProgress.js';
-import { CONTRIBUTORS } from '../data/contributors.js';
-import { eventPulseHTML, bindEventPulse } from '../components/EventPulseGame.js';
+import { DEVELOPERS } from '../data/contributors.js';
+import { communityLiveHTML } from '../components/CommunityLiveCard.js';
+import { industryStatsHTML, bindIndustryStats } from '../components/IndustryStats.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 
-const VIDEO_URL = ''; // Fill in when YouTube link is provided
+const VIDEO_URL = '';
 
-function contributorCardHTML(c) {
-  const initial = (c.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
-  const paragraphs = c.paragraphKeys.map(k => `<p class="contributor-bio-p">${escHtml(t(k))}</p>`).join('');
-  const cta = c.ctaKey ? `<p class="contributor-cta">${escHtml(t(c.ctaKey))}</p>` : '';
-  const tag = c.tagKey
-    ? `<span class="contributor-tag">${escHtml(t(c.tagKey))}</span>` : '';
-  const companies = c.companyKeys
-    ? `<div class="contributor-companies">${c.companyKeys.map(k =>
+function developerCardHTML(d) {
+  const initial = (d.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
+  const tags = (d.tagKeys || []).map(k =>
+    `<span class="developer-tag">${escHtml(t(k))}</span>`).join('');
+  const highlights = (d.highlightKeys || []).map(k =>
+    `<li class="developer-highlight-item">${escHtml(t(k))}</li>`).join('');
+  const companies = d.companyKeys
+    ? `<div class="developer-companies">${d.companyKeys.map(k =>
         `<span class="company-chip">${escHtml(t(k))}</span>`).join('')}</div>` : '';
 
   return `
-    <article class="contributor-card" data-contributor="${escHtml(c.id)}">
-      <div class="contributor-photo">
-        <img src="assets/photos/${encodeURIComponent(c.photo)}"
-          alt="${escHtml(c.name)}" loading="lazy"
-          onerror="this.style.display='none';this.parentElement.classList.add('no-photo')">
-        <span class="contributor-photo-fallback" aria-hidden="true">${escHtml(initial)}</span>
-      </div>
-      <div class="contributor-info">
-        <div class="contributor-head">
-          <div class="contributor-name serif">${escHtml(c.name)}</div>
-          ${tag}
+    <article class="developer-card" data-developer="${escHtml(d.id)}">
+      <div class="developer-card-top">
+        <div class="developer-photo">
+          <img src="assets/photos/${encodeURIComponent(d.photo)}"
+            alt="${escHtml(d.name)}" loading="lazy"
+            onerror="this.style.display='none';this.parentElement.classList.add('no-photo')">
+          <span class="developer-photo-fallback" aria-hidden="true">${escHtml(initial)}</span>
         </div>
-        <div class="contributor-role">${escHtml(t(c.roleKey))}</div>
-        <div class="contributor-bio">${paragraphs}${cta}</div>
-        ${companies}
+        <div class="developer-head-block">
+          <div class="developer-name serif">${escHtml(d.name)}</div>
+          <div class="developer-role">${escHtml(t(d.roleKey))}</div>
+          <div class="developer-tags">${tags}</div>
+        </div>
       </div>
+      <ul class="developer-highlights">${highlights}</ul>
+      ${companies}
+      ${d.contactKey ? `<p class="developer-contact-note">${escHtml(t(d.contactKey))}</p>` : ''}
     </article>`;
 }
 
-function resolveBranchLists() {
-  const rows = window.BNI_PUBLIC_STATS?.branches;
-  if (rows?.length) {
-    const map = (region) => rows
-      .filter(b => b.region === region)
-      .map(b => ({
-        name: String(b.branch).replace(/分會$/, ''),
-        count: b.count ?? 0,
-      }))
-      .filter(b => b.count > 0);
-    return { zhongshan: map('zhongshan'), sanlu: map('sanlu') };
-  }
-  return {
-    zhongshan: BRANCHES.zhongshan.filter(b => b.count > 0),
-    sanlu: BRANCHES.sanlu.filter(b => b.count > 0),
-  };
+function resolveBranchListsLocal() {
+  return resolveBranchLists(window.BNI_PUBLIC_STATS);
 }
 
 export function renderHome(container) {
   const markCount = getMarkCount();
-  const { zhongshan, sanlu } = resolveBranchLists();
+  const { zhongshan, sanlu, guest } = resolveBranchListsLocal();
   const totalMembers = window.BNI_PUBLIC_STATS?.total_members ?? (window.BNI_MEMBERS || []).length;
   const branchCount = window.BNI_PUBLIC_STATS?.branch_count ?? 20;
 
@@ -71,12 +59,9 @@ export function renderHome(container) {
       </div>
       <h1 class="hero-title serif hero-title-shimmer">${escHtml(t('hero_title'))}</h1>
       <p class="hero-sub">${escHtml(t('hero_sub')).replace('\n', '<br>')}</p>
-      <div style="font-size:16px;margin-top:12px;opacity:0.65;letter-spacing:0.3px">
-        ${escHtml(t('hero_region'))}
-      </div>
     </div>
 
-    ${eventPulseHTML()}
+    ${communityLiveHTML()}
 
     ${profileEnrichBannerHTML()}
 
@@ -115,10 +100,7 @@ export function renderHome(container) {
 
     ${goalProgressHTML({ compact: true })}
 
-    <div class="section-header"><div class="section-title">${escHtml(t('home_contributor'))}</div></div>
-    <div class="contributor-stack">
-      ${CONTRIBUTORS.map(contributorCardHTML).join('')}
-    </div>
+    ${industryStatsHTML({ stats: window.BNI_PUBLIC_STATS, members: window.BNI_MEMBERS })}
 
     <div class="section-header"><div class="section-title">${escHtml(t('home_leaders'))}</div></div>
     <div class="yang-card yang-card-link" role="link" tabindex="0" data-hash="leaders">
@@ -133,22 +115,19 @@ export function renderHome(container) {
       </div>
       <div class="yang-info">
         <div class="yang-name">楊日陞</div>
-        <div class="yang-title">區域資深董事<br>${escHtml(t('hero_region'))}</div>
+        <div class="yang-title">區域資深董事<br>BNI Anderson Team</div>
         <button type="button" class="btn-yang" data-hash="leaders">
           ${escHtml(t('home_view'))}
         </button>
       </div>
     </div>
 
-    <div class="section-header"><div class="section-title">${escHtml(t('home_video'))}</div></div>
-    <div class="video-placeholder">
-      <div class="video-thumb ${VIDEO_URL ? '' : 'video-thumb-disabled'}" id="home-video-btn" ${VIDEO_URL ? '' : 'aria-disabled="true"'}>
-        <div class="video-play-btn" aria-hidden="true">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="5,3 19,12 5,21"/></svg>
-        </div>
-        <div style="font-size:13px;opacity:0.7">${VIDEO_URL ? escHtml(t('home_watch')) : escHtml(t('home_video_soon'))}</div>
-      </div>
-      <div class="video-caption">A Team 20 分會 · Anderson Team</div>
+    <div class="section-header">
+      <div class="section-title">${escHtml(t('home_developers'))}</div>
+      <p class="section-sub">${escHtml(t('home_developers_sub'))}</p>
+    </div>
+    <div class="developer-stack">
+      ${DEVELOPERS.map(developerCardHTML).join('')}
     </div>
 
     <div class="section-header"><div class="section-title">${escHtml(t('home_branches'))}</div></div>
@@ -157,20 +136,32 @@ export function renderHome(container) {
       <div class="branch-chips">
         ${zhongshan.map((b, i) => `<div
           class="branch-chip zhongshan stagger-${Math.min(i+1,6)}"
-          data-branch="${escHtml(b.name)}分會"
+          data-branch="${escHtml(b.fullName || b.name + '分會')}"
           role="button" tabindex="0">
-          ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
+          ${escHtml(b.fullName || b.name + '分會')}<span class="chip-count">${b.count}</span>
         </div>`).join('')}
       </div>
       <div class="branch-region-title">${escHtml(t('search_sanlu'))}</div>
       <div class="branch-chips">
         ${sanlu.map((b, i) => `<div
           class="branch-chip sanlu stagger-${Math.min(i+1,6)}"
-          data-branch="${escHtml(b.name)}分會"
+          data-branch="${escHtml(b.fullName || b.name + '分會')}"
           role="button" tabindex="0">
-          ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
+          ${escHtml(b.fullName || b.name + '分會')}<span class="chip-count">${b.count}</span>
         </div>`).join('')}
       </div>
+      ${guest.length ? `
+      <div class="branch-region-title">${escHtml(t('home_branches_guest'))}</div>
+      <div class="branch-chips">
+        ${guest.map((b, i) => `<div
+          class="branch-chip guest stagger-${Math.min(i+1,6)}"
+          data-branch="${escHtml(b.fullName || b.name + '分會')}"
+          role="button" tabindex="0">
+          ${escHtml(b.fullName || (String(b.name).endsWith('分會') ? b.name : b.name + '分會'))}<span class="chip-count">${b.count}</span>
+        </div>`).join('')}
+      </div>` : `
+      <div class="branch-region-title">${escHtml(t('home_branches_guest'))}</div>
+      <p class="branch-empty-hint">${escHtml(t('search_guest_empty'))}</p>`}
       <button
         onclick="location.hash='search'"
         class="btn-ai"
@@ -219,10 +210,6 @@ export function renderHome(container) {
     location.hash = 'search';
   });
 
-  document.getElementById('home-video-btn').addEventListener('click', () => {
-    if (VIDEO_URL) window.open(VIDEO_URL, '_blank', 'noopener');
-  });
-
-  bindEventPulse();
   bindProfileEnrichBanner();
+  bindIndustryStats(container);
 }

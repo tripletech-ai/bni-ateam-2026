@@ -7,8 +7,7 @@ export function renderTabBar(el, currentHash, opts = {}) {
   const TABS = [
     { hash: '#home',    label: t('tab_home'),    icon: homeIcon()   },
     { hash: '#search',  label: t('tab_search'),  icon: searchIcon() },
-    { hash: '#marks',   label: t('tab_marks'),   icon: heartIcon()  },
-    { hash: '#result',  label: t('tab_result'),  icon: chartIcon()  },
+    { hash: '#marks',   label: t('tab_marks'),   icon: marksTabIcon() },
     { hash: '#leaders', label: t('tab_leaders'), icon: teamIcon()   },
   ];
   if (opts.isAdmin) {
@@ -17,6 +16,7 @@ export function renderTabBar(el, currentHash, opts = {}) {
   el.innerHTML = TABS.map(tab => {
     const isMarks  = tab.hash === '#marks';
     const isActive = currentHash === tab.hash ||
+      (currentHash === '#result' && tab.hash === '#marks') ||
       (currentHash === '' && tab.hash === '#home');
     const badge = isMarks && markCount > 0
       ? `<span class="tab-badge" aria-label="${markCount} 個標記">${markCount}</span>` : '';
@@ -37,6 +37,9 @@ function homeIcon() {
 }
 function searchIcon() {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`;
+}
+function marksTabIcon() {
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/><polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/></svg>`;
 }
 function heartIcon() {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`;

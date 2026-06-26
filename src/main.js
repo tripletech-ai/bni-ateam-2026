@@ -2,7 +2,6 @@ import { renderTabBar } from './components/TabBar.js';
 import { renderHome }   from './pages/Home.js';
 import { renderSearch } from './pages/Search.js';
 import { renderMarks }  from './pages/Marks.js';
-import { renderResult } from './pages/Result.js';
 import { renderLeaders }from './pages/Leaders.js';
 import { renderOnboard, renderLoginGate } from './pages/Onboard.js';
 import { renderAdmin }  from './pages/Admin.js';
@@ -16,7 +15,9 @@ import {
   fetchAllMembers,
   fetchPublicStats,
   getCurrentUser,
+  fetchIncomingMarks,
 } from './services/auth.js';
+import { showIncomingOneOverlay } from './components/IncomingOneBanner.js';
 import { renderUserBar } from './components/UserBar.js';
 import { bootSkeletonHTML } from './utils/skeleton.js';
 import { showWelcomeTutorial } from './pages/WelcomeTutorial.js';
@@ -82,7 +83,7 @@ const routes = {
   '#home'    : renderHome,
   '#search'  : renderSearch,
   '#marks'   : renderMarks,
-  '#result'  : renderResult,
+  '#result'  : renderMarks,
   '#leaders' : renderLeaders,
   '#profile' : renderProfileEdit,
   '#admin'   : (c) => renderAdmin(c),
@@ -98,7 +99,19 @@ function setChromeVisible(showTabs) {
 
 function navigate() {
   if (!appReady) return;
-  const hash = window.location.hash || '';
+  let hash = window.location.hash || '';
+  if (hash === '#admin' && !isAdmin) {
+    hash = '#home';
+    if (window.location.hash === '#admin') {
+      history.replaceState(null, '', '#home');
+    }
+  }
+  if (hash === '#result') {
+    hash = '#marks';
+    if (window.location.hash === '#result') {
+      history.replaceState(null, '', '#marks');
+    }
+  }
   const render = routes[hash] || renderHome;
   app.innerHTML = '';
   try {
@@ -112,13 +125,34 @@ function navigate() {
   window.scrollTo(0, 0);
 }
 
+let incomingPollTimer = null;
+
+async function pollIncomingMarks() {
+  if (!isBound()) return;
+  try {
+    const rows = await fetchIncomingMarks(true);
+    if (rows?.length) showIncomingOneOverlay(rows);
+  } catch (e) {
+    console.warn('incoming marks:', e.message);
+  }
+}
+
+function startIncomingPoll() {
+  if (incomingPollTimer) clearInterval(incomingPollTimer);
+  pollIncomingMarks();
+  incomingPollTimer = setInterval(pollIncomingMarks, 45000);
+}
+
 async function afterBindComplete() {
   try {
     await loadMembersWithRetry();
+    await loadPublicStatsWithRetry();
   } catch (e) {
     console.warn('Reload members failed:', e);
   }
+  isAdmin = await checkIsAdmin();
   showWelcomeIfNeeded();
+  startIncomingPoll();
   setChromeVisible(true);
   appReady = true;
   location.hash = '#home';
@@ -184,7 +218,6 @@ async function boot() {
 
   try {
     await loadMembersWithRetry();
-    await loadPublicStatsWithRetry();
   } catch (e) {
     console.warn('DB members load failed:', e.message);
     if (!window.BNI_MEMBERS?.length) {
@@ -192,6 +225,7 @@ async function boot() {
       return;
     }
   }
+  await loadPublicStatsWithRetry();
 
   const user = getCurrentUser();
   if (!user) {
@@ -207,6 +241,7 @@ async function boot() {
   appReady = true;
   setChromeVisible(true);
   showWelcomeIfNeeded();
+  startIncomingPoll();
   navigate();
 }
 

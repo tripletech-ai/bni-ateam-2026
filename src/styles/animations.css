@@ -71,9 +71,9 @@
 .ai-loading-container {
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  padding: 44px 24px 36px;
+  padding: 44px 24px 32px;
   background: linear-gradient(180deg, #0d1a3a 0%, #0a0f1e 100%);
-  position: relative; overflow: hidden; min-height: 180px;
+  position: relative; overflow: hidden; min-height: 260px;
 }
 .ai-scan-line {
   position: absolute; height: 1px; width: 50%; top: 50%;
@@ -104,6 +104,21 @@
   background: linear-gradient(90deg, transparent 0%, var(--gold-bright) 40%, rgba(255,255,255,0.8) 50%, var(--gold-bright) 60%, transparent 100%);
   background-size: 200% 100%;
   animation: shimmerBar 1.2s linear infinite;
+}
+.ai-loading-promo {
+  margin-top: 28px; padding-top: 20px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  max-width: 320px; text-align: center;
+}
+.ai-loading-promo-text {
+  font-size: 12px; line-height: 1.7;
+  color: rgba(255,255,255,0.55);
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.ai-loading-promo-contact {
+  margin-top: 8px; font-size: 12px; line-height: 1.6;
+  color: var(--gold-bright); font-weight: 600;
+  font-family: 'Noto Sans TC', sans-serif;
 }
 
 @keyframes goldShimmer {

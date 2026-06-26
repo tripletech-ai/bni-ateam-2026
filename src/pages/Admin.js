@@ -1,19 +1,25 @@
 import { escHtml } from '../utils/html.js';
 import {
   checkIsAdmin,
+  getAuthEmail,
   fetchAllMembers,
   adminUpdateMember,
   adminCreateMember,
   fetchAdminDashboard,
   adminUnbindMember,
+  fetchAdminBranches,
+  adminMergeBranches,
 } from '../services/auth.js';
+import { isAdminEmail } from '../config/admins.js';
+import { normalizeBranchName } from '../data/branches.js';
 import { applyMemberToCache } from '../services/membersApi.js';
 import { showToast } from '../utils/toast.js';
+import { t } from '../i18n/translations.js';
 
 let adminTab = 'stats';
 
 export async function renderAdmin(container) {
-  const ok = await checkIsAdmin();
+  const ok = isAdminEmail(getAuthEmail()) || await checkIsAdmin();
   if (!ok) {
     container.innerHTML = `
       <div class="admin-wrap">
@@ -29,6 +35,7 @@ export async function renderAdmin(container) {
       <div class="admin-tabs">
         <button type="button" class="admin-tab" data-tab="stats">使用現況</button>
         <button type="button" class="admin-tab" data-tab="members">會員管理</button>
+        <button type="button" class="admin-tab" data-tab="branches">${escHtml(t('admin_tab_branches'))}</button>
       </div>
       <div id="admin-panel"></div>
     </div>
@@ -48,6 +55,7 @@ export async function renderAdmin(container) {
 
 async function renderPanel(panel) {
   if (adminTab === 'stats') await renderStatsPanel(panel);
+  else if (adminTab === 'branches') await renderBranchesPanel(panel);
   else await renderMembersPanel(panel);
 }
 
@@ -172,7 +180,7 @@ async function renderMembersPanel(panel) {
         const fd = new FormData(form);
         const patch = {
           name: fd.get('name'),
-          branch: fd.get('branch'),
+          branch: normalizeBranchName(fd.get('branch')),
           profession: fd.get('profession'),
           have: fd.get('have'),
           want_meet: fd.get('want_meet'),
@@ -235,6 +243,93 @@ async function renderMembersPanel(panel) {
   });
 
   await loadMembers();
+}
+
+async function renderBranchesPanel(panel) {
+  panel.innerHTML = '<div class="bind-loading">載入分會…</div>';
+  try {
+    const branches = await fetchAdminBranches();
+    const dupMap = buildDuplicateHints(branches);
+
+    panel.innerHTML = `
+      <p class="admin-sub">${escHtml(t('admin_branch_sub'))}</p>
+      <div class="admin-merge-form">
+        <label class="field-label">${escHtml(t('admin_branch_merge_from'))}</label>
+        <input id="merge-from" class="field-input" list="branch-names" placeholder="例：長輝">
+        <label class="field-label">${escHtml(t('admin_branch_merge_to'))}</label>
+        <input id="merge-to" class="field-input" list="branch-names" placeholder="例：長輝分會">
+        <datalist id="branch-names">
+          ${branches.map(b => `<option value="${escHtml(b.branch)}">`).join('')}
+        </datalist>
+        <button type="button" id="admin-merge-btn" class="btn-ai">${escHtml(t('admin_branch_merge_btn'))}</button>
+      </div>
+      <div class="admin-branch-table-wrap">
+        <table class="admin-branch-table">
+          <thead>
+            <tr>
+              <th>${escHtml(t('admin_branch_col'))}</th>
+              <th>${escHtml(t('admin_branch_region'))}</th>
+              <th>${escHtml(t('admin_branch_count'))}</th>
+              <th>${escHtml(t('admin_branch_duplicates'))}</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${branches.map(b => {
+              const dups = dupMap.get(b.branch) || [];
+              return `<tr>
+                <td>${escHtml(b.branch)}</td>
+                <td>${escHtml(b.region || '—')}</td>
+                <td>${b.count ?? 0}</td>
+                <td>${dups.length ? dups.map(d => escHtml(d)).join('、') : '—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+      <button type="button" id="admin-refresh-branches" class="btn-outline" style="margin-top:12px">重新整理</button>
+    `;
+
+    panel.querySelector('#admin-refresh-branches')?.addEventListener('click', () => renderBranchesPanel(panel));
+    panel.querySelector('#admin-merge-btn')?.addEventListener('click', async () => {
+      const from = panel.querySelector('#merge-from')?.value.trim();
+      const to = panel.querySelector('#merge-to')?.value.trim();
+      if (!from || !to) {
+        showToast('請填寫合併來源與目標分會');
+        return;
+      }
+      const msg = t('admin_branch_merge_confirm')
+        .replace('{from}', normalizeBranchName(from))
+        .replace('{to}', normalizeBranchName(to));
+      if (!confirm(msg)) return;
+      try {
+        const res = await adminMergeBranches(from, to);
+        showToast(`${t('admin_branch_merge_ok')}（${res.updated ?? 0} 人）`);
+        await renderBranchesPanel(panel);
+      } catch (err) {
+        showToast(err.message || '合併失敗');
+      }
+    });
+  } catch (err) {
+    panel.innerHTML = `<div class="bind-empty">${escHtml(err.message)}</div>`;
+  }
+}
+
+/** 同一正規化名稱下有多個寫法 → 標示可能重複 */
+function buildDuplicateHints(branches) {
+  const byNorm = new Map();
+  for (const b of branches) {
+    const norm = b.normalized || normalizeBranchName(b.branch);
+    if (!byNorm.has(norm)) byNorm.set(norm, []);
+    byNorm.get(norm).push(b.branch);
+  }
+  const dupMap = new Map();
+  for (const [, names] of byNorm) {
+    if (names.length < 2) continue;
+    for (const n of names) {
+      dupMap.set(n, names.filter(x => x !== n));
+    }
+  }
+  return dupMap;
 }
 
 function formatTime(ts) {

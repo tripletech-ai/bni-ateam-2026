@@ -109,15 +109,15 @@ async function run() {
   await page.reload({ waitUntil: 'networkidle' });
   await page.waitForTimeout(4000);
 
-  // ── 3. 已登入未綁定：認領頁必須有兩個按鈕 ──
+  // ── 3. 已登入未綁定：認領頁必須有楊董區 / 非楊董區 ──
   try {
     const appText = await page.locator('#app').innerText();
-    const bindBtn = page.locator('[data-mode="bind"]');
-    const regBtn = page.locator('[data-mode="register"]');
-    await bindBtn.waitFor({ state: 'visible', timeout: 15000 });
-    await regBtn.waitFor({ state: 'visible', timeout: 5000 });
-    if (!/認領|綁定|②/.test(appText)) fail('03 認領頁內容', appText.slice(0, 120));
-    else ok('03 認領頁顯示（② 認領身分）', '綁定 + 新認領按鈕可見');
+    const ateamBtn = page.locator('[data-mode="ateam"]');
+    const guestBtn = page.locator('[data-mode="guest-branch"]');
+    await ateamBtn.waitFor({ state: 'visible', timeout: 15000 });
+    await guestBtn.waitFor({ state: 'visible', timeout: 5000 });
+    if (!/認領|楊董|②/.test(appText)) fail('03 認領頁內容', appText.slice(0, 120));
+    else ok('03 認領頁顯示（② 認領身分）', '楊董區 + 非楊董區可見');
     if (appText.trim().length < 50) fail('03b 認領頁非空白', `len=${appText.length}`);
     else ok('03b 認領頁非空白', `${appText.length} 字`);
   } catch (e) {
@@ -128,6 +128,8 @@ async function run() {
 
   // ── 4. 綁定搜尋流程 ──
   try {
+    await page.locator('[data-mode="ateam"]').click();
+    await page.waitForTimeout(200);
     await page.locator('[data-mode="bind"]').click();
     await page.waitForTimeout(300);
     const search = page.locator('#bind-search');
@@ -148,10 +150,12 @@ async function run() {
 
   // ── 5. 新認領表單 + 範本 ──
   try {
-    await page.locator('[data-back]').first().click();
+    await page.locator('[data-back="ateam"]').click();
     await page.waitForTimeout(200);
     await page.locator('[data-mode="register"]').click();
     await page.waitForTimeout(300);
+    await page.locator('.ateam-pick-chip').first().click();
+    await page.waitForTimeout(200);
     const template = page.locator('.profile-template-panel');
     await template.waitFor({ state: 'visible', timeout: 5000 });
     await page.locator('[data-preset="default"]').click();
@@ -214,13 +218,16 @@ async function run() {
 
   // ── 8. 導覽分頁 ──
   try {
-    for (const hash of ['search', 'marks', 'result', 'leaders']) {
+    for (const hash of ['search', 'marks', 'leaders']) {
       await page.evaluate(h => { location.hash = h; }, hash);
       await page.waitForTimeout(800);
       const text = await page.locator('#app').innerText();
       if (text.length < 20) fail(`08 分頁 #${hash}`, 'content too short');
     }
-    ok('08 各分頁可導覽', 'search/marks/result/leaders');
+    await page.evaluate(() => { location.hash = 'result'; });
+    await page.waitForTimeout(800);
+    if (!(await page.locator('#marks-list').count())) fail('08 #result 相容', '應導向 marks 頁');
+    ok('08 各分頁可導覽', 'search/marks/leaders（#result 相容）');
   } catch (e) {
     fail('08 分頁導覽', e.message);
   }

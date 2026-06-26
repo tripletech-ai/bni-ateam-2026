@@ -1,8 +1,10 @@
 import { getMark, setMark, memberKey } from '../utils/storage.js';
+import { syncMarkToServer } from '../utils/markSync.js';
 import { showToast }                   from '../utils/toast.js';
 import { escHtml, escAttr }            from '../utils/html.js';
 import { avatarInner }                 from '../utils/avatar.js';
 import { getCardLink }                 from '../data/cardLinks.js';
+import { industryBadgesHTML }            from '../components/IndustryPicker.js';
 import { t }                           from '../i18n/translations.js';
 
 export function personCardHTML(member, opts = {}) {
@@ -33,12 +35,18 @@ export function personCardHTML(member, opts = {}) {
         <div class="person-section-text">${escHtml(member.wantReferral)}</div>
        </div>` : '';
 
+  const bioSection = member.bio
+    ? `<div class="person-section">
+        <div class="person-section-label">${escHtml(t('card_bio'))}</div>
+        <div class="person-section-text">${escHtml(member.bio)}</div>
+       </div>` : '';
+
   const kwSection = matchedKeywords.length > 0
     ? `<div class="person-keywords">${matchedKeywords.map(k => escHtml(k)).join('、')}</div>` : '';
 
   const regionClass = member.region === 'sanlu' ? 'region-sanlu' : member.region === 'zhongshan' ? 'region-zhongshan' : '';
 
-  const cardLink = getCardLink(member.name);
+  const cardLink = member.cardLink || getCardLink(member.name);
   const rowCardBtn = cardLink
     ? `<button class="row-card-btn" data-action="about" data-link="${escAttr(cardLink)}">${escHtml(t('card_about'))}</button>` : '';
 
@@ -48,6 +56,7 @@ export function personCardHTML(member, opts = {}) {
         <div class="person-name">${escHtml(member.name)}</div>
         <div class="person-meta">${escHtml(member.branch)}</div>
         <div class="person-meta person-profession">${escHtml(member.profession)}</div>
+        ${industryBadgesHTML(member.industries, { compact: true })}
       </div>
       <div class="person-card-right">
         ${badge}
@@ -59,7 +68,7 @@ export function personCardHTML(member, opts = {}) {
       </div>
     </div>
     <div class="person-card-body">
-      ${haveSection}${wantSection}${referralSection}${kwSection}
+      ${haveSection}${bioSection}${wantSection}${referralSection}${kwSection}
       <div class="person-actions">
         <button class="btn btn-line"
           data-action="line" data-key="${escAttr(key)}"
@@ -104,9 +113,10 @@ export function bindCardEvents(container, members) {
       handleLine({ lineLink, lineId });
     } else {
       setMark(member, action);
+      const updated = getMark(member);
+      syncMarkToServer(member, action, updated[action]);
       const card = container.querySelector(`.person-card[data-key="${CSS.escape(key)}"]`);
       if (card) {
-        const updated = getMark(member);
         card.querySelector('[data-action="one"]')?.classList.toggle('active', updated.one);
         card.querySelector('[data-action="biz"]')?.classList.toggle('active', updated.biz);
       }

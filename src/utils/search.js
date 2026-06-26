@@ -1,6 +1,8 @@
 // Members data is loaded via classic <script> tag as window.BNI_MEMBERS
 // This avoids ES module cache issues across Netlify deployments
 
+import { getMembersByIndustry as filterMembersByIndustry } from '../data/industries.js';
+
 function getMembers() {
   return window.BNI_MEMBERS || [];
 }
@@ -74,14 +76,20 @@ function expandKeyword(k) {
 // renovation clients), so they sit lower; wantReferral is lowest.
 const FIELD_WEIGHTS = [
   ['profession', 5],
+  ['bio', 3],
   ['have', 3],
   ['tags', 2], ['wantMeet', 2],
   ['name', 1], ['branch', 1], ['wantReferral', 1],
 ];
 
+function memberIndustriesText(member) {
+  return (member.industries || []).join(' ').toLowerCase();
+}
+
 function memberFields(member) {
   return {
     profession:   (member.profession || '').toLowerCase(),
+    bio:          (member.bio || '').toLowerCase(),
     tags:         (member.tags || []).join(' ').toLowerCase(),
     have:         (member.have || '').toLowerCase(),
     wantMeet:     (member.wantMeet || '').toLowerCase(),
@@ -91,55 +99,102 @@ function memberFields(member) {
   };
 }
 
-export function searchMembers(keywords) {
-  if (!keywords || keywords.length === 0) return [];
-  const kws = keywords.map(k => String(k).trim()).filter(k => k.length >= 2);
-  if (kws.length === 0) return [];
-  const expanded = kws.map(k => ({ kw: k, terms: expandKeyword(k) }));
+const STRONG_FIELDS = new Set(['profession', 'bio', 'have']);
 
-  const results = [];
-  for (const member of getMembers()) {
-    const f = memberFields(member);
-    let score = 0;
-    const matched = [];
-    for (const { kw, terms } of expanded) {
-      let best = 0;
-      for (const [field, w] of FIELD_WEIGHTS) {
-        if (w > best && terms.some(t => f[field].includes(t))) best = w;
+function scoreMember(member, expanded) {
+  const f = memberFields(member);
+  let score = 0;
+  const matchedKeywords = [];
+  let strongMatchCount = 0;
+  let professionHit = false;
+
+  for (const { kw, terms } of expanded) {
+    let best = 0;
+    let bestField = null;
+    for (const [field, w] of FIELD_WEIGHTS) {
+      if (w > best && terms.some(t => f[field].includes(t))) {
+        best = w;
+        bestField = field;
       }
-      if (best > 0) { score += best; matched.push(kw); }
     }
-    if (matched.length > 0) {
-      results.push({ ...member, matchedKeywords: matched, _score: score });
+    if (best > 0) {
+      score += best;
+      matchedKeywords.push(kw);
+      if (STRONG_FIELDS.has(bestField)) {
+        strongMatchCount++;
+        if (bestField === 'profession') professionHit = true;
+      }
     }
   }
 
-  return results.sort((a, b) =>
-    b._score - a._score ||
-    b.matchedKeywords.length - a.matchedKeywords.length ||
-    a.name.localeCompare(b.name, 'zh-TW')
-  );
+  if (matchedKeywords.length === 0) return null;
+
+  const isPrecise =
+    professionHit ||
+    (strongMatchCount >= 1 && matchedKeywords.length >= 2) ||
+    strongMatchCount >= 2 ||
+    (score >= 8 && strongMatchCount >= 1);
+
+  return {
+    ...member,
+    matchedKeywords,
+    _score: score,
+    _tier: isPrecise ? 'precise' : 'possible',
+  };
 }
 
-// Soft fallback so the user is NEVER shown an empty screen.
-// Ranks by single-character overlap with the query (loose thematic link),
-// then fills with profession-diverse members. Deterministic.
-export function getSuggestions(keywords = [], excludeIds = new Set(), need = 3) {
-  const chars = new Set();
-  keywords.forEach(k => {
-    for (const c of String(k)) if (/[㐀-鿿]/.test(c)) chars.add(c.toLowerCase());
-  });
+export function searchMembersTiered(keywords) {
+  if (!keywords || keywords.length === 0) return { precise: [], possible: [] };
+  const kws = keywords.map(k => String(k).trim()).filter(k => k.length >= 2);
+  if (kws.length === 0) return { precise: [], possible: [] };
+  const expanded = kws.map(k => ({ kw: k, terms: expandKeyword(k) }));
 
+  const precise = [];
+  const possible = [];
+  for (const member of getMembers()) {
+    const hit = scoreMember(member, expanded);
+    if (!hit) continue;
+    if (hit._tier === 'precise') precise.push(hit);
+    else possible.push(hit);
+  }
+
+  const sortHits = (a, b) =>
+    b._score - a._score ||
+    b.matchedKeywords.length - a.matchedKeywords.length ||
+    a.name.localeCompare(b.name, 'zh-TW');
+
+  precise.sort(sortHits);
+  possible.sort(sortHits);
+  return { precise, possible };
+}
+
+export function searchMembers(keywords) {
+  return searchMembersTiered(keywords).precise;
+}
+
+// Soft fallback — thematic suggestions for「可能有的機會」tier.
+export function getSuggestions(keywords = [], excludeIds = new Set(), need = 3) {
   const avail = getMembers().filter(m => !excludeIds.has(memberId(m)));
+
   const softScore = m => {
-    const text = [m.profession, (m.tags || []).join(' '), m.have, m.wantMeet]
+    const text = [m.profession, m.bio, m.have, (m.tags || []).join(' '), m.wantMeet]
       .join(' ').toLowerCase();
     let s = 0;
-    chars.forEach(c => { if (text.includes(c)) s++; });
+    for (const k of keywords) {
+      const lk = String(k).trim().toLowerCase();
+      if (lk.length >= 2 && text.includes(lk)) s += 4;
+      else if (lk.length >= 2) {
+        for (const c of lk) {
+          if (/[㐀-鿿]/.test(c) && text.includes(c)) s++;
+        }
+      }
+    }
     return s;
   };
+
   const ranked = avail
     .map(m => ({ m, s: softScore(m) }))
+    .filter(({ s }) => s >= 2)
     .sort((a, b) => b.s - a.s || a.m.name.localeCompare(b.m.name, 'zh-TW'));
 
   const picked = [];
@@ -158,6 +213,10 @@ export function getSuggestions(keywords = [], excludeIds = new Set(), need = 3) 
 
 export function getMembersByBranch(branchName) {
   return getMembers().filter(m => m.branch === branchName);
+}
+
+export function getMembersByIndustry(industryId) {
+  return filterMembersByIndustry(getMembers(), industryId);
 }
 
 export function getAllMembers() {

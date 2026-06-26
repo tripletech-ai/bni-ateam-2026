@@ -145,6 +145,15 @@ CREATE POLICY bni_tutorial_admin_all ON bni_tutorial_steps FOR ALL TO authentica
   const claimPolicy = readFileSync(join(__dirname, 'claim-policy.sql'), 'utf8');
   await run('claim policy (20-branch bind)', claimPolicy);
 
+  const bioMarks = readFileSync(join(__dirname, 'member-bio-marks.sql'), 'utf8');
+  await run('member bio + connection marks', bioMarks);
+
+  const memberIndustries = readFileSync(join(__dirname, 'member-industries.sql'), 'utf8');
+  await run('member industries + public stats', memberIndustries);
+
+  const adminEmailFix = readFileSync(join(__dirname, 'admin-email-fix.sql'), 'utf8');
+  await run('admin email JWT fix', adminEmailFix);
+
   await seedMembers();
 
   const anon = await getAnonToken();

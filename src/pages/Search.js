@@ -1,22 +1,27 @@
 import { getKeywordsFromAI }                from '../utils/aiSearch.js';
-import { searchMembers, getSuggestions, getMembersByBranch } from '../utils/search.js';
+import { searchMembersTiered, getSuggestions, getMembersByBranch, getMembersByIndustry } from '../utils/search.js';
 import { personCardHTML, bindCardEvents }    from '../components/PersonCard.js';
-import { BRANCHES }                          from '../data/branches.js';
+import { resolveBranchLists, normalizeBranchName } from '../data/branches.js';
+import { industryLabel, mergeIndustryStatsFromPublic } from '../data/industries.js';
 import { escHtml }                           from '../utils/html.js';
 import { t }                                 from '../i18n/translations.js';
 
 export function renderSearch(container) {
   const pending       = sessionStorage.getItem('bni_pending_search');
   const pendingBranch = sessionStorage.getItem('bni_pending_branch');
+  const pendingIndustry = sessionStorage.getItem('bni_pending_industry');
   if (pending)       sessionStorage.removeItem('bni_pending_search');
   if (pendingBranch) sessionStorage.removeItem('bni_pending_branch');
+  if (pendingIndustry) sessionStorage.removeItem('bni_pending_industry');
 
   container.innerHTML = buildSearchUI();
   bindSearchEvents(container);
+  renderIndustryBrowse(document.getElementById('industry-browse-area'));
   renderBranchBrowse(document.getElementById('branch-browse-area'));
 
   if (pending)       setTimeout(() => triggerSearch(pending), 50);
   else if (pendingBranch) setTimeout(() => showBranchMembers(pendingBranch), 50);
+  else if (pendingIndustry) setTimeout(() => showIndustryMembers(pendingIndustry), 50);
 }
 
 function buildSearchUI() {
@@ -36,6 +41,7 @@ function buildSearchUI() {
     <div id="search-loading" style="display:none" role="status" aria-live="polite"></div>
     <div id="ai-result-area"      style="display:none"></div>
     <div id="search-results-area" style="display:none"></div>
+    <div id="industry-browse-area"></div>
     <div id="branch-browse-area"></div>
   `;
 }
@@ -81,6 +87,8 @@ async function triggerSearch(input) {
   resultArea.style.display = 'none';
   searchArea.style.display = 'none';
   if (branchArea) branchArea.style.display = 'none';
+  const industryArea = document.getElementById('industry-browse-area');
+  if (industryArea) industryArea.style.display = 'none';
   loading.style.display    = 'block';
 
   // Premium AI loading animation
@@ -96,6 +104,10 @@ async function triggerSearch(input) {
       </div>
       <div class="ai-loading-text">${escHtml(t('search_analyzing'))}</div>
       <div class="ai-shimmer-bar"><div class="ai-shimmer-fill"></div></div>
+      <div class="ai-loading-promo">
+        <p class="ai-loading-promo-text">${escHtml(t('search_dev_promo'))}</p>
+        <p class="ai-loading-promo-contact">${escHtml(t('search_dev_contact'))}</p>
+      </div>
     </div>`;
 
   const keywords = await getKeywordsFromAI(input);
@@ -122,8 +134,7 @@ async function triggerSearch(input) {
   document.getElementById('btn-reset-search').addEventListener('click', resetSearch);
 
   // Auto-search immediately (no manual button)
-  const results = searchMembers(keywords);
-  showResults(results, searchArea, keywords);
+  showResults(keywords, searchArea);
   if (branchArea) branchArea.style.display = 'none';
 }
 
@@ -136,51 +147,46 @@ const REFINE_HINT = () => `
   </div>`;
 
 const cardsHTML = (list, opts = {}) =>
-  list.map((m, i) => personCardHTML(m, { ...opts, staggerIndex: i })).join('');
+  list.map((m, i) => personCardHTML(m, {
+    matchedKeywords: opts.showMatch ? (m.matchedKeywords || []) : [],
+    staggerIndex: i,
+  })).join('');
 
-function showResults(results, container, keywords = []) {
+function showResults(keywords, container) {
   container.style.display = 'block';
-  const MIN = 3;
-  const excludeIds = new Set(results.map(r => r.id || r.name));
+  const { precise, possible } = searchMembersTiered(keywords);
+  const MIN_POSSIBLE = 3;
 
-  // CASE A — no exact match: never a dead end. Guide + soft suggestions.
-  if (results.length === 0) {
-    const suggestions = getSuggestions(keywords, excludeIds, MIN);
-    container.innerHTML = `
-      <div class="search-noexact">${escHtml(t('search_no_exact'))}</div>
-      ${REFINE_HINT()}
-      <div class="results-header suggest">
-        <span>${suggestions.length}</span> ${escHtml(t('search_suggest_title'))}
-      </div>
-      <div id="cards-list">${cardsHTML(suggestions)}</div>`;
-    bindCardEvents(document.getElementById('cards-list'), suggestions);
-    return;
+  const excludeIds = new Set([...precise, ...possible].map(r => r.id || r.name));
+  let possibleList = [...possible];
+  if (possibleList.length < MIN_POSSIBLE) {
+    const extra = getSuggestions(keywords, excludeIds, MIN_POSSIBLE - possibleList.length);
+    possibleList = [...possibleList, ...extra];
   }
 
-  // CASE B — we have matches. Show them, top up to MIN with suggestions if thin.
-  const topUp = results.length < MIN
-    ? getSuggestions(keywords, excludeIds, MIN - results.length)
-    : [];
+  const preciseSection = precise.length
+    ? `<div class="results-header precise">
+        <span>${precise.length}</span> ${escHtml(t('search_precise_title'))}
+      </div>
+      <div id="cards-list-precise">${cardsHTML(precise, { showMatch: true })}</div>`
+    : `<div class="search-noexact">${escHtml(t('search_no_exact'))}</div>`;
 
-  // Exact matches keep their per-member matchedKeywords (drives the "N 項符合" badge)
-  const exactCards = results.map((m, i) =>
-    personCardHTML(m, { matchedKeywords: m.matchedKeywords || [], staggerIndex: i })
-  ).join('');
+  const possibleSection = possibleList.length
+    ? `<div class="results-header possible">
+        <span>${possibleList.length}</span> ${escHtml(t('search_possible_title'))}
+      </div>
+      <div id="cards-list-possible">${cardsHTML(possibleList, { showMatch: true })}</div>`
+    : '';
 
   container.innerHTML = `
-    <div class="results-header">
-      <span>${results.length}</span> ${escHtml(t('search_results'))}
-    </div>
-    <div id="cards-list">${exactCards}</div>
-    ${topUp.length ? `
-      <div class="results-header suggest">
-        <span>${topUp.length}</span> ${escHtml(t('search_suggest_title'))}
-      </div>
-      <div id="suggest-list">${cardsHTML(topUp)}</div>` : ''}
+    ${preciseSection}
+    ${possibleSection}
     ${REFINE_HINT()}`;
 
-  bindCardEvents(document.getElementById('cards-list'), results);
-  if (topUp.length) bindCardEvents(document.getElementById('suggest-list'), topUp);
+  const preciseEl = document.getElementById('cards-list-precise');
+  if (preciseEl) bindCardEvents(preciseEl, precise);
+  const possibleEl = document.getElementById('cards-list-possible');
+  if (possibleEl) bindCardEvents(possibleEl, possibleList);
 }
 
 function resetSearch() {
@@ -188,33 +194,99 @@ function resetSearch() {
   const result   = document.getElementById('ai-result-area');
   const search   = document.getElementById('search-results-area');
   const branches = document.getElementById('branch-browse-area');
+  const industries = document.getElementById('industry-browse-area');
   if (aiBox)    aiBox.style.display    = 'block';
   if (result)   result.style.display   = 'none';
   if (search)   search.style.display   = 'none';
   if (branches) branches.style.display = 'block';
+  if (industries) industries.style.display = 'block';
   const input = document.getElementById('ai-input');
   if (input) { input.value = ''; input.focus(); }
 }
 
+function renderIndustryBrowse(container) {
+  if (!container) return;
+  const rows = mergeIndustryStatsFromPublic(window.BNI_PUBLIC_STATS, window.BNI_MEMBERS);
+  if (!rows.length) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const chip = (row) => `
+    <div class="industry-chip-browse" data-industry="${escHtml(row.id)}" role="button" tabindex="0">
+      ${escHtml(industryLabel(row.id, t))}<span class="chip-count">${row.count}</span>
+    </div>`;
+
+  container.innerHTML = `
+    <div class="section-header"><div class="section-title">${escHtml(t('ind_browse_title'))}</div></div>
+    <div class="branch-section">
+      <div class="industry-browse-grid">${rows.map(chip).join('')}</div>
+    </div>`;
+
+  const go = (id) => showIndustryMembers(id);
+  container.querySelectorAll('[data-industry]').forEach(el => {
+    el.addEventListener('click', () => go(el.dataset.industry));
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(el.dataset.industry); }
+    });
+  });
+}
+
+function showIndustryMembers(industryId) {
+  const members = getMembersByIndustry(industryId);
+  const container = document.getElementById('search-results-area');
+  const branchArea = document.getElementById('branch-browse-area');
+  const industryArea = document.getElementById('industry-browse-area');
+  const aiBox = document.getElementById('search-ai-box');
+  if (!container) return;
+  if (branchArea) branchArea.style.display = 'none';
+  if (industryArea) industryArea.style.display = 'none';
+  if (aiBox) aiBox.style.display = 'none';
+  container.style.display = 'block';
+
+  const label = industryLabel(industryId, t);
+  if (members.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <div class="empty-state-title">${escHtml(label)} — ${escHtml(t('ind_browse_empty'))}</div>
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="results-header">
+      <span>${members.length}</span> ${escHtml(t('search_branch_members'))}${escHtml(label)} ${escHtml(t('ind_browse_members_suffix'))}
+    </div>
+    <div id="cards-list"></div>`;
+
+  const cardsList = document.getElementById('cards-list');
+  cardsList.innerHTML = members.map((m, i) => personCardHTML(m, { staggerIndex: i })).join('');
+  bindCardEvents(cardsList, members);
+  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 function renderBranchBrowse(container) {
   if (!container) return;
-  const zh  = BRANCHES.zhongshan.filter(b => b.count > 0);
-  const san = BRANCHES.sanlu.filter(b => b.count > 0);
+  const { zhongshan, sanlu, guest } = resolveBranchLists(window.BNI_PUBLIC_STATS);
+
+  const chip = (b, region) => {
+    const full = b.fullName || normalizeBranchName(b.name);
+    const label = b.fullName || full;
+    return `<div class="branch-chip ${region}" data-branch="${escHtml(full)}" role="button" tabindex="0">
+      ${escHtml(label)}<span class="chip-count">${b.count}</span>
+    </div>`;
+  };
 
   container.innerHTML = `
     <div class="section-header"><div class="section-title">${escHtml(t('search_browse'))}</div></div>
     <div class="branch-section">
       <div class="branch-region-title">${escHtml(t('search_zhongshan'))}</div>
-      <div class="branch-chips">
-        ${zh.map(b => `<div class="branch-chip zhongshan" data-branch="${escHtml(b.name)}分會" role="button" tabindex="0">
-          ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
-        </div>`).join('')}
-      </div>
+      <div class="branch-chips">${zhongshan.map(b => chip(b, 'zhongshan')).join('')}</div>
       <div class="branch-region-title">${escHtml(t('search_sanlu'))}</div>
-      <div class="branch-chips">
-        ${san.map(b => `<div class="branch-chip sanlu" data-branch="${escHtml(b.name)}分會" role="button" tabindex="0">
-          ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
-        </div>`).join('')}
+      <div class="branch-chips">${sanlu.map(b => chip(b, 'sanlu')).join('')}</div>
+      <div class="branch-region-title">${escHtml(t('search_guest'))}</div>
+      <div class="branch-chips">${guest.length
+        ? guest.map(b => chip(b, 'guest')).join('')
+        : `<p class="branch-empty-hint">${escHtml(t('search_guest_empty'))}</p>`}
       </div>
     </div>`;
 
@@ -236,8 +308,10 @@ function showBranchMembers(branchName) {
   const members   = getMembersByBranch(branchName);
   const container = document.getElementById('search-results-area');
   const branchArea = document.getElementById('branch-browse-area');
+  const industryArea = document.getElementById('industry-browse-area');
   if (!container) return;
   if (branchArea) branchArea.style.display = 'none';
+  if (industryArea) industryArea.style.display = 'none';
   container.style.display = 'block';
 
   if (members.length === 0) {

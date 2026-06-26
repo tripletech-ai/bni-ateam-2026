@@ -2,6 +2,7 @@ import { createClient } from 'https://esm.sh/@insforge/sdk@1.4.2';
 import { INSFORGE_BASE_URL, INSFORGE_ANON_KEY } from '../config/insforge.js';
 import { withRetry } from '../utils/retry.js';
 import { loadSession, saveSession, clearSession } from './sessionStore.js';
+import { isAdminEmail, normalizeAdminEmail } from '../config/admins.js';
 
 const PKCE_KEY = 'bni_oauth_code_verifier';
 
@@ -46,6 +47,14 @@ export function getClient() {
 
 export function getCurrentUser() {
   return currentUser;
+}
+
+export function getAuthEmail() {
+  const u = currentUser || loadSession()?.user;
+  if (!u) return '';
+  return normalizeAdminEmail(
+    u.email || u.user_metadata?.email || u.userMetadata?.email || ''
+  );
 }
 
 export function getMyStatus() {
@@ -232,6 +241,7 @@ export async function registerNewMember(payload) {
     p_line_id: payload.lineId || '',
     p_line_link: payload.lineLink || '',
     p_tags: payload.tags || [],
+    p_industries: payload.industries || [],
   });
   if (error) throw error;
   await refreshStatus();
@@ -245,13 +255,23 @@ export async function completeTutorial() {
 }
 
 export async function checkIsAdmin() {
+  if (isAdminEmail(getAuthEmail())) return true;
+
   try {
     const { data, error } = await getClient().database.rpc('bni_is_admin');
-    if (error) return false;
+    if (error) {
+      console.warn('bni_is_admin RPC:', error.message);
+      return false;
+    }
     return data === true;
-  } catch {
+  } catch (e) {
+    console.warn('checkIsAdmin:', e.message);
     return false;
   }
+}
+
+export function checkIsAdminSync() {
+  return isAdminEmail(getAuthEmail());
 }
 
 export async function fetchPublicStats() {
@@ -284,10 +304,60 @@ export async function updateMyProfile(payload) {
     p_want_referral: payload.wantReferral || '',
     p_line_id: payload.lineId || '',
     p_line_link: payload.lineLink || '',
+    p_bio: payload.bio || '',
+    p_card_link: payload.cardLink || '',
+    p_industries: payload.industries || [],
   });
   if (error) throw error;
   myStatus = data;
   return myStatus;
+}
+
+export async function recordConnectionMark(toMemberId, markType) {
+  const { data, error } = await getClient().database.rpc('bni_record_connection_mark', {
+    p_to_member_id: toMemberId,
+    p_mark_type: markType,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function removeConnectionMark(toMemberId, markType) {
+  const { data, error } = await getClient().database.rpc('bni_remove_connection_mark', {
+    p_to_member_id: toMemberId,
+    p_mark_type: markType,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchIncomingMarks(unseenOnly = true) {
+  return withRetry(async () => {
+    const { data, error } = await getClient().database.rpc('bni_get_incoming_marks', {
+      p_unseen_only: unseenOnly,
+    });
+    if (error) throw error;
+    return Array.isArray(data) ? data : [];
+  }, { label: 'fetchIncomingMarks' });
+}
+
+export async function ackIncomingMarks(markIds = null) {
+  const { data, error } = await getClient().database.rpc('bni_ack_incoming_marks', {
+    p_mark_ids: markIds,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchCardBio(cardUrl) {
+  const res = await fetch('/api/fetch-card-bio', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: cardUrl }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || !data.ok) throw new Error(data.message || '無法讀取名片');
+  return data.bio;
 }
 
 export async function fetchTutorialSteps() {
@@ -360,6 +430,21 @@ export async function adminCreateMember(row) {
     .insert([row])
     .select()
     .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function fetchAdminBranches() {
+  const { data, error } = await getClient().database.rpc('bni_admin_list_branches');
+  if (error) throw error;
+  return Array.isArray(data) ? data : [];
+}
+
+export async function adminMergeBranches(fromBranch, toBranch) {
+  const { data, error } = await getClient().database.rpc('bni_admin_merge_branches', {
+    p_from: fromBranch,
+    p_to: toBranch,
+  });
   if (error) throw error;
   return data;
 }

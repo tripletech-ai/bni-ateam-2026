@@ -3,16 +3,18 @@ export function profileNeedsEnrichment(member) {
   if (!member) return false;
   const prof = (member.profession || '').trim();
   const referral = (member.want_referral || member.wantReferral || '').trim();
-  return !prof || !referral;
+  const bio = (member.bio || '').trim();
+  const industries = Array.isArray(member.industries) ? member.industries : [];
+  return !prof || !referral || !bio || industries.length === 0;
 }
 
 const PRESETS = {
   zh: {
     default: {
       label: '通用範本',
-      profession: '專業服務／顧問',
-      have: '一對一諮詢、客製方案、北北基桃到府／線上服務',
-      wantMeet: '中小企業主、創業者、需要專業協助的決策者',
+      profession: '品牌行銷／社群經營',
+      have: '社群代操、短影音企劃、北北基桃到府／線上服務',
+      wantMeet: '中小企業主、創業者、需要曝光與行銷的決策者',
       wantReferral: '好的引薦：有明確需求、願意約 1-1 聊聊的潛在客戶\n理想引薦：決策快、預算已編列的企業主或採購窗口\n夢幻引薦：產業龍頭、指標性案源或長期策略合作夥伴',
     },
     design: {
@@ -30,8 +32,8 @@ const PRESETS = {
       wantReferral: '好的引薦：近期結婚、買房、生小孩或公司成立的朋友\n理想引薦：年營收穩定、願意討論風險轉嫁的 SME 老闆\n夢幻引薦：家族辦公室、企業主團體或大型組織福委窗口',
     },
     pro: {
-      label: '法律／顧問',
-      profession: '律師／法律顧問',
+      label: '法律／訴訟',
+      profession: '律師／契約與訴訟',
       have: '契約審閱、商業糾紛、公司治理、創業法遵諮詢',
       wantMeet: '新創 founder、中小企業主、人資／法務主管',
       wantReferral: '好的引薦：正在簽約、遇糾紛或想設立公司的朋友\n理想引薦：快速成長、準備融資或跨國交易的企業\n夢幻引薦：上市櫃公司、大型併購或政府標案相關決策者',
@@ -40,9 +42,9 @@ const PRESETS = {
   en: {
     default: {
       label: 'General template',
-      profession: 'Professional services / consulting',
-      have: '1-on-1 consulting, tailored plans, on-site or online in Greater Taipei',
-      wantMeet: 'SME owners, founders, decision-makers who need expert help',
+      profession: 'Brand marketing / social media',
+      have: 'Social management, short-video campaigns, on-site or online in Greater Taipei',
+      wantMeet: 'SME owners, founders, decision-makers who need marketing reach',
       wantReferral: 'Good referral: prospects with clear needs open to a 1-on-1 chat\nIdeal referral: owners with budget and fast decisions\nDream referral: industry leaders or long-term strategic partners',
     },
     design: {
@@ -60,8 +62,8 @@ const PRESETS = {
       wantReferral: 'Good: friends who married, bought a home, had a baby, or started a company\nIdeal: stable SME owners open to risk planning\nDream: family offices or corporate benefits leads',
     },
     pro: {
-      label: 'Legal / advisory',
-      profession: 'Attorney / legal counsel',
+      label: 'Legal / litigation',
+      profession: 'Attorney / contracts & litigation',
       have: 'Contract review, disputes, governance, startup compliance',
       wantMeet: 'Founders, SME owners, HR / legal managers',
       wantReferral: 'Good: friends signing deals, in disputes, or incorporating\nIdeal: fast-growing companies preparing funding or cross-border deals\nDream: listed firms or major M&A / public-sector leads',
