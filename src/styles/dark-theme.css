@@ -903,6 +903,10 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .results-header.possible .results-count,
 .results-header.possible .results-header-title { color: rgba(147,197,253,0.98); }
 .results-header.possible .results-header-title { font-size: 26px; }
+.results-header.network { margin-top: 10px; border-top-color: rgba(74,222,128,0.45); }
+.results-header.network .results-count,
+.results-header.network .results-header-title { color: #86efac; }
+.results-header.network .results-header-title { font-size: 26px; }
 .search-noexact {
   background: rgba(255,255,255,0.04);
   border-left-color: var(--gold-bright);
@@ -1915,6 +1919,7 @@ textarea.field-input {
   color: var(--dark-muted);
 }
 .match-reason-seek, .match-reason-decision { color: var(--gold-bright); border-color: rgba(250,199,117,0.25); }
+.match-reason-network { color: #86efac; border-color: rgba(74,222,128,0.35); }
 .match-reason-referral { color: #d8b4fe; border-color: rgba(168,85,247,0.3); }
 .match-reason-complement { color: #86efac; border-color: rgba(74,222,128,0.25); }
 .match-reason-incoming, .match-reason-mutual { color: #fca5a5; border-color: rgba(248,113,113,0.3); }

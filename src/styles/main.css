@@ -300,6 +300,10 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .results-header.possible .results-count,
 .results-header.possible .results-header-title { color: var(--navy-mid, #185fa5); }
 .results-header.possible .results-header-title { font-size: 24px; }
+.results-header.network { margin-top: 8px; border-top-color: #16a34a; }
+.results-header.network .results-count,
+.results-header.network .results-header-title { color: #16a34a; }
+.results-header.network .results-header-title { font-size: 24px; }
 .search-noexact { margin: 12px 16px 8px; padding: 12px 14px; font-size: 13px; line-height: 1.6; color: var(--muted); background: var(--surface); border-radius: var(--r-sm); border-left: 3px solid var(--gold, #c9a227); }
 .search-refine { display: flex; gap: 10px; align-items: flex-start; margin: 16px; padding: 12px 14px; font-size: 12px; line-height: 1.6; color: var(--muted); background: var(--bg); border-radius: var(--r-sm); }
 .search-refine svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; opacity: 0.7; }

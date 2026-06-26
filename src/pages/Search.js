@@ -191,26 +191,28 @@ function sectionHTML(id, count, titleKey, subtitleKey, list, showMatch) {
 
 function showResults(intent, container) {
   container.style.display = 'block';
-  const { precise, possible, referral } = searchMembersByIntent(intent);
+  const { precise, network, referral, possible } = searchMembersByIntent(intent);
 
   const preciseSection = precise.length
     ? sectionHTML('precise', precise.length, 'search_precise_title', 'search_precise_sub', precise, true)
     : `<div class="search-noexact">${escHtml(t('search_no_exact'))}</div>`;
 
+  const networkSection = sectionHTML('network', network.length, 'search_network_title', 'search_network_sub', network, true);
   const referralSection = sectionHTML('referral', referral.length, 'search_referral_title', 'search_referral_sub', referral, true);
   const possibleSection = sectionHTML('possible', possible.length, 'search_possible_title', 'search_possible_sub', possible, true);
 
-  const emptyHint = !precise.length && !possible.length && !referral.length
+  const emptyHint = !precise.length && !network.length && !possible.length && !referral.length
     ? `<div class="search-noexact">${escHtml(t('search_no_result'))}<br><span style="font-size:12px;opacity:0.8">${escHtml(t('search_no_result_sub'))}</span></div>`
     : '';
 
   container.innerHTML = `
     ${emptyHint || preciseSection}
+    ${networkSection}
     ${referralSection}
     ${possibleSection}
     ${REFINE_HINT()}`;
 
-  for (const [id, list] of [['precise', precise], ['referral', referral], ['possible', possible]]) {
+  for (const [id, list] of [['precise', precise], ['network', network], ['referral', referral], ['possible', possible]]) {
     const el = document.getElementById(`cards-list-${id}`);
     if (el && list.length) bindCardEvents(el, list);
   }

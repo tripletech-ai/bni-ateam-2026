@@ -179,9 +179,8 @@ function scoreMemberByIntent(member, intent) {
   let seekScore = 0;
   let seekSupplyHits = 0;
   let referralScore = 0;
-  let complementScore = 0;
+  let networkScore = 0;
   let peerPenalty = 0;
-  let demandPenalty = 0;
   let contextBonus = 0;
   /** @type {{ type: string, text: string }[]} */
   const matchReasons = [];
@@ -226,8 +225,8 @@ function scoreMemberByIntent(member, intent) {
     }
 
     if (!hit && fieldHit(f.wantMeet, terms)) {
-      demandPenalty += 6;
-      matchReasons.push({ type: 'weak', text: `${kw} — 對方「想認識」此類（可能在找客戶）` });
+      networkScore += 9;
+      matchReasons.push({ type: 'network', text: `同客群：對方也想開發「${kw}」— 可結盟一起找客戶` });
     }
 
     if (hit) matchedKeywords.push(kw);
@@ -245,8 +244,8 @@ function scoreMemberByIntent(member, intent) {
 
   for (const { kw, terms } of iAm) {
     if (fieldHit(f.wantMeet, terms)) {
-      complementScore += 7;
-      matchReasons.push({ type: 'complement', text: `對方想認識「${kw}」類夥伴 — 互補媒合` });
+      networkScore += 8;
+      matchReasons.push({ type: 'network', text: `業務人脈圈：對方想認識「${kw}」類夥伴，可共同服務客群` });
     }
     if (fieldHit(f.profession, terms)) {
       peerPenalty += 14;
@@ -256,8 +255,8 @@ function scoreMemberByIntent(member, intent) {
 
   for (const { kw, terms } of iOffer) {
     if (fieldHit(f.wantMeet, terms)) {
-      complementScore += 5;
-      matchReasons.push({ type: 'complement', text: `你的「${kw}」↔ 對方想認識的對象` });
+      networkScore += 6;
+      matchReasons.push({ type: 'network', text: `你的「${kw}」↔ 對方想開發的客群，可交叉合作` });
     }
   }
 
@@ -282,24 +281,18 @@ function scoreMemberByIntent(member, intent) {
     matchReasons.push({ type: 'branch', text: `同分會（${myBranch}）` });
   }
 
-  const total = seekScore + referralScore + complementScore + socialBonus + contextBonus - peerPenalty - demandPenalty;
-  if (total < 3 && !referralScore && !complementScore) return null;
+  const total = seekScore + referralScore + networkScore + socialBonus + contextBonus - peerPenalty;
+  if (total < 3 && !referralScore && !networkScore) return null;
 
   const isPeer = peerPenalty >= 14 && seekSupplyHits === 0;
-  const isDemandOnly = demandPenalty >= 6 && seekSupplyHits === 0 && referralScore === 0;
 
   let tier = 'possible';
-  if (referralScore >= 6 && seekSupplyHits === 0) {
+  if (seekSupplyHits >= 1 && seekScore >= 8 && !isPeer) {
+    tier = 'precise';
+  } else if (networkScore >= 7 && !isPeer && seekSupplyHits === 0) {
+    tier = 'network';
+  } else if (referralScore >= 6 && seekSupplyHits === 0) {
     tier = 'referral';
-  } else if (
-    seekSupplyHits >= 1 &&
-    seekScore >= 8 &&
-    !isPeer &&
-    !isDemandOnly
-  ) {
-    tier = 'precise';
-  } else if (complementScore >= 7 && !isPeer) {
-    tier = 'precise';
   } else if (referralScore >= 4) {
     tier = 'referral';
   }
@@ -311,6 +304,7 @@ function scoreMemberByIntent(member, intent) {
     _score: total,
     _tier: tier,
     _seekSupplyHits: seekSupplyHits,
+    _networkScore: networkScore,
   };
 }
 
@@ -319,12 +313,13 @@ function scoreMemberByIntent(member, intent) {
  */
 export function searchMembersByIntent(keywordsOrIntent) {
   const intent = normalizeIntent(keywordsOrIntent);
-  const buckets = { precise: [], possible: [], referral: [] };
+  const buckets = { precise: [], network: [], referral: [], possible: [] };
 
   for (const member of getMembers()) {
     const hit = scoreMemberByIntent(member, intent);
     if (!hit) continue;
     if (hit._tier === 'precise') buckets.precise.push(hit);
+    else if (hit._tier === 'network') buckets.network.push(hit);
     else if (hit._tier === 'referral') buckets.referral.push(hit);
     else buckets.possible.push(hit);
   }
@@ -335,7 +330,13 @@ export function searchMembersByIntent(keywordsOrIntent) {
     (b.matchReasons?.length || 0) - (a.matchReasons?.length || 0) ||
     a.name.localeCompare(b.name, 'zh-TW');
 
+  const sortNetwork = (a, b) =>
+    b._networkScore - a._networkScore ||
+    b._score - a._score ||
+    a.name.localeCompare(b.name, 'zh-TW');
+
   buckets.precise.sort(sortHits);
+  buckets.network.sort(sortNetwork);
   buckets.referral.sort(sortHits);
   buckets.possible.sort(sortHits);
 
@@ -344,8 +345,8 @@ export function searchMembersByIntent(keywordsOrIntent) {
 
 /** @param {import('./searchIntent.js').SearchIntent | string[]} keywordsOrIntent */
 export function searchMembersTiered(keywordsOrIntent) {
-  const { precise, possible, referral } = searchMembersByIntent(keywordsOrIntent);
-  return { precise, possible, referral };
+  const { precise, network, possible, referral } = searchMembersByIntent(keywordsOrIntent);
+  return { precise, network, possible, referral };
 }
 
 export function searchMembers(keywordsOrIntent) {

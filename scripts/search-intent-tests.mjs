@@ -35,7 +35,7 @@ const CASES = [
     name: '口語：想要找醫療廠商 → 張松源',
     input: '我是帥哥 想要找醫療廠商',
     assert: (r) => {
-      const z = [...r.precise, ...r.possible, ...r.referral].find(m => m.name === '張松源');
+      const z = [...r.precise, ...r.network, ...r.possible, ...r.referral].find(m => m.name === '張松源');
       return z && (z._tier === 'precise' || z._seekSupplyHits >= 1);
     },
   },
@@ -43,6 +43,11 @@ const CASES = [
     name: '結構化：想找醫美',
     input: '【想找】醫美、診所、醫療健康',
     assert: (r) => r.precise.some(m => m.name === '張松源'),
+  },
+  {
+    name: '律師找企業主 → 業務人脈圈',
+    input: '【我是】律師\n【想找】企業主、創業者',
+    assert: (r) => r.network.length > 0 && r.network.some(m => /行銷|會計|設計|顧問/.test(m.profession || '')),
   },
   {
     name: '排除保險',
