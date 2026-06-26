@@ -68,6 +68,7 @@ function leaderboardPanelHTML() {
   const rows = boards[liveLbMode] || [];
   return `
     <section class="live-panel live-panel-leaderboard${liveMainTab !== 'leaderboard' ? ' hidden' : ''}">
+      <p class="live-lb-sub">${escHtml(t('lb_sub'))}</p>
       ${leaderboardModeTabsHTML(liveLbModes, liveLbMode)}
       <div id="live-leaderboard-list">${leaderboardHTML(rows, { mode: liveLbMode })}</div>
     </section>`;

@@ -47,7 +47,10 @@ export function leaderboardHTML(rows = [], { compact = false, limit = 30, mode =
           <div class="lb-name">${escHtml(row.name || '')}</div>
           <div class="lb-meta">${escHtml(row.branch || '')}${row.profession ? ` · ${escHtml(row.profession)}` : ''}</div>
         </div>
-        <span class="lb-score serif">${row.score ?? 0}</span>
+        <div class="lb-score-wrap" aria-label="${escHtml(String(row.score ?? 0))} ${escHtml(t(keys.scoreUnit))}">
+          <span class="lb-score serif">${row.score ?? 0}</span>
+          <span class="lb-score-unit">${escHtml(t(keys.scoreUnit))}</span>
+        </div>
       </div>`;
   }).join('');
 

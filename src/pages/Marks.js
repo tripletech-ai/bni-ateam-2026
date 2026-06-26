@@ -203,6 +203,13 @@ function bindIncomingSection(container) {
   });
 }
 
+function updateIncomingCount(container, rows) {
+  const countEl = container.querySelector('#marks-incoming-count');
+  if (!countEl) return;
+  const list = (rows || []).filter(r => r.mark_type === 'one');
+  countEl.textContent = list.length ? t('marks_incoming_count', { n: list.length }) : '';
+}
+
 async function loadIncomingSection(container) {
   const section = container.querySelector('#marks-incoming');
   if (!section) return;
@@ -212,6 +219,7 @@ async function loadIncomingSection(container) {
     const unseen = rows.filter(r => !r.seen_by_target);
     setIncomingUnseenCount(unseen.length);
     section.innerHTML = incomingSectionHTML(rows);
+    updateIncomingCount(container, rows);
 
     const ackAll = container.querySelector('#marks-incoming-ack-all');
     if (ackAll) {
@@ -273,7 +281,7 @@ export function renderMarks(container) {
   container.innerHTML = `
     <div class="marks-page">
       <div class="section-header marks-incoming-header">
-        <div class="section-title">${escHtml(t('marks_incoming_title'))}</div>
+        <div class="section-title">${escHtml(t('marks_incoming_title'))}<span id="marks-incoming-count" class="marks-incoming-count" aria-live="polite"></span></div>
         <p class="marks-incoming-sub">${escHtml(t('marks_incoming_sub'))}</p>
       </div>
       <div id="marks-incoming" class="marks-incoming-list" aria-live="polite">
@@ -287,6 +295,7 @@ export function renderMarks(container) {
       </div>
       <div class="section-header"><div class="section-title">${escHtml(t('marks_page_title'))}</div></div>
       ${statsGridHTML(connected, oneCount, bizCount)}
+      <p class="marks-stats-hint">${escHtml(t('marks_stats_hint'))}</p>
       ${goalProgressHTML()}
       ${goalHintHTML(connected, oneCount)}
       <div class="section-header marks-list-header">

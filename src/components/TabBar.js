@@ -35,8 +35,11 @@ export function renderTabBar(el, currentHash, opts = {}) {
     const badgeLabel = incomingUnseen > 0
       ? t('tab_badge_incoming', { n: incomingUnseen })
       : t('tab_badge_marks', { n: oneMarkCount });
+    const badgeText = incomingUnseen > 0
+      ? t('tab_badge_incoming_short', { n: incomingUnseen })
+      : t('tab_badge_marks_short', { n: oneMarkCount });
     const badge = isMarks && marksBadgeCount > 0
-      ? `<span class="tab-badge${incomingUnseen > 0 ? ' tab-badge-incoming' : ''}" aria-label="${escHtml(badgeLabel)}">${marksBadgeCount}</span>` : '';
+      ? `<span class="tab-badge${incomingUnseen > 0 ? ' tab-badge-incoming tab-badge-pill' : ' tab-badge-pill'}" title="${escHtml(badgeLabel)}" aria-label="${escHtml(badgeLabel)}">${escHtml(badgeText)}</span>` : '';
     const warnDot = tab.warn
       ? `<span class="tab-warn-dot" aria-hidden="true"></span>` : '';
     return `<button
