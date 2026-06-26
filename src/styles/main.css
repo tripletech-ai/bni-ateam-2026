@@ -1315,6 +1315,11 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 }
 .chat-send-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .chat-send-btn:not(:disabled):active { transform: scale(0.94); }
+
+.feed-rate-hint {
+  margin: 6px 4px 0; font-size: 11px; text-align: center;
+  opacity: 0.55; line-height: 1.4;
+}
 .chat-bubble-mine {
   flex-direction: row-reverse;
   margin-left: 15%;
@@ -1459,3 +1464,40 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 .user-bar {
   position: relative;
 }
+.user-bar-inner {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+}
+.user-bar-actions {
+  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+}
+.user-bar-switch {
+  border: 1px solid rgba(201,162,39,0.45);
+  background: rgba(201,162,39,0.12);
+  color: var(--gold, #c9a227);
+  font-size: calc(12px * var(--fs-k, 0.78));
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.user-bar-switch:active { transform: scale(0.98); }
+.profile-switch-identity-card {
+  margin: 0 16px 16px; padding: 16px;
+  border-radius: var(--r-sm);
+  border: 1px dashed rgba(201,162,39,0.45);
+  background: rgba(201,162,39,0.06);
+}
+.profile-switch-badge {
+  display: inline-block; font-size: 11px; font-weight: 700;
+  letter-spacing: 0.5px; padding: 3px 10px; border-radius: 999px;
+  background: rgba(201,162,39,0.18); color: var(--gold, #c9a227); margin-bottom: 10px;
+}
+.profile-switch-title { font-size: calc(16px * var(--fs-k, 0.78)); font-weight: 700; margin: 0 0 8px; }
+.profile-switch-lead { font-size: calc(13px * var(--fs-k, 0.78)); line-height: 1.55; opacity: 0.85; margin: 0 0 10px; }
+.profile-switch-steps {
+  margin: 0 0 14px 18px; padding: 0;
+  font-size: calc(13px * var(--fs-k, 0.78)); line-height: 1.6; opacity: 0.88;
+}
+.profile-reclaim-btn-prominent { width: 100%; font-weight: 600; }

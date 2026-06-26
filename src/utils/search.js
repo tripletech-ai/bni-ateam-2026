@@ -312,11 +312,12 @@ function scoreMemberByIntent(member, intent) {
   if (total < 3 && !referralScore && !networkScore) return null;
 
   const isPeer = peerPenalty >= 14 && seekSupplyHits === 0;
+  const isSameProfessionPeer = peerPenalty >= 14 && iAm.length > 0;
 
   let tier = 'possible';
-  if (seekSupplyHits >= 1 && seekScore >= 8 && !isPeer) {
+  if (seekSupplyHits >= 1 && seekScore >= 8 && !isPeer && !isSameProfessionPeer) {
     tier = 'precise';
-  } else if (networkScore >= 7 && !isPeer && seekSupplyHits === 0) {
+  } else if (networkScore >= 7 && !isPeer && !isSameProfessionPeer && seekSupplyHits === 0) {
     tier = 'network';
   } else if (referralScore >= 6 && seekSupplyHits === 0) {
     tier = 'referral';

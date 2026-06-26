@@ -1,20 +1,11 @@
 /** @typedef {{ iAm: string[], iOffer: string[], iSeek: string[], iRefer: string[], exclude: string[] }} SearchIntent */
 
+/** 每次回傳新陣列，避免 shallow copy 污染全域狀態 */
+export function emptyIntent() {
+  return { iAm: [], iOffer: [], iSeek: [], iRefer: [], exclude: [] };
+}
 
-
-export const EMPTY_INTENT = /** @type {SearchIntent} */ ({
-
-  iAm: [],
-
-  iOffer: [],
-
-  iSeek: [],
-
-  iRefer: [],
-
-  exclude: [],
-
-});
+export const EMPTY_INTENT = emptyIntent();
 
 
 
@@ -48,11 +39,11 @@ const IAM_NOISE_RE = /^(帥哥|美女|帥|美|新人|小白|路過|測試|試試
 
 export function normalizeIntent(raw) {
 
-  if (!raw) return { ...EMPTY_INTENT };
+  if (!raw) return emptyIntent();
 
   if (Array.isArray(raw)) {
 
-    return { ...EMPTY_INTENT, iSeek: KW(raw) };
+    return { ...emptyIntent(), iSeek: KW(raw) };
 
   }
 
@@ -116,7 +107,7 @@ function splitList(text) {
 
 export function extractSeekFromPlainText(text) {
 
-  const intent = { ...EMPTY_INTENT };
+  const intent = emptyIntent();
 
   if (!text?.trim()) return intent;
 
@@ -176,7 +167,7 @@ export function extractSeekFromPlainText(text) {
 
 export function sanitizeIam(intent) {
 
-  const out = { ...EMPTY_INTENT, ...intent };
+  const out = { ...emptyIntent(), ...intent };
 
   const fixedIam = [];
 
@@ -209,8 +200,7 @@ export function sanitizeIam(intent) {
 
 
   out.iAm = KW(fixedIam);
-
-  out.iSeek = KW([...out.iSeek, ...extraSeek]);
+  out.iSeek = KW([...out.iSeek, ...extraSeek].filter(t => !IAM_NOISE_RE.test(t)));
 
   out.iOffer = KW(out.iOffer);
 
@@ -254,7 +244,7 @@ function repairSeekIfEmpty(intent, fullText) {
 
 export function parseStructuredInput(input) {
 
-  const intent = { ...EMPTY_INTENT };
+  const intent = emptyIntent();
 
   if (!input?.trim()) return intent;
 

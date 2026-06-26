@@ -54,7 +54,7 @@ function regionForBranch(branch, fallbackRegion = '') {
   return fallbackRegion || 'guest';
 }
 
-/** 依分會 + 姓名綁定既有名單，或建立新檔案 */
+/** 依分會 + 姓名綁定既有名單，或建立新檔案（同名已認領時後端會複製新檔） */
 export async function claimByNameBranch({ name, branch, region = '' }) {
   const trimmedName = String(name || '').trim();
   const normBranch = normalizeRegisterBranch(branch);
@@ -66,17 +66,10 @@ export async function claimByNameBranch({ name, branch, region = '' }) {
   }
 
   const matches = findMembersByNameBranch(trimmedName, normBranch);
-  const unclaimed = matches.filter(m => m.dbId && !m.authUserId);
-
-  if (unclaimed.length === 1) {
-    return bindExistingMember(unclaimed[0].dbId);
-  }
-
-  if (matches.length >= 1 && unclaimed.length === 0) {
-    throw new Error('ALREADY_BOUND');
-  }
-  if (unclaimed.length > 1) {
-    throw new Error('MULTIPLE_MATCHES');
+  const roster = matches.filter(m => m.dbId);
+  if (roster.length >= 1) {
+    const target = roster.find(m => !m.authUserId) || roster[0];
+    return bindExistingMember(target.dbId);
   }
 
   return registerNewMember({

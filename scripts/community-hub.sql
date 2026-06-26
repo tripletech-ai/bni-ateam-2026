@@ -143,7 +143,7 @@ BEGIN
   IF v_my_id IS NULL THEN RAISE EXCEPTION 'NOT_BOUND'; END IF;
 
   SELECT last_message_at INTO v_last FROM bni_feed_rate WHERE member_id = v_my_id;
-  IF v_last IS NOT NULL AND v_last > now() - interval '60 seconds' THEN
+  IF v_last IS NOT NULL AND v_last > now() - interval '10 seconds' THEN
     RAISE EXCEPTION 'RATE_LIMIT';
   END IF;
 

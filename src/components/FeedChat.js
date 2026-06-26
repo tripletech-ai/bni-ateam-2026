@@ -1,6 +1,10 @@
 import { escHtml, escAttr } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
+import { showToast } from '../utils/toast.js';
 import { guestFeedLoginHTML } from './GuestTrialBanner.js';
+
+/** 與後端 bni_post_feed_message 限速一致 */
+export const FEED_COOLDOWN_MS = 10_000;
 
 const SEND_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>`;
 
@@ -105,7 +109,8 @@ export function feedComposerHTML() {
       <button type="button" id="feed-submit" class="chat-send-btn" aria-label="${escAttr(t('feed_post'))}">
         ${SEND_ICON}
       </button>
-    </div>`;
+    </div>
+    <p class="feed-rate-hint" id="feed-rate-hint">${escHtml(t('feed_rate_hint'))}</p>`;
 }
 
 export function feedSectionHTML(items) {
@@ -145,17 +150,58 @@ export function bindFeedComposer(onPost) {
   if (!btn || !input) return;
 
   bindInputAutoGrow(input);
+  let lastPostAt = 0;
+  let cooldownTimer = null;
+
+  const hintEl = document.getElementById('feed-rate-hint');
+
+  const clearCooldownUi = () => {
+    if (cooldownTimer) {
+      clearInterval(cooldownTimer);
+      cooldownTimer = null;
+    }
+    btn.disabled = false;
+    if (hintEl) hintEl.textContent = t('feed_rate_hint');
+  };
+
+  const startCooldownUi = (msLeft = FEED_COOLDOWN_MS) => {
+    btn.disabled = true;
+    const tick = () => {
+      const remain = Math.ceil((lastPostAt + FEED_COOLDOWN_MS - Date.now()) / 1000);
+      if (remain <= 0) {
+        clearCooldownUi();
+        return;
+      }
+      if (hintEl) hintEl.textContent = t('feed_rate_countdown').replace('{n}', String(remain));
+    };
+    tick();
+    cooldownTimer = setInterval(tick, 500);
+  };
 
   const submit = async () => {
     const text = input.value.trim();
     if (!text) return;
+    const now = Date.now();
+    if (now - lastPostAt < FEED_COOLDOWN_MS) {
+      showToast(t('feed_rate_limit'));
+      startCooldownUi(lastPostAt + FEED_COOLDOWN_MS - now);
+      return;
+    }
     btn.disabled = true;
     try {
-      await onPost(text);
-      input.value = '';
-      input.style.height = 'auto';
+      const ok = await onPost(text);
+      if (ok) {
+        input.value = '';
+        input.style.height = 'auto';
+        lastPostAt = Date.now();
+        startCooldownUi();
+      } else {
+        clearCooldownUi();
+      }
+    } catch {
+      clearCooldownUi();
     } finally {
-      btn.disabled = false;
+      if (!cooldownTimer) btn.disabled = false;
       input.focus();
     }
   };

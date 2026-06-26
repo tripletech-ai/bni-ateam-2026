@@ -20,7 +20,6 @@ import {
   ensureSessionFresh,
   getCurrentUser,
   getMyStatus,
-  signInWithGoogle,
 } from '../services/auth.js';
 import { showToast } from '../utils/toast.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
@@ -88,7 +87,7 @@ function sessionBannerHTML() {
   return `
     <div class="live-session-banner" role="alert">
       <p>${escHtml(t('feed_session_expired'))}</p>
-      <button type="button" class="btn-ai live-session-relogin">${escHtml(t('guest_banner_login'))}</button>
+      <button type="button" class="btn-ai live-session-relogin">${escHtml(t('feed_session_relogin'))}</button>
     </div>`;
 }
 
@@ -180,12 +179,9 @@ function showSessionBanner(container) {
   const chatRoom = container.querySelector('.chat-room');
   if (!chatRoom || chatRoom.querySelector('.live-session-banner')) return;
   chatRoom.insertAdjacentHTML('afterbegin', sessionBannerHTML());
-  chatRoom.querySelector('.live-session-relogin')?.addEventListener('click', async () => {
-    try {
-      await signInWithGoogle();
-    } catch (e) {
-      showToast(e.message || t('guest_login_fail'));
-    }
+  chatRoom.querySelector('.live-session-relogin')?.addEventListener('click', () => {
+    location.hash = '';
+    location.reload();
   });
 }
 
@@ -229,18 +225,17 @@ function onPostFeed(container) {
         if (!ok) {
           showSessionBanner(container);
           showToast(t('feed_session_expired'));
-          return;
+          return false;
         }
         hideSessionBanner(container);
       }
       const result = await postFeedMessage(text);
       if (liveMainTab !== 'chat') switchLiveTab(container, 'chat');
-      // 立即顯示（不等排行榜載入）
       const optimistic = optimisticFeedItem(text, result);
       pushFeedToUI(container, appendFeedItem(window.BNI_FEED || [], optimistic));
       showToast(t('feed_post_ok'));
-      // 背景同步正式資料
       refreshFeedOnly(container).catch(e => console.warn('feed sync:', e.message));
+      return true;
     } catch (e) {
       const msg = e.message || '';
       if (/RATE_LIMIT/i.test(msg)) showToast(t('feed_rate_limit'));
@@ -250,6 +245,7 @@ function onPostFeed(container) {
         showToast(t('feed_session_expired'));
       }
       else showToast(t('feed_post_fail'));
+      return false;
     }
   };
 }

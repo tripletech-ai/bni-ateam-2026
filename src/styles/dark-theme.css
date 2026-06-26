@@ -2180,5 +2180,18 @@ textarea.field-input {
 }
 .user-bar-menu button { color: var(--dark-text); }
 .user-bar-menu button:hover { background: rgba(255,255,255,0.06); }
+.user-bar-switch {
+  border-color: rgba(250,199,117,0.4);
+  background: rgba(250,199,117,0.1);
+  color: var(--gold-bright);
+}
+.profile-switch-identity-card {
+  border-color: rgba(250,199,117,0.35);
+  background: rgba(250,199,117,0.05);
+}
+.profile-switch-badge {
+  background: rgba(250,199,117,0.15);
+  color: var(--gold-bright);
+}
 .login-google-divider::before, .login-google-divider::after { background: var(--dark-border); }
 .user-bar { position: relative; }

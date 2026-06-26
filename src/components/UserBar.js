@@ -4,6 +4,18 @@ import { profileNeedsEnrichment } from '../utils/profileHints.js';
 import { t } from '../i18n/translations.js';
 import { showToast } from '../utils/toast.js';
 
+async function confirmReclaim() {
+  if (!window.confirm(t('reclaim_confirm_detail'))) return;
+  try {
+    await selfUnbind();
+    showToast(t('reclaim_ok'));
+    location.hash = '';
+    location.reload();
+  } catch (e) {
+    showToast(e.message || t('reclaim_fail'));
+  }
+}
+
 export function renderUserBar(el) {
   if (!el) return;
   const status = getMyStatus();
@@ -30,6 +42,9 @@ export function renderUserBar(el) {
         ${profileNeedsEnrichment(member)
           ? `<button type="button" class="user-bar-edit user-bar-edit-warn" id="user-profile-btn">${escHtml(t('profile_enrich_btn'))}</button>`
           : `<button type="button" class="user-bar-edit" id="user-profile-btn">${escHtml(t('profile_short'))}</button>`}
+        <button type="button" class="user-bar-switch" id="user-bar-switch-btn" title="${escAttr(t('user_bar_reclaim'))}">
+          ${escHtml(t('user_bar_reclaim_short'))}
+        </button>
         <button type="button" class="user-bar-menu-btn" id="user-menu-btn" aria-label="${escHtml(t('account_section_title'))}" aria-haspopup="true">⋯</button>
       </div>
     </div>
@@ -43,6 +58,7 @@ export function renderUserBar(el) {
   const goProfile = () => { location.hash = 'profile'; };
   el.querySelector('#user-bar-profile-link')?.addEventListener('click', goProfile);
   el.querySelector('#user-profile-btn')?.addEventListener('click', goProfile);
+  el.querySelector('#user-bar-switch-btn')?.addEventListener('click', confirmReclaim);
   el.querySelector('#user-menu-profile')?.addEventListener('click', () => {
     el.querySelector('#user-bar-menu')?.classList.add('hidden');
     goProfile();
@@ -58,15 +74,7 @@ export function renderUserBar(el) {
 
   el.querySelector('#user-menu-reclaim')?.addEventListener('click', async () => {
     menu?.classList.add('hidden');
-    if (!window.confirm(t('reclaim_confirm_detail'))) return;
-    try {
-      await selfUnbind();
-      showToast(t('reclaim_ok'));
-      location.hash = '';
-      location.reload();
-    } catch (e) {
-      showToast(e.message || t('reclaim_fail'));
-    }
+    await confirmReclaim();
   });
 
   el.querySelector('#user-menu-signout')?.addEventListener('click', async () => {
@@ -80,4 +88,8 @@ export function renderUserBar(el) {
       showToast(e.message || '登出失敗');
     }
   });
+}
+
+function escAttr(s) {
+  return String(s || '').replace(/"/g, '&quot;');
 }

@@ -1,6 +1,6 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
-import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, selfUnbind, signOut, ensureAuthSession, hasGoogleAccount } from '../services/auth.js';
+import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, selfUnbind, signOut, ensureAuthSession } from '../services/auth.js';
 import { getCardLink } from '../data/cardLinks.js';
 import { fieldPlaceholder, referralPlaceholder } from '../utils/profileHints.js';
 import {
@@ -58,7 +58,6 @@ export function renderProfileEdit(container) {
   }
 
   const f = fieldMember();
-  const authLabel = hasGoogleAccount() ? t('account_auth_google') : t('account_auth_device');
   container.innerHTML = `
     <div class="profile-edit-wrap">
       <div class="profile-edit-head">
@@ -70,7 +69,18 @@ export function renderProfileEdit(container) {
         <div class="account-identity-label">${escHtml(t('account_identity'))}</div>
         <div class="account-identity-name serif">${escHtml(f.name)}</div>
         <div class="account-identity-meta">${escHtml(f.branch)}</div>
-        <div class="account-auth-badge">${escHtml(authLabel)}</div>
+      </section>
+
+      <section class="profile-switch-identity-card" aria-labelledby="profile-switch-heading">
+        <div class="profile-switch-badge">${escHtml(t('account_switch_badge'))}</div>
+        <h2 id="profile-switch-heading" class="profile-switch-title">${escHtml(t('account_switch_title'))}</h2>
+        <p class="profile-switch-lead">${escHtml(t('account_switch_hint'))}</p>
+        <ol class="profile-switch-steps">
+          <li>${escHtml(t('account_switch_steps_1'))}</li>
+          <li>${escHtml(t('account_switch_steps_2'))}</li>
+          <li>${escHtml(t('account_switch_steps_3'))}</li>
+        </ol>
+        <button type="button" class="btn-outline profile-reclaim-btn profile-reclaim-btn-prominent" id="profile-reclaim-btn">${escHtml(t('user_bar_reclaim'))}</button>
       </section>
 
       <div class="profile-edit-tip profile-edit-tip-compact">${escHtml(t('profile_tip_short'))}</div>
@@ -125,8 +135,6 @@ export function renderProfileEdit(container) {
 
       <section class="profile-account-section" aria-labelledby="profile-account-heading">
         <h2 id="profile-account-heading" class="profile-account-title">${escHtml(t('account_section_title'))}</h2>
-        <p class="profile-reclaim-hint">${escHtml(t('account_switch_hint'))}</p>
-        <button type="button" class="btn-outline profile-reclaim-btn" id="profile-reclaim-btn">${escHtml(t('user_bar_reclaim'))}</button>
         <p class="profile-signout-hint">${escHtml(t('account_signout_hint'))}</p>
         <button type="button" class="btn-text profile-signout-btn" id="profile-signout-btn">${escHtml(t('user_bar_signout'))}</button>
       </section>

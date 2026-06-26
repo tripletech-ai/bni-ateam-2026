@@ -36,6 +36,7 @@ import { guestTrialBannerHTML, bindGuestTrialLogin } from './components/GuestTri
 import { showToast } from './utils/toast.js';
 import { notifyProfileMilestone } from './utils/profileMilestone.js';
 import { clearPendingClaim } from './utils/memberClaim.js';
+import { normalizeAppUrl } from './utils/appUrl.js';
 
 // ── Language ──────────────────────────────────────
 window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
