@@ -101,6 +101,13 @@ export function feedSectionHTML(items) {
   return chatRoomHTML(items);
 }
 
+export function appendFeedItem(items, item) {
+  const list = Array.isArray(items) ? [...items] : [];
+  if (item?.id && list.some(x => x.id === item.id)) return list;
+  list.push(item);
+  return list;
+}
+
 export function scrollChatToBottom(container) {
   const el = container?.querySelector('.chat-messages');
   if (el) el.scrollTop = el.scrollHeight;

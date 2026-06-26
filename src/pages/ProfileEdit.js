@@ -1,6 +1,6 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
-import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio } from '../services/auth.js';
+import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, selfUnbind, signOut } from '../services/auth.js';
 import { getCardLink } from '../data/cardLinks.js';
 import { fieldPlaceholder, referralPlaceholder } from '../utils/profileHints.js';
 import {
@@ -106,6 +106,12 @@ export function renderProfileEdit(container) {
 
         <button type="submit" class="btn-ai profile-save-btn">${escHtml(t('profile_save'))}</button>
       </form>
+
+      <div class="profile-reclaim-section">
+        <p class="profile-reclaim-hint">${escHtml(t('profile_reclaim_hint'))}</p>
+        <button type="button" class="btn-outline profile-reclaim-btn" id="profile-reclaim-btn">${escHtml(t('user_bar_reclaim'))}</button>
+        <button type="button" class="btn-text profile-signout-btn" id="profile-signout-btn">${escHtml(t('user_bar_signout'))}</button>
+      </div>
     </div>
   `;
 
@@ -114,6 +120,28 @@ export function renderProfileEdit(container) {
 
   container.querySelector('#profile-back')?.addEventListener('click', () => {
     location.hash = 'home';
+  });
+
+  container.querySelector('#profile-reclaim-btn')?.addEventListener('click', async () => {
+    if (!window.confirm(t('reclaim_confirm'))) return;
+    try {
+      await selfUnbind();
+      showToast(t('reclaim_ok'));
+      location.hash = '';
+      location.reload();
+    } catch (err) {
+      showToast(err.message || t('reclaim_fail'));
+    }
+  });
+
+  container.querySelector('#profile-signout-btn')?.addEventListener('click', async () => {
+    try {
+      await signOut();
+      location.hash = '';
+      location.reload();
+    } catch (err) {
+      showToast(err.message || '登出失敗');
+    }
   });
 
   container.querySelector('#import-bio-btn')?.addEventListener('click', async () => {

@@ -1083,6 +1083,44 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   cursor: pointer;
 }
 .user-bar-signout:active { background: rgba(255,255,255,0.12); }
+.user-bar-reclaim {
+  font-size: 10px; font-weight: 600;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.15);
+  background: transparent;
+  color: var(--dark-muted);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.user-bar-reclaim:active { background: rgba(255,255,255,0.08); }
+
+.profile-reclaim-section {
+  margin-top: 24px; padding-top: 20px;
+  border-top: 1px solid var(--dark-border);
+}
+.profile-reclaim-hint { font-size: 12px; color: var(--dark-muted); margin-bottom: 12px; line-height: 1.55; }
+.profile-reclaim-btn, .profile-signout-btn { width: 100%; margin-top: 8px; }
+.profile-signout-btn { margin-top: 4px; }
+
+.onboard-region-btns { display: flex; flex-direction: column; gap: 10px; }
+
+.onboard-area-title { color: var(--gold-bright); }
+.onboard-region-chip {
+  background: rgba(255,255,255,0.05);
+  border-color: var(--dark-border);
+}
+.onboard-region-chip-label { color: var(--dark-text); }
+.onboard-region-chip-count { color: var(--dark-muted); }
+.event-chapter-chip.ateam-roster {
+  border-color: rgba(250,199,117,0.45);
+  background: rgba(250,199,117,0.12);
+}
+.ateam-roster-badge {
+  background: rgba(250,199,117,0.15);
+  color: var(--gold-bright);
+  border-color: rgba(250,199,117,0.35);
+}
 
 /* ── Goal progress ── */
 .goal-progress {
@@ -1959,3 +1997,9 @@ textarea.field-input {
 .inapp-browser-lead { color: var(--dark-text); }
 .inapp-browser-steps { color: var(--dark-muted); }
 .inapp-browser-note { color: var(--dark-subtle); }
+
+.login-skip-hint {
+  background: rgba(74,222,128,0.12);
+  border-color: rgba(74,222,128,0.35);
+  color: rgba(255,255,255,0.88);
+}

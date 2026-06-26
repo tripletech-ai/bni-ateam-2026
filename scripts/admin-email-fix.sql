@@ -13,7 +13,7 @@ $$;
 
 CREATE OR REPLACE FUNCTION bni_is_admin()
 RETURNS boolean LANGUAGE sql SECURITY DEFINER SET search_path = public AS $$
-  SELECT bni_current_jwt_email() IN ('b1993614@gmail.com', 'tripletech.ai@gmail.com');
+  SELECT bni_current_jwt_email() IN ('b1993614@gmail.com', 'tripletech.ai@gmail.com', 'samuel900731@gmail.com');
 $$;
 
 GRANT EXECUTE ON FUNCTION bni_is_admin() TO authenticated;

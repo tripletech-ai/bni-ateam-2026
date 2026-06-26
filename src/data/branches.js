@@ -120,6 +120,21 @@ export function resolveBranchLists(stats) {
   };
 }
 
+export function regionBranchPickerHTML(region, selected = '') {
+  const list = BRANCHES[region] || [];
+  return list.map(b => {
+    const full = `${b.name}分會`;
+    const active = full === selected ? ' active' : '';
+    return `<button type="button" class="ateam-pick-chip ${region}${active}" data-branch="${full}">${b.name}</button>`;
+  }).join('');
+}
+
+export const REGION_LABELS = {
+  zhongshan: '中山區',
+  sanlu: '三蘆區',
+  guest: '其他分會',
+};
+
 /** 20 分會圖框 HTML（認領頁用） */
 export function ateamBranchGridHTML() {
   const chip = (b, region) =>

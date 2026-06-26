@@ -595,6 +595,24 @@ html { scroll-behavior: smooth; }
 .onboard-hint { font-size: 13px; color: var(--text); margin-bottom: 16px; line-height: 1.55; }
 .onboard-btn { width: 100%; margin-top: 10px; }
 .onboard-panel { margin-top: 8px; }
+.onboard-region-btns { display: flex; flex-direction: column; gap: 10px; }
+.onboard-area-group { margin-bottom: 16px; }
+.onboard-area-title { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px; }
+.onboard-region-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.onboard-region-chip {
+  text-align: left; padding: 10px 12px; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: var(--bg);
+  min-width: calc(50% - 4px); flex: 1 1 calc(50% - 4px);
+}
+.onboard-region-chip-label { display: block; font-size: 13px; font-weight: 600; color: var(--text); }
+.onboard-region-chip-count { font-size: 11px; color: var(--muted); }
+.onboard-or-divider { text-align: center; margin: 14px 0 10px; }
+.chapter-search-results { margin: 8px 0 4px; max-height: 220px; overflow-y: auto; }
+.ateam-roster-badge {
+  font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 4px;
+  background: var(--gold-light); color: var(--gold); border: 1px solid rgba(186,117,23,0.35);
+}
+.event-chapter-chip.ateam-roster { border-color: var(--gold); background: var(--gold-light); }
 .btn-outline {
   width: 100%; margin-top: 10px; padding: 14px;
   border: 1.5px solid var(--navy); border-radius: var(--r-sm);
@@ -962,6 +980,12 @@ html { scroll-behavior: smooth; }
 .login-guest-trial-note {
   font-size: 12px; line-height: 1.55; color: var(--muted);
   margin: 10px 0 0; text-align: center;
+}
+.login-skip-hint {
+  font-size: 13px; line-height: 1.6; color: var(--text);
+  margin: 14px 0 0; text-align: center;
+  padding: 12px 14px; border-radius: var(--r-sm);
+  background: var(--green-light); border: 1px solid rgba(59,109,17,0.25);
 }
 .guest-trial-banner {
   margin: 0 0 12px; padding: 12px 16px;

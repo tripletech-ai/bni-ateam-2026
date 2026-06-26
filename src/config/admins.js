@@ -2,6 +2,7 @@
 export const ADMIN_EMAILS = Object.freeze([
   'b1993614@gmail.com',
   'tripletech.ai@gmail.com',
+  'samuel900731@gmail.com',
 ]);
 
 export function normalizeAdminEmail(email) {

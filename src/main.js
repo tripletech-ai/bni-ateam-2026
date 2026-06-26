@@ -23,6 +23,7 @@ import {
   fetchFeed,
   fetchLiveSettings,
   tryAutoBindOnLogin,
+  fetchEventChapters,
 } from './services/auth.js';
 import { showIncomingOneOverlay } from './components/IncomingOneBanner.js';
 import { renderUserBar } from './components/UserBar.js';
@@ -274,6 +275,16 @@ function syncProfileMilestone() {
   if (hit) window.BNI_PROFILE_MILESTONE = hit;
 }
 
+async function loadEventChaptersWithRetry() {
+  try {
+    window.BNI_EVENT_CHAPTERS = await withRetry(() => fetchEventChapters(), {
+      retries: 2, delayMs: 500, label: 'eventChapters',
+    });
+  } catch (e) {
+    console.warn('Event chapters load failed, using static registry:', e.message);
+  }
+}
+
 async function loadPublicStatsWithRetry() {
   try {
     window.BNI_PUBLIC_STATS = await withRetry(() => fetchPublicStats(), {
@@ -295,6 +306,7 @@ async function enterGuestMode() {
     }
   }
   await loadPublicStatsWithRetry();
+  await loadEventChaptersWithRetry();
   preloadLiveData();
   isAdmin = false;
   appReady = true;
@@ -332,6 +344,7 @@ async function boot() {
     }
   }
   await loadPublicStatsWithRetry();
+  await loadEventChaptersWithRetry();
 
   const user = getCurrentUser();
   if (!user) {

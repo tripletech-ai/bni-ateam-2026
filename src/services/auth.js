@@ -315,6 +315,15 @@ export async function tryAutoBindOnLogin() {
   }
 }
 
+/** 解除名單綁定，保留 Google 登入以便重新認領 */
+export async function selfUnbind() {
+  const { data, error } = await getClient().database.rpc('bni_self_unbind');
+  if (error) throw error;
+  myStatus = { authenticated: true, bound: false, tutorial_done: false };
+  if (typeof window !== 'undefined') window.BNI_MY_BRANCH = '';
+  return data;
+}
+
 export async function bindExistingMember(memberId) {
   const { data, error } = await getClient().database.rpc('bni_bind_existing_member', {
     p_member_id: memberId,
@@ -410,6 +419,15 @@ export async function fetchPublicStats() {
     if (error) throw error;
     return data;
   }, { label: 'fetchPublicStats' });
+}
+
+export async function fetchEventChapters() {
+  return withRetry(async () => {
+    const { data, error } = await getAnonClient().database.rpc('bni_get_event_chapters');
+    if (error) throw error;
+    const regions = Array.isArray(data) ? data : [];
+    return { regions };
+  }, { label: 'fetchEventChapters' });
 }
 
 export async function fetchEventPulse() {
