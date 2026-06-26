@@ -1678,11 +1678,15 @@ body.guest-trial-mode #user-bar { display: none !important; }
   position: fixed; inset: 0; z-index: 10002;
   background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center;
   padding: 20px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
 }
 .app-confirm-card {
   width: 100%; max-width: 340px; padding: 20px 18px 18px;
   border-radius: var(--r); background: var(--surface);
   border: 1px solid var(--border); box-shadow: var(--shadow-md);
+  position: relative;
+  z-index: 1;
 }
 .app-confirm-title { font-size: 18px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
 .app-confirm-message { font-size: 14px; line-height: 1.6; margin: 0 0 16px; color: var(--muted); }

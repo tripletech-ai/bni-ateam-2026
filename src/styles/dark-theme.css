@@ -2287,9 +2287,25 @@ textarea.field-input {
 }
 .guest-trial-intro-ok:active { background: rgba(250, 199, 117, 0.2); }
 
-.app-confirm-card { background: var(--dark-surface); border-color: var(--dark-border); }
+.app-confirm-overlay {
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.app-confirm-card {
+  background: #101629;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 24px 48px rgba(0, 0, 0, 0.55);
+}
 .app-confirm-title { color: var(--dark-text); }
-.app-confirm-message { color: var(--dark-muted); }
+.app-confirm-message { color: rgba(255, 255, 255, 0.88); }
+.app-confirm-actions .btn-outline {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: var(--dark-text);
+}
 
 .guest-home-reminder-list { color: var(--dark-muted); }
 .guest-home-reminder-title { color: #fca5a5; font-size: 17px; font-weight: 700; margin: 0 0 8px; }
