@@ -1022,6 +1022,7 @@ export const translations = {
     leaders_donggu_suffix: 'Advisor',
     leaders_card:        'My Card',
     leaders_line:        'LINE',
+    leaders_facebook:    'Facebook',
     leaders_phone:       'Call',
     leaders_email:       'Email',
     leaders_pending:     'Coming Soon',

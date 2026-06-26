@@ -9,7 +9,6 @@ import { t } from '../i18n/translations.js';
 export function renderTabBar(el, currentHash, opts = {}) {
   if (!el) return;
   const bound = opts.isBound !== undefined ? opts.isBound : isBound();
-  const markCount = getMarkCount();
   const oneMarkCount = getOneMarkCount();
   const incomingUnseen = getIncomingUnseenCount();
   const marksBadgeCount = incomingUnseen > 0 ? incomingUnseen : oneMarkCount;
