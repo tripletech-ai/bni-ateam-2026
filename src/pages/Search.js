@@ -132,14 +132,16 @@ const cardsHTML = (list, opts = {}) =>
     staggerIndex: i,
   })).join('');
 
-function sectionHTML(id, count, titleKey, list, showMatch) {
+function sectionHTML(id, count, titleKey, list, showMatch, subTitleKey = '') {
   if (!list.length) return '';
+  const sub = subTitleKey ? `<div class="results-header-sub">${escHtml(t(subTitleKey))}</div>` : '';
   return `
     <div class="results-section results-section-${id}">
       <div class="results-header ${id}">
         <span class="results-count" aria-hidden="true">${count}</span>
         <div class="results-header-body">
           <div class="results-header-title">${escHtml(t(titleKey))}</div>
+          ${sub}
         </div>
       </div>
       <div id="cards-list-${id}">${cardsHTML(list, { showMatch })}</div>
@@ -149,26 +151,24 @@ function sectionHTML(id, count, titleKey, list, showMatch) {
 function showResults(intent, container) {
   container.style.display = 'block';
   const { precise, network, referral, possible } = searchMembersByIntent(intent);
+  const collaborate = [...precise, ...network];
 
-  const preciseSection = precise.length
-    ? sectionHTML('precise', precise.length, 'search_precise_title', precise, true)
-    : `<div class="search-noexact">${escHtml(t('search_no_exact'))}</div>`;
-
-  const networkSection = sectionHTML('network', network.length, 'search_network_title', network, true);
+  const collaborateSection = sectionHTML(
+    'collaborate', collaborate.length, 'search_collaborate_title', collaborate, true, 'search_collaborate_sub',
+  );
   const referralSection = sectionHTML('referral', referral.length, 'search_referral_title', referral, true);
   const possibleSection = sectionHTML('possible', possible.length, 'search_possible_title', possible, true);
 
-  const emptyHint = !precise.length && !network.length && !possible.length && !referral.length
+  const emptyHint = !collaborate.length && !possible.length && !referral.length
     ? `<div class="search-noexact">${escHtml(t('search_no_result'))}</div>`
     : '';
 
   container.innerHTML = `
-    ${emptyHint || preciseSection}
-    ${networkSection}
+    ${emptyHint || collaborateSection}
     ${referralSection}
     ${possibleSection}`;
 
-  for (const [id, list] of [['precise', precise], ['network', network], ['referral', referral], ['possible', possible]]) {
+  for (const [id, list] of [['collaborate', collaborate], ['referral', referral], ['possible', possible]]) {
     const el = document.getElementById(`cards-list-${id}`);
     if (el && list.length) bindCardEvents(el, list);
   }

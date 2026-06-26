@@ -902,6 +902,10 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .results-header.precise .results-count,
 .results-header.precise .results-header-title { color: var(--gold-bright); }
 .results-header.precise .results-header-title { font-size: 26px; }
+.results-header.collaborate { margin-top: 6px; border-top-color: rgba(250,199,117,0.45); }
+.results-header.collaborate .results-count,
+.results-header.collaborate .results-header-title { color: var(--gold-bright); }
+.results-header.collaborate .results-header-title { font-size: 26px; }
 .results-header.referral { margin-top: 10px; border-top-color: rgba(168,85,247,0.35); }
 .results-header.referral .results-count,
 .results-header.referral .results-header-title { color: #d8b4fe; }
@@ -2102,4 +2106,10 @@ textarea.field-input {
 .profile-enrich-minimal {
   background: rgba(255,255,255,0.04);
   border: 1px solid var(--dark-border);
+}
+.chat-send-btn { background: linear-gradient(135deg, #e8b04a, var(--gold-bright)); color: #0a0f1e; }
+.chat-bubble-mine .chat-bubble-text {
+  background: rgba(250, 199, 117, 0.14);
+  border-color: rgba(250, 199, 117, 0.3);
+  color: var(--dark-text);
 }

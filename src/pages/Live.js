@@ -48,15 +48,19 @@ function ensureLbMode() {
   }
 }
 
+function myMemberName() {
+  return getMyStatus()?.member?.name || '';
+}
+
 function liveMainTabsHTML() {
   return `
     <div class="live-main-tabs" role="tablist" aria-label="${escHtml(t('live_tabs_label'))}">
-      <button type="button" class="live-main-tab${liveMainTab === 'leaderboard' ? ' active' : ''}"
-        role="tab" aria-selected="${liveMainTab === 'leaderboard'}"
-        data-live-tab="leaderboard">${escHtml(t('live_tab_leaderboard'))}</button>
       <button type="button" class="live-main-tab${liveMainTab === 'chat' ? ' active' : ''}"
         role="tab" aria-selected="${liveMainTab === 'chat'}"
         data-live-tab="chat">${escHtml(t('live_tab_chat'))}</button>
+      <button type="button" class="live-main-tab${liveMainTab === 'leaderboard' ? ' active' : ''}"
+        role="tab" aria-selected="${liveMainTab === 'leaderboard'}"
+        data-live-tab="leaderboard">${escHtml(t('live_tab_leaderboard'))}</button>
     </div>`;
 }
 
@@ -71,10 +75,11 @@ function leaderboardPanelHTML() {
 }
 
 function chatPanelHTML(feed) {
+  const opts = { isAdmin: liveIsAdmin, isGuest: isGuestTrial(), myName: myMemberName() };
   return `
     <section class="live-panel live-panel-chat" ${liveMainTab !== 'chat' ? 'hidden' : ''}>
       <div id="live-feed-wrap">
-        ${chatRoomHTML(feed, { isAdmin: liveIsAdmin, isGuest: isGuestTrial() })}
+        ${chatRoomHTML(feed, opts)}
       </div>
     </section>`;
 }
@@ -89,6 +94,8 @@ function sessionBannerHTML() {
 
 function switchLiveTab(container, tab) {
   liveMainTab = tab;
+  const page = container.querySelector('.live-page');
+  page?.classList.toggle('live-page--chat', tab === 'chat');
   container.querySelectorAll('.live-main-tab').forEach(b => {
     const on = b.dataset.liveTab === tab;
     b.classList.toggle('active', on);
@@ -190,7 +197,8 @@ function pushFeedToUI(container, feed) {
   window.BNI_FEED = feed;
   const chatRoom = container?.querySelector('.chat-room');
   if (!chatRoom) return;
-  updateFeedList(chatRoom, feed, { isAdmin: liveIsAdmin, isGuest: isGuestTrial() });
+  const opts = { isAdmin: liveIsAdmin, isGuest: isGuestTrial(), myName: myMemberName() };
+  updateFeedList(chatRoom, feed, opts);
   bindLiveFeedAdmin(container);
   if (liveMainTab === 'chat') scrollChatToBottom(container);
 }
@@ -315,11 +323,11 @@ export async function renderLive(container) {
   const feed = window.BNI_FEED || [];
 
   container.innerHTML = `
-    <div class="live-page">
+    <div class="live-page${liveMainTab === 'chat' ? ' live-page--chat' : ''}">
       ${liveMainTabsHTML()}
-      ${leaderboardPanelHTML(boards)}
       ${chatPanelHTML(feed)}
-      <div style="height:16px"></div>
+      ${leaderboardPanelHTML(boards)}
+      <div style="height:8px"></div>
     </div>`;
 
   bindLiveMainTabs(container);
