@@ -1796,7 +1796,10 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .chat-room { background: rgba(255,255,255,0.02); border-color: var(--dark-border); }
 .chat-bubble-text { background: rgba(16,22,41,0.98); border-color: rgba(255,255,255,0.07); color: var(--dark-text); }
 .chat-event { background: transparent; border: none; }
-.chat-event.feed-type-login .chat-event-text { color: rgba(255,255,255,0.4); }
+.chat-event.feed-type-login .chat-event-text { color: rgba(255,255,255,0.72); }
+.chat-event.feed-type-login .chat-event-who { color: rgba(255,255,255,0.9); }
+.chat-event.feed-type-login .chat-event-action { color: rgba(250,199,117,0.85); }
+.chat-event.feed-type-login .chat-event-text::before { color: rgba(255,255,255,0.28); }
 .chat-composer-wrap { border-top-color: rgba(255,255,255,0.06); }
 .feed-delete-btn { position: relative; z-index: 1; }
 

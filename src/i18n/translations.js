@@ -310,7 +310,7 @@ export const translations = {
     live_tab_chat: '聊天室',
 
     feed_title: '現場聊天室',
-    feed_sub: '群組廣播 · 每人每 10 秒限 1 則',
+    feed_sub: '群組廣播 · 每人每 10 秒限 1 則 · 灰點為曾進入紀錄，非即時在線',
     feed_empty: '還沒有人發言，來打第一聲招呼吧',
     feed_empty_how: '在下方輸入後按送出（每 10 秒 1 則）',
     feed_not_bound: '請先登入並認領身分，才能發布廣播',
@@ -337,6 +337,7 @@ export const translations = {
     feed_delete_ok: '已刪除',
     feed_delete_fail: '刪除失敗，請稍後再試',
     feed_login_event: '{name} · {branch} 剛加入現場連結',
+    feed_login_action: '剛加入現場連結',
     feed_mutual_event: '{name} 與 {partner} 互相連結了！',
     feed_mutual_event_branch: '{name}（{branch}）與 {partner}（{partnerBranch}）互相連結了！',
     feed_member_view: '查看夥伴資料',
@@ -762,7 +763,7 @@ export const translations = {
     live_tab_chat: 'Chat',
 
     feed_title: 'Live chat',
-    feed_sub: 'Group broadcast · 1 post per 10 seconds per person',
+    feed_sub: 'Group broadcast · 1 post per 10s · grey dot = visited, not live online',
     feed_empty: 'No messages yet — say hello first',
     feed_empty_how: 'Type below and tap Send (1 every 10 seconds)',
     feed_not_bound: 'Sign in and claim your identity before posting',
@@ -789,6 +790,7 @@ export const translations = {
     feed_delete_ok: 'Deleted',
     feed_delete_fail: 'Delete failed, try again',
     feed_login_event: '{name} · {branch} joined the live feed',
+    feed_login_action: 'joined the live feed',
     feed_mutual_event: '{name} and {partner} connected!',
     feed_mutual_event_branch: '{name} ({branch}) and {partner} ({partnerBranch}) connected!',
     feed_member_view: 'View member profile',

@@ -45,16 +45,20 @@ function chatActorMetaLinkHTML(item) {
   return `<button type="button" class="chat-bubble-meta chat-member-link"${attrs} title="${escAttr(t('feed_member_view'))}">${inner}</button>`;
 }
 
+function formatLoginEventHTML(item) {
+  const name = escHtml(item.actor_name || t('feed_system'));
+  const branch = escHtml(item.actor_branch || item.meta?.branch || '—');
+  const action = escHtml(t('feed_login_action'));
+  return `<span class="chat-event-who">${name}<span class="chat-event-sep" aria-hidden="true"> · </span>${branch}</span><span class="chat-event-action">${action}</span>`;
+}
+
 function formatEventBody(item) {
   const type = item.feed_type || 'message';
   const name = item.actor_name || '';
   const branch = item.actor_branch || item.meta?.branch || '';
 
   if (type === 'login') {
-    return escHtml(t('feed_login_event', {
-      name: name || t('feed_system'),
-      branch: branch || '—',
-    }));
+    return formatLoginEventHTML(item);
   }
   if (type === 'mutual') {
     const partner = item.meta?.partner_name || '';
