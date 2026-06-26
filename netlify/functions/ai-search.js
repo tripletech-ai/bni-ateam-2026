@@ -83,6 +83,30 @@ function normalizePayload(parsed) {
   return intent;
 }
 
+const RATE_WINDOW_MS = 60_000;
+const RATE_MAX = 12;
+const rateBuckets = globalThis.__bniAiSearchRate || new Map();
+globalThis.__bniAiSearchRate = rateBuckets;
+
+function clientIp(req) {
+  return (
+    req.headers.get("x-nf-client-connection-ip")
+    || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim()
+    || "unknown"
+  );
+}
+
+function checkRateLimit(ip) {
+  const now = Date.now();
+  let bucket = rateBuckets.get(ip);
+  if (!bucket || now - bucket.start > RATE_WINDOW_MS) {
+    bucket = { start: now, count: 0 };
+    rateBuckets.set(ip, bucket);
+  }
+  bucket.count += 1;
+  return bucket.count <= RATE_MAX;
+}
+
 export default async (req) => {
   const corsHeaders = {
     "Access-Control-Allow-Origin": "*",
@@ -96,6 +120,14 @@ export default async (req) => {
 
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405, headers: corsHeaders });
+  }
+
+  const ip = clientIp(req);
+  if (!checkRateLimit(ip)) {
+    return Response.json(
+      { ok: false, message: "請求過於頻繁，請稍後再試" },
+      { status: 429, headers: corsHeaders }
+    );
   }
 
   let input;

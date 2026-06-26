@@ -1,5 +1,6 @@
 function mapRow(row) {
   const tags = Array.isArray(row.tags) ? row.tags : [];
+  const claimed = row.claimed === true || !!row.auth_user_id;
   return {
     id: row.roster_id || row.id,
     dbId: row.id,
@@ -17,7 +18,8 @@ function mapRow(row) {
     industries: Array.isArray(row.industries) ? row.industries : [],
     tags,
     status: row.status,
-    authUserId: row.auth_user_id,
+    claimed,
+    authUserId: row.auth_user_id || (claimed ? '__bound__' : null),
   };
 }
 

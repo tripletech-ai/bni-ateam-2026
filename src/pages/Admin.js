@@ -165,7 +165,7 @@ async function renderMembersPanel(panel) {
   async function loadMembers() {
     listEl.innerHTML = '<div class="bind-loading">載入中…</div>';
     try {
-      members = await fetchAllMembers({ includeInactive: inactiveEl.checked });
+      members = await fetchAllMembers({ includeInactive: inactiveEl.checked, admin: true });
       members.forEach(m => applyMemberToCache(m));
       renderList(searchEl.value);
     } catch (err) {

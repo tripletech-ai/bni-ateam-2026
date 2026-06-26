@@ -103,7 +103,7 @@ async function claimViaClientMatch({ name, branch, region }) {
   const matches = findMembersByNameBranch(name, branch);
   const withDb = matches.filter(m => m.dbId);
 
-  const unclaimed = withDb.find(m => !m.authUserId);
+  const unclaimed = withDb.find(m => !m.claimed && !m.authUserId);
   if (unclaimed) {
     return bindExistingMember(unclaimed.dbId);
   }

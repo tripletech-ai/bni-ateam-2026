@@ -697,18 +697,17 @@ export async function fetchTutorialSteps() {
   }, { label: 'fetchTutorialSteps' });
 }
 
-export async function fetchAllMembers({ includeInactive = false } = {}) {
+export async function fetchAllMembers({ includeInactive = false, admin = false } = {}) {
   return withRetry(async () => {
-    let query = getClient().database
-      .from('bni_members')
-      .select('*')
-      .order('roster_id', { ascending: true })
-      .limit(1000);
-    if (!includeInactive) query = query.eq('active', true);
-    const { data, error } = await query;
+    const rpc = admin ? 'bni_admin_list_members' : 'bni_get_public_members';
+    const client = admin ? getClient() : getAnonClient();
+    const { data, error } = await client.database.rpc(rpc, {
+      p_include_inactive: includeInactive,
+    });
     if (error) throw error;
-    return data || [];
-  }, { label: 'fetchAllMembers' });
+    if (Array.isArray(data)) return data;
+    return [];
+  }, { label: admin ? 'fetchAdminMembers' : 'fetchPublicMembers' });
 }
 
 export async function fetchAdminDashboard() {
@@ -748,22 +747,18 @@ export async function searchUnboundMembers(keyword) {
 }
 
 export async function adminUpdateMember(id, patch) {
-  const { data, error } = await getClient().database
-    .from('bni_members')
-    .update(patch)
-    .eq('id', id)
-    .select()
-    .single();
+  const { data, error } = await getClient().database.rpc('bni_admin_update_member', {
+    p_member_id: id,
+    p_patch: patch,
+  });
   if (error) throw error;
   return data;
 }
 
 export async function adminCreateMember(row) {
-  const { data, error } = await getClient().database
-    .from('bni_members')
-    .insert([row])
-    .select()
-    .single();
+  const { data, error } = await getClient().database.rpc('bni_admin_create_member', {
+    p_row: row,
+  });
   if (error) throw error;
   return data;
 }

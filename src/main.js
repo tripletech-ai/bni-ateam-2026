@@ -394,6 +394,9 @@ async function boot() {
     return;
   }
 
+  if (wantsAdmin && isAdmin) {
+    location.hash = '#admin';
+  }
   appReady = true;
   setChromeVisible(true);
   if (!isTutorialDone()) {
