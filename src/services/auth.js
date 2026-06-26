@@ -391,13 +391,14 @@ export async function initAuth() {
   return { user: currentUser, status: myStatus };
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle({ returnPath = '/' } = {}) {
   if (isInAppBrowser()) {
     const err = new Error('INAPP_BROWSER');
     err.code = 'INAPP_BROWSER';
     throw err;
   }
-  const redirectTo = `${window.location.origin}/`;
+  const path = returnPath.startsWith('/') ? returnPath : `/${returnPath}`;
+  const redirectTo = `${window.location.origin}${path}`;
   const { data, error } = await getClient().auth.signInWithOAuth('google', {
     redirectTo,
     additionalParams: { prompt: 'select_account' },
@@ -419,7 +420,7 @@ export async function signOut() {
   }
   clearSession();
   resetClient();
-  clearDeviceCreds();
+  /* 保留裝置帳號 creds，避免登出後重新認領產生新 auth → 幽靈名單 */
   currentUser = null;
   myStatus = { authenticated: false };
   if (typeof window !== 'undefined') {

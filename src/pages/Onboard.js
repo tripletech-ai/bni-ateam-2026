@@ -25,6 +25,7 @@ import { describeClaimOutcome } from '../utils/claimFeedback.js';
 import { collect800HTML, bindCollect800Game, getCollect800Stats } from '../components/Collect800Game.js';
 import { loginPrefsHTML, bindLoginPrefs } from '../components/LoginPrefsPanel.js';
 import { loginStepsGuideHTML } from '../components/LoginStepsGuide.js';
+import { showConfirmDialog } from '../utils/confirmDialog.js';
 import { resolveClaimCredentials } from '../config/yangBoss.js';
 
 function memberCountLine() {
@@ -56,7 +57,13 @@ function simpleClaimFormHTML({ branch = '', name = '' } = {}) {
       <label class="field-label" for="claim-name-input">${escHtml(t('onboard_name_lbl'))}</label>
       <input id="claim-name-input" name="name" class="field-input" value="${escHtml(name)}"
         required maxlength="20" autocomplete="name"
-        placeholder="${escHtml(t('onboard_name_ph_full'))}">
+        placeholder="${escHtml(t('onboard_name_ph_full'))}"
+        aria-describedby="claim-name-hint">
+      <p id="claim-name-hint" class="field-hint claim-name-hint hidden" role="status"></p>
+
+      <div id="claim-preview" class="claim-preview claim-preview-empty" role="status" aria-live="polite">
+        <span class="claim-preview-text">${escHtml(t('onboard_claim_preview_empty'))}</span>
+      </div>
 
       <button type="submit" class="btn-ai onboard-btn" id="claim-submit-btn">${escHtml(t('onboard_submit'))}</button>
       <p class="field-hint onboard-profile-later">${escHtml(t('onboard_profile_later'))}</p>
@@ -71,6 +78,7 @@ export function mapAuthError(err) {
     return t('onboard_err_session');
   }
   if (msg.includes('ALREADY_BOUND')) return t('onboard_err_already_device');
+  if (msg.includes('NAME_BRANCH_TAKEN')) return t('onboard_err_taken');
   if (msg.includes('NOT_AUTHENTICATED')) return t('onboard_err_session');
   if (msg.includes('MEMBER_NOT_FOUND')) return t('claim_err_not_found');
   if (msg.includes('NOT_ATEAM_BRANCH')) return t('claim_err_not_ateam');
@@ -104,6 +112,52 @@ function validateClaimForm({ branch, name, fromBoss }) {
   return true;
 }
 
+function updateClaimPreview(container) {
+  const preview = container.querySelector('#claim-preview');
+  if (!preview) return;
+  const { branch, name, fromBoss } = readClaimForm(container);
+  const textEl = preview.querySelector('.claim-preview-text');
+  const ready = fromBoss || (branch && isValidChineseName(name));
+  preview.classList.toggle('claim-preview-empty', !ready);
+  preview.classList.toggle('claim-preview-ready', ready);
+  if (textEl) {
+    textEl.textContent = ready
+      ? t('onboard_claim_preview', { branch, name })
+      : t('onboard_claim_preview_empty');
+  }
+}
+
+function updateNameHint(container) {
+  const hint = container.querySelector('#claim-name-hint');
+  const input = container.querySelector('#claim-name-input');
+  if (!hint || !input) return;
+  const val = input.value.trim();
+  if (!val) {
+    hint.classList.add('hidden');
+    hint.textContent = '';
+    return;
+  }
+  if (!isValidChineseName(val)) {
+    hint.textContent = t('onboard_err_name');
+    hint.classList.remove('hidden');
+    hint.classList.add('field-hint-warn');
+  } else {
+    hint.classList.add('hidden');
+  }
+}
+
+function bindClaimPreview(container) {
+  const nameInput = container.querySelector('#claim-name-input');
+  const branchInput = container.querySelector('#claim-branch-input');
+  nameInput?.addEventListener('input', () => {
+    updateNameHint(container);
+    updateClaimPreview(container);
+  });
+  branchInput?.addEventListener('input', () => updateClaimPreview(container));
+  updateNameHint(container);
+  updateClaimPreview(container);
+}
+
 function bindBranchSearch(container) {
   const input = container.querySelector('#claim-branch-input');
   const hidden = container.querySelector('#claim-branch-value');
@@ -117,6 +171,7 @@ function bindBranchSearch(container) {
     container.querySelectorAll('.simple-claim-chips .quick-filter-chip').forEach(chip => {
       chip.classList.toggle('active', chip.dataset.branch === full);
     });
+    updateClaimPreview(container);
   };
 
   input?.addEventListener('input', () => {
@@ -158,6 +213,15 @@ async function submitClaim(container, { onComplete }) {
   const payload = readClaimForm(container);
   if (!validateClaimForm(payload)) return;
 
+  if (!payload.fromBoss) {
+    const ok = await showConfirmDialog({
+      title: t('onboard_claim_confirm_title'),
+      message: t('onboard_claim_confirm_msg', { branch: payload.branch, name: payload.name }),
+      confirmLabel: t('onboard_submit'),
+    });
+    if (!ok) return;
+  }
+
   const btn = container.querySelector('#claim-submit-btn');
   if (btn) btn.disabled = true;
   try {
@@ -192,6 +256,7 @@ async function submitClaim(container, { onComplete }) {
 
 function bindSimpleClaimForm(container, { onComplete } = {}) {
   bindBranchSearch(container);
+  bindClaimPreview(container);
   container.querySelector('#simple-claim-form')?.addEventListener('submit', async e => {
     e.preventDefault();
     await submitClaim(container, { onComplete });
@@ -251,7 +316,10 @@ function renderClaimScreen(container, {
         <button type="button" id="guest-trial-btn" class="btn-outline login-guest-trial-btn">
           <span class="login-guest-trial-label">${escHtml(t('login_guest_trial_btn'))}</span>
           <span class="login-guest-trial-sub">${escHtml(t('login_guest_trial_hint'))}</span>
-        </button>` : ''}
+        </button>
+        <p class="login-admin-entry">
+          <a href="/admin" class="admin-entry-link">${escHtml(t('admin_entry_link'))}</a>
+        </p>` : ''}
       </div>
     </div>`;
 

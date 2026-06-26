@@ -1811,10 +1811,28 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .guest-trial-banner-sub { color: var(--dark-muted); }
 .guest-trial-banner-list { color: rgba(255,255,255,0.72); }
 .guest-trial-banner-list li { margin-bottom: 4px; }
+.guest-trial-dismiss-btn { color: var(--dark-muted); }
+.guest-trial-mini-text { color: rgba(255,255,255,0.78); }
+.claim-preview-ready { background: rgba(59,109,17,0.15); color: #86efac; border-color: rgba(74,222,128,0.35); }
+.claim-preview-empty { color: var(--dark-muted); border-color: var(--dark-border); background: rgba(255,255,255,0.03); }
+.field-hint-warn { color: #fca5a5; }
+.search-copy-example { color: rgba(255,255,255,0.72); }
+.search-format-details {
+  border-color: rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+}
+.search-format-details summary { color: rgba(255,255,255,0.88); }
+.search-refine-hint { color: var(--dark-muted); }
 .guest-home-reminder {
   border-color: rgba(248,113,113,0.35);
   background: linear-gradient(165deg, rgba(248,113,113,0.10), rgba(16,33,69,0.5));
 }
+.guest-blocked-card {
+  border-color: rgba(248,113,113,0.35);
+  background: linear-gradient(165deg, rgba(248,113,113,0.10), rgba(16,33,69,0.5));
+}
+.guest-blocked-title { color: var(--dark-text); }
+.guest-blocked-body { color: var(--dark-muted); }
 .guest-home-reminder-title { color: var(--dark-text); }
 .guest-home-reminder-lead,
 .guest-home-reminder-list { color: var(--dark-muted); }
@@ -1875,6 +1893,10 @@ textarea.field-input {
 
 /* ── Admin panel ── */
 .admin-wrap { color: var(--dark-text); }
+.admin-login-card { background: #101629; border: 1px solid var(--dark-border); }
+.admin-login-emails { background: rgba(255,255,255,0.04); color: var(--dark-muted); }
+.admin-feed-row { background: #101629; border: 1px solid var(--dark-border); }
+.admin-entry-link { color: var(--dark-muted); }
 .admin-sub,
 .admin-denied,
 .admin-bind-hint,

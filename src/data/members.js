@@ -328,11 +328,11 @@ window.BNI_MEMBERS = [
   {
     id: "037", name: "洪儀君", branch: "長輝分會", region: "zhongshan",
     profession: "手足指甲保健",
-    have: "631",
-    wantMeet: "",
+    have: "手足指甲保健、健甲照護\n健甲專家 H.N.P／足日 zuday 健甲管理中心\n運動傷害防護背景",
+    wantMeet: "皮膚科診所\n運動醫學診所\n長照產業\n想轉型健甲的美甲師",
     wantReferral: "",
-    lineId: "", lineLink: "51",
-    tags: ["手足指甲保健","631"]
+    lineId: "hnp2016", lineLink: "",
+    tags: ["手足指甲保健","健甲","皮膚科","運動醫學","長照","美甲"]
   },
   {
     id: "038", name: "孫成育", branch: "長輝分會", region: "zhongshan",

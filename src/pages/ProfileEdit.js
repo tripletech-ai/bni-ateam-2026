@@ -14,7 +14,7 @@ import { notifyProfileMilestone } from '../utils/profileMilestone.js';
 import { industryPickerHTML, bindIndustryPicker, readIndustryPickerValues } from '../components/IndustryPicker.js';
 import { inferIndustriesFromText } from '../data/industries.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
-import { guestHomeReminderHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
+import { guestBlockedPageHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 import { endGuestTrial } from '../utils/guestTrial.js';
 import { goToPage } from '../utils/nav.js';
 import { runReclaim } from '../utils/reclaim.js';
@@ -54,7 +54,7 @@ export function renderProfileEdit(container) {
   if (isGuestTrial()) {
     container.innerHTML = `
       <div class="profile-edit-wrap guest-profile-blocked">
-        ${guestHomeReminderHTML()}
+        ${guestBlockedPageHTML('profile')}
       </div>`;
     bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
     return;

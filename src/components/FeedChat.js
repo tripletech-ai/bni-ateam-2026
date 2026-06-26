@@ -1,4 +1,5 @@
 import { escHtml, escAttr } from '../utils/html.js';
+import { showConfirmDialog } from '../utils/confirmDialog.js';
 import { t } from '../i18n/translations.js';
 import { showToast } from '../utils/toast.js';
 import { guestFeedLoginHTML } from './GuestTrialBanner.js';
@@ -201,7 +202,7 @@ function renderFeedItems(sorted, opts) {
   return parts.join('');
 }
 
-function formatFeedTime(iso) {
+export function formatFeedTime(iso) {
   if (!iso) return '';
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return '';
@@ -393,7 +394,12 @@ export function bindFeedAdminActions(container, onDelete) {
       e.stopPropagation();
       const id = btn.dataset.feedId;
       if (!id) return;
-      if (!window.confirm(t('feed_delete_confirm'))) return;
+      const ok = await showConfirmDialog({
+        title: t('feed_delete'),
+        message: t('feed_delete_confirm'),
+        confirmLabel: t('feed_delete'),
+      });
+      if (!ok) return;
       btn.disabled = true;
       try {
         await onDelete(id);

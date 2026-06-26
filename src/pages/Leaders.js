@@ -36,22 +36,23 @@ export function homeSectionAccordion(title, content, id, { defaultOpen = false, 
     </div>`;
 }
 
-/** 首頁領導層：董顧 → 顧問群（預設摺疊） */
+/** 首頁：區董與董顧（單一 toggle，內含區董 + 中山／三盧董顧群） */
 export function homeLeadersSectionsHTML() {
   const { secondary, zhongshan, sanlu } = LEADERS;
-  const advisorsInner = `
-    <div class="home-advisors-inner">
-      ${accordion(t('leaders_section_zh'), zhongshan, 'zh-dir-home', { defaultOpen: false, nested: true })}
-      ${accordion(t('leaders_section_san'), sanlu, 'san-dir-home', { defaultOpen: false, nested: true })}
+  const inner = `
+    <div class="home-donggu-advisors-body">
+      ${leaderCardSecondary(secondary)}
+      <div class="home-donggu-advisors-inner">
+        ${accordion(t('leaders_section_zh_donggu'), zhongshan, 'zh-dir-home', { defaultOpen: false, nested: true, nameSuffix: t('leaders_donggu_suffix') })}
+        ${accordion(t('leaders_section_san_donggu'), sanlu, 'san-dir-home', { defaultOpen: false, nested: true, nameSuffix: t('leaders_donggu_suffix') })}
+      </div>
     </div>`;
-  return `
-    ${homeSectionAccordion(
-      t('home_section_donggu'),
-      `<div class="home-donggu-body">${leaderCardSecondary(secondary)}</div>`,
-      'home-donggu',
-      { subtitle: `${secondary.name} · ${secondary.title}` },
-    )}
-    ${homeSectionAccordion(t('home_section_advisors'), advisorsInner, 'home-advisors')}`;
+  return homeSectionAccordion(
+    t('home_section_donggu_advisors'),
+    inner,
+    'home-donggu-advisors',
+    { subtitle: `${secondary.name} · ${secondary.title}` },
+  );
 }
 
 export function renderLeaders(container) {
@@ -131,11 +132,12 @@ function leaderCardSecondary(l) {
     </div>`;
 }
 
-function directorCardHTML(p, index) {
+function directorCardHTML(p, index, { nameSuffix = '' } = {}) {
   const dirCard = getCardLink(p.name) || p.cardLink || '';
   const metaParts = [p.branch, p.profession].filter(Boolean);
   const metaLine  = metaParts.length ? `<div class="dir-meta">${escHtml(metaParts.join(' · '))}</div>` : '';
-  const nameLabel = index != null ? `${index}. ${p.name}` : p.name;
+  const suffix = nameSuffix || '';
+  const nameLabel = index != null ? `${index}. ${p.name}${suffix}` : `${p.name}${suffix}`;
 
   const haveSection = p.have
     ? `<div class="dir-section"><span class="dir-section-label">${escHtml(t('card_have'))}</span><span class="dir-section-text">${escHtml(p.have)}</span></div>` : '';
@@ -175,8 +177,8 @@ function directorCardHTML(p, index) {
   </div>`;
 }
 
-function accordion(title, people, id, { defaultOpen = true, nested = false } = {}) {
-  const cards = people.map((p, i) => directorCardHTML(p, i + 1)).join('');
+function accordion(title, people, id, { defaultOpen = true, nested = false, nameSuffix = '' } = {}) {
+  const cards = people.map((p, i) => directorCardHTML(p, i + 1, { nameSuffix })).join('');
   const openClass = defaultOpen ? 'open' : '';
   const display = defaultOpen ? 'block' : 'none';
   const wrapClass = nested ? 'accordion-wrap accordion-nested' : 'accordion-wrap';

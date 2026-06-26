@@ -34,7 +34,7 @@ import { showFirstRunHint, finishOnboardingTutorial } from './components/FirstRu
 import { loadMembersFromDb } from './services/membersApi.js';
 import { withRetry } from './utils/retry.js';
 import { isGuestTrial, endGuestTrial } from './utils/guestTrial.js';
-import { guestTrialBannerHTML, bindGuestTrialLogin } from './components/GuestTrialBanner.js';
+import { renderGuestBanner } from './components/GuestTrialBanner.js';
 import { showGuestTrialIntro } from './components/GuestTrialIntro.js';
 import { showToast } from './utils/toast.js';
 import { notifyProfileMilestone } from './utils/profileMilestone.js';
@@ -43,6 +43,13 @@ import { normalizeAppUrl } from './utils/appUrl.js';
 import { profileBackendEmpty } from './utils/profileHints.js';
 import { registerNavigator, goToPage } from './utils/nav.js';
 import { initPreferences } from './utils/preferences.js';
+import {
+  isAdminRoute,
+  syncAdminPathToHash,
+  consumeAdminLoginIntent,
+  hasAdminLoginIntent,
+} from './utils/routing.js';
+import { renderAdminLogin } from './pages/AdminLogin.js';
 
 // ── Language & font (set on login screen; persisted in localStorage) ──
 initPreferences();
@@ -71,11 +78,14 @@ function setChromeVisible(showTabs) {
   if (showTabs && isBound()) renderUserBar(userBar);
   else if (userBar) userBar.classList.add('hidden');
   document.body.classList.toggle('guest-trial-mode', showTabs && isGuestTrial());
+  document.body.classList.toggle('admin-mode', showTabs && isAdmin && !isBound());
 }
 
 function navigate() {
   if (!appReady || !app) return;
+  syncAdminPathToHash();
   let hash = window.location.hash || '';
+  if (isAdminRoute() && !hash) hash = '#admin';
   if (hash === '#admin' && !isAdmin) {
     hash = '#home';
     if (window.location.hash === '#admin') {
@@ -103,8 +113,10 @@ function navigate() {
   try {
     render(app);
     if (isGuestTrial()) {
-      app.insertAdjacentHTML('afterbegin', guestTrialBannerHTML());
-      bindGuestTrialLogin(app, { onBeforeLogin: endGuestTrial });
+      renderGuestBanner(app, {
+        onBeforeLogin: endGuestTrial,
+        onDismiss: () => navigate(),
+      });
     }
   } catch (err) {
     console.error('Page render error:', err);
@@ -297,6 +309,16 @@ async function enterGuestMode() {
   });
 }
 
+async function enterAdminApp() {
+  appReady = true;
+  setChromeVisible(true);
+  preloadLiveData();
+  if (consumeAdminLoginIntent() || isAdminRoute()) {
+    location.hash = 'admin';
+  }
+  navigate();
+}
+
 async function boot() {
   appReady = false;
   if (!app) return;
@@ -328,7 +350,13 @@ async function boot() {
   await loadEventChaptersWithRetry();
 
   const user = getCurrentUser();
+  const wantsAdmin = isAdminRoute() || hasAdminLoginIntent();
+
   if (!user) {
+    if (wantsAdmin) {
+      renderAdminLogin(app, { onSuccess: () => boot() });
+      return;
+    }
     if (isGuestTrial()) {
       await enterGuestMode();
       return;
@@ -342,6 +370,17 @@ async function boot() {
   }
 
   if (!isBound()) {
+    if (isAdmin) {
+      await enterAdminApp();
+      return;
+    }
+    if (wantsAdmin) {
+      renderAdminLogin(app, {
+        onSuccess: () => boot(),
+        denied: true,
+      });
+      return;
+    }
     const auto = await tryAutoBindOnLogin();
     if (auto?.bound) {
       await afterBindComplete();
@@ -376,4 +415,5 @@ window.addEventListener('unhandledrejection', event => {
 });
 
 normalizeAppUrl();
+syncAdminPathToHash();
 boot();

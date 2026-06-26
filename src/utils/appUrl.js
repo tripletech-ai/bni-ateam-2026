@@ -6,6 +6,9 @@ export function normalizeAppUrl() {
       const clean = '/' + String(pathname || '').replace(/^\/+/, '');
       window.history.replaceState(null, '', (clean === '//' ? '/' : clean) + search + hash);
     }
+    if (pathname.replace(/\/+$/, '') === '/admin' && !hash) {
+      window.history.replaceState(null, '', `/admin${search}#admin`);
+    }
   } catch {
     /* ignore */
   }

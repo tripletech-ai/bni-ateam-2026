@@ -103,25 +103,13 @@ async function claimViaClientMatch({ name, branch, region }) {
   const matches = findMembersByNameBranch(name, branch);
   const withDb = matches.filter(m => m.dbId);
 
-  const unclaimedRoster = withDb.find(m => m.status === 'roster' && !m.authUserId);
-  if (unclaimedRoster) {
-    return bindExistingMember(unclaimedRoster.dbId);
+  const unclaimed = withDb.find(m => !m.authUserId);
+  if (unclaimed) {
+    return bindExistingMember(unclaimed.dbId);
   }
 
   if (withDb.length >= 1) {
-    const src = withDb[0];
-    return registerNewMember({
-      name: src.name || name,
-      branch: src.branch || branch,
-      region: regionForBranch(branch, region),
-      profession: src.profession || '',
-      have: src.have || '',
-      wantMeet: src.wantMeet || '',
-      wantReferral: src.wantReferral || '',
-      industries: src.industries || [],
-      lineId: src.lineId || '',
-      lineLink: src.lineLink || '',
-    });
+    throw new Error('NAME_BRANCH_TAKEN');
   }
 
   return registerNewMember({

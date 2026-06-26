@@ -12,37 +12,64 @@ import {
   adminSetMemberActive,
   fetchLiveSettings,
   adminSetLeaderboardModes,
+  fetchFeed,
+  adminDeleteFeedMessage,
+  signOut,
 } from '../services/auth.js';
-import { isAdminEmail } from '../config/admins.js';
+import { ADMIN_EMAILS, isAdminEmail } from '../config/admins.js';
 import { normalizeBranchName } from '../data/branches.js';
 import { applyMemberToCache } from '../services/membersApi.js';
 import { showToast } from '../utils/toast.js';
 import { t } from '../i18n/translations.js';
+import { showConfirmDialog } from '../utils/confirmDialog.js';
+import { formatFeedTime } from '../components/FeedChat.js';
 
 let adminTab = 'stats';
+
+function adminEmailsHint() {
+  return ADMIN_EMAILS.join('、');
+}
 
 export async function renderAdmin(container) {
   const ok = isAdminEmail(getAuthEmail()) || await checkIsAdmin();
   if (!ok) {
     container.innerHTML = `
       <div class="admin-wrap">
-        <h2 class="section-title">管理員後台</h2>
-        <p class="admin-denied">你沒有管理員權限。僅限授權的 Google 帳號可進入（b1993614@gmail.com、tripletech.ai@gmail.com）。</p>
+        <h2 class="section-title">${escHtml(t('admin_denied_title'))}</h2>
+        <p class="admin-denied">${escHtml(t('admin_denied_body', { emails: adminEmailsHint() }))}</p>
+        <a href="/" class="admin-login-back">${escHtml(t('admin_login_back'))}</a>
       </div>`;
     return;
   }
 
   container.innerHTML = `
     <div class="admin-wrap">
-      <h2 class="section-title">管理員後台</h2>
+      <div class="admin-head-row">
+        <h2 class="section-title">${escHtml(t('admin_title'))}</h2>
+        <button type="button" class="btn-text admin-signout-btn" id="admin-signout">${escHtml(t('user_bar_signout'))}</button>
+      </div>
+      <p class="admin-signed-as">${escHtml(t('admin_signed_as'))} ${escHtml(getAuthEmail())}</p>
       <div class="admin-tabs">
-        <button type="button" class="admin-tab" data-tab="stats">使用現況</button>
-        <button type="button" class="admin-tab" data-tab="members">會員管理</button>
+        <button type="button" class="admin-tab" data-tab="stats">${escHtml(t('admin_tab_stats'))}</button>
+        <button type="button" class="admin-tab" data-tab="members">${escHtml(t('admin_tab_members'))}</button>
+        <button type="button" class="admin-tab" data-tab="feed">${escHtml(t('admin_tab_feed'))}</button>
         <button type="button" class="admin-tab" data-tab="branches">${escHtml(t('admin_tab_branches'))}</button>
       </div>
       <div id="admin-panel"></div>
     </div>
   `;
+
+  container.querySelector('#admin-signout')?.addEventListener('click', async () => {
+    const okConfirm = await showConfirmDialog({
+      title: t('signout_confirm'),
+      message: t('signout_confirm'),
+      confirmLabel: t('user_bar_signout'),
+    });
+    if (!okConfirm) return;
+    await signOut();
+    location.href = '/admin';
+    location.reload();
+  });
 
   container.querySelectorAll('.admin-tab').forEach(btn => {
     btn.addEventListener('click', () => {
@@ -59,6 +86,7 @@ export async function renderAdmin(container) {
 async function renderPanel(panel) {
   if (adminTab === 'stats') await renderStatsPanel(panel);
   else if (adminTab === 'branches') await renderBranchesPanel(panel);
+  else if (adminTab === 'feed') await renderFeedPanel(panel);
   else await renderMembersPanel(panel);
 }
 
@@ -173,6 +201,8 @@ async function renderMembersPanel(panel) {
           <textarea name="have" class="field-input" rows="2">${escHtml(m.have || '')}</textarea>
           <textarea name="want_meet" class="field-input" rows="2">${escHtml(m.want_meet || '')}</textarea>
           <textarea name="want_referral" class="field-input" rows="2">${escHtml(m.want_referral || '')}</textarea>
+          <textarea name="bio" class="field-input" rows="3" placeholder="自我介紹">${escHtml(m.bio || '')}</textarea>
+          <input name="card_link" value="${escHtml(m.card_link || '')}" class="field-input" placeholder="電子名片連結">
           <input name="line_id" value="${escHtml(m.line_id || '')}" class="field-input">
           <input name="line_link" value="${escHtml(m.line_link || '')}" class="field-input">
           <label class="field-check"><input type="checkbox" name="active" ${m.active ? 'checked' : ''}> 啟用</label>
@@ -200,6 +230,8 @@ async function renderMembersPanel(panel) {
           have: fd.get('have'),
           want_meet: fd.get('want_meet'),
           want_referral: fd.get('want_referral'),
+          bio: fd.get('bio'),
+          card_link: fd.get('card_link'),
           line_id: fd.get('line_id'),
           line_link: fd.get('line_link'),
           active: form.querySelector('[name=active]').checked,
@@ -218,7 +250,11 @@ async function renderMembersPanel(panel) {
     });
     listEl.querySelectorAll('.admin-unbind').forEach(btn => {
       btn.addEventListener('click', async () => {
-        if (!confirm('確定解除此會員的 Google 綁定？')) return;
+        const okConfirm = await showConfirmDialog({
+          title: t('admin_unbind_confirm_title'),
+          message: t('admin_unbind_confirm'),
+        });
+        if (!okConfirm) return;
         try {
           await adminUnbindMember(btn.dataset.id);
           showToast('已解除綁定');
@@ -231,7 +267,11 @@ async function renderMembersPanel(panel) {
     listEl.querySelectorAll('.admin-ban').forEach(btn => {
       btn.addEventListener('click', async () => {
         const name = btn.dataset.name || '此會員';
-        if (!confirm(`確定停用「${name}」？停用後無法發文、也不會出現在公開名單。`)) return;
+        const okConfirm = await showConfirmDialog({
+          title: t('admin_ban_confirm_title'),
+          message: t('admin_ban_confirm', { name }),
+        });
+        if (!okConfirm) return;
         try {
           await adminSetMemberActive(btn.dataset.id, false);
           showToast('已停用帳號');
@@ -244,7 +284,11 @@ async function renderMembersPanel(panel) {
     listEl.querySelectorAll('.admin-unban').forEach(btn => {
       btn.addEventListener('click', async () => {
         const name = btn.dataset.name || '此會員';
-        if (!confirm(`確定恢復「${name}」？`)) return;
+        const okConfirm = await showConfirmDialog({
+          title: t('admin_unban_confirm_title'),
+          message: t('admin_unban_confirm', { name }),
+        });
+        if (!okConfirm) return;
         try {
           await adminSetMemberActive(btn.dataset.id, true);
           showToast('已恢復帳號');
@@ -284,6 +328,75 @@ async function renderMembersPanel(panel) {
   });
 
   await loadMembers();
+}
+
+async function renderFeedPanel(panel) {
+  panel.innerHTML = `
+    <p class="admin-sub">${escHtml(t('admin_feed_sub'))}</p>
+    <div class="admin-toolbar">
+      <button type="button" id="admin-feed-refresh" class="btn-outline">${escHtml(t('admin_feed_refresh'))}</button>
+    </div>
+    <div id="admin-feed-list" class="admin-feed-list"><div class="bind-loading">${escHtml(t('admin_feed_loading'))}</div></div>
+  `;
+
+  async function loadFeed() {
+    const listEl = panel.querySelector('#admin-feed-list');
+    listEl.innerHTML = `<div class="bind-loading">${escHtml(t('admin_feed_loading'))}</div>`;
+    try {
+      const feed = await fetchFeed(80);
+      if (!feed.length) {
+        listEl.innerHTML = `<div class="bind-empty">${escHtml(t('feed_empty'))}</div>`;
+        return;
+      }
+      listEl.innerHTML = feed.map(item => adminFeedRowHTML(item)).join('');
+      listEl.querySelectorAll('.admin-feed-delete').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const id = btn.dataset.feedId;
+          if (!id) return;
+          const okConfirm = await showConfirmDialog({
+            title: t('feed_delete'),
+            message: t('feed_delete_confirm'),
+            confirmLabel: t('feed_delete'),
+          });
+          if (!okConfirm) return;
+          btn.disabled = true;
+          try {
+            await adminDeleteFeedMessage(id);
+            showToast(t('feed_delete_ok'));
+            await loadFeed();
+          } catch (err) {
+            showToast(t('feed_delete_fail'));
+            btn.disabled = false;
+          }
+        });
+      });
+    } catch (err) {
+      listEl.innerHTML = `<div class="bind-empty">${escHtml(err.message)}</div>`;
+    }
+  }
+
+  panel.querySelector('#admin-feed-refresh')?.addEventListener('click', loadFeed);
+  await loadFeed();
+}
+
+function adminFeedRowHTML(item) {
+  const type = item.feed_type || 'message';
+  const name = escHtml(item.actor_name || t('feed_system'));
+  const branch = escHtml(item.actor_branch || item.meta?.branch || '—');
+  const time = formatFeedTime(item.created_at);
+  const body = type === 'message'
+    ? escHtml(item.content || '')
+    : escHtml(item.content || `[${type}]`);
+  const typeLabel = type === 'message' ? '' : `<span class="admin-feed-type">${escHtml(type)}</span>`;
+  return `
+    <article class="admin-feed-row" data-id="${escHtml(item.id || '')}">
+      <div class="admin-feed-row-top">
+        <div class="admin-feed-meta">${name} · ${branch} ${typeLabel}</div>
+        <div class="admin-feed-time">${escHtml(time)}</div>
+      </div>
+      <div class="admin-feed-body">${body}</div>
+      ${item.id ? `<button type="button" class="btn-outline admin-feed-delete" data-feed-id="${escHtml(item.id)}">${escHtml(t('feed_delete'))}</button>` : ''}
+    </article>`;
 }
 
 async function renderBranchesPanel(panel) {
@@ -341,7 +454,11 @@ async function renderBranchesPanel(panel) {
       const msg = t('admin_branch_merge_confirm')
         .replace('{from}', normalizeBranchName(from))
         .replace('{to}', normalizeBranchName(to));
-      if (!confirm(msg)) return;
+      const okConfirm = await showConfirmDialog({
+        title: t('admin_branch_merge_btn'),
+        message: msg,
+      });
+      if (!okConfirm) return;
       try {
         const res = await adminMergeBranches(from, to);
         showToast(`${t('admin_branch_merge_ok')}（${res.updated ?? 0} 人）`);

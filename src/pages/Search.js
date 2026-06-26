@@ -9,6 +9,7 @@ import { showMemberList } from '../utils/memberList.js';
 import { findMemberByNameBranch } from '../utils/feedMemberNav.js';
 import { industryPieChartHTML } from '../components/IndustryPieChart.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
+import { showToast } from '../utils/toast.js';
 import { saveSearchSession, loadSearchSession, clearSearchSession } from '../utils/searchSession.js';
 
 export function renderSearch(container) {
@@ -46,16 +47,23 @@ function buildSearchUI() {
     ${profileEnrichBannerHTML()}
     <div id="search-ai-box" class="ai-box">
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
-      <p class="search-format-hint">${escHtml(t('search_format_hint'))}</p>
-      <ul class="search-format-guide" aria-label="${escHtml(t('search_format_hint'))}">
-        <li><strong>【${escHtml(t('search_intent_iam'))}】</strong>${escHtml(t('search_format_iam'))}</li>
-        <li><strong>【${escHtml(t('search_intent_offer'))}】</strong>${escHtml(t('search_format_offer'))}</li>
-        <li><strong>【${escHtml(t('search_intent_seek'))}】</strong>${escHtml(t('search_format_seek'))}</li>
-        <li><strong>【${escHtml(t('search_intent_exclude'))}】</strong>${escHtml(t('search_format_exclude'))}</li>
-      </ul>
+      <details class="search-format-details">
+        <summary>${escHtml(t('search_format_toggle'))}</summary>
+        <p class="search-format-hint">${escHtml(t('search_format_hint'))}</p>
+        <ul class="search-format-guide" aria-label="${escHtml(t('search_format_hint'))}">
+          <li><strong>【${escHtml(t('search_intent_iam'))}】</strong>${escHtml(t('search_format_iam'))}</li>
+          <li><strong>【${escHtml(t('search_intent_offer'))}】</strong>${escHtml(t('search_format_offer'))}</li>
+          <li><strong>【${escHtml(t('search_intent_seek'))}】</strong>${escHtml(t('search_format_seek'))}</li>
+          <li><strong>【${escHtml(t('search_intent_exclude'))}】</strong>${escHtml(t('search_format_exclude'))}</li>
+        </ul>
+      </details>
       <textarea id="ai-input" class="ai-textarea"
         placeholder="${escHtml(t('search_placeholder'))}"
-        rows="6" aria-label="${escHtml(t('search_label'))}" maxlength="500" autofocus></textarea>
+        rows="5" aria-label="${escHtml(t('search_label'))}" maxlength="500"></textarea>
+      <div class="search-ai-actions">
+        <button type="button" id="ai-copy-example" class="btn-text search-copy-example">${escHtml(t('search_copy_example'))}</button>
+        <span id="ai-char-count" class="search-char-count" aria-live="polite">0 / 500</span>
+      </div>
       <button id="ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
     </div>
     <div id="search-loading" style="display:none" role="status" aria-live="polite"></div>
@@ -69,16 +77,33 @@ function buildSearchUI() {
 
 function bindSearchEvents(container) {
   const input = document.getElementById('ai-input');
+  const charCount = document.getElementById('ai-char-count');
+
+  const syncCharCount = () => {
+    if (charCount && input) charCount.textContent = `${input.value.length} / 500`;
+  };
+
   if (input && !input.value) {
     try { input.focus({ preventScroll: true }); } catch { input.focus(); }
   }
+  syncCharCount();
+  input?.addEventListener('input', syncCharCount);
 
-  document.getElementById('ai-submit').addEventListener('click', () => {
-    const input = document.getElementById('ai-input').value.trim();
-    if (input.length >= 2) triggerSearch(input);
+  document.getElementById('ai-copy-example')?.addEventListener('click', () => {
+    if (!input) return;
+    input.value = t('search_placeholder');
+    syncCharCount();
+    showToast(t('search_copy_example_ok'));
+    input.focus();
   });
 
-  document.getElementById('ai-input').addEventListener('keydown', e => {
+  document.getElementById('ai-submit').addEventListener('click', () => {
+    const val = document.getElementById('ai-input').value.trim();
+    if (val.length >= 2) triggerSearch(val);
+    else showToast(t('search_need_more'));
+  });
+
+  input?.addEventListener('keydown', e => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       document.getElementById('ai-submit').click();
@@ -278,7 +303,10 @@ function showResults(intent, container) {
   const possibleSection = sectionHTML('possible', possible.length, 'search_possible_title', possible, true);
 
   const emptyHint = !collaborate.length && !possible.length && !referral.length
-    ? `<div class="search-noexact">${escHtml(t('search_no_result'))}</div>`
+    ? `<div class="search-noexact">
+        <p class="search-noexact-title">${escHtml(t('search_no_result'))}</p>
+        <p class="search-refine-hint">${escHtml(t('search_refine_hint'))}</p>
+      </div>`
     : '';
 
   container.innerHTML = `

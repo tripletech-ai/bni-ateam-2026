@@ -1,4 +1,4 @@
--- 登入認領：依「分會 + 中文姓名」在後台精準匹配既有名單（優先 roster 未認領）
+-- 登入認領：依「分會 + 中文姓名」在後台精準匹配既有名單（優先未認領列，禁止重複 INSERT）
 -- 執行一次：node scripts/run-insforge-sql.mjs scripts/claim-by-name-branch.sql
 
 CREATE OR REPLACE FUNCTION bni_normalize_claim_name(p_name text)
@@ -34,6 +34,7 @@ DECLARE
   v_region text;
   v_member bni_members%ROWTYPE;
   v_target_id uuid;
+  v_from_roster boolean := false;
 BEGIN
   IF v_user_id IS NULL THEN RAISE EXCEPTION 'NOT_AUTHENTICATED'; END IF;
   IF EXISTS (SELECT 1 FROM bni_members WHERE auth_user_id = v_user_id AND active = true) THEN
@@ -50,60 +51,34 @@ BEGIN
   END IF;
   v_region := COALESCE(NULLIF(trim(p_region), ''), bni_region_for_branch(v_branch));
 
+  SELECT bni_current_jwt_email() INTO v_email;
+
+  -- 1) 優先綁定未認領列（含解除綁定後的 roster）
   SELECT * INTO v_member
   FROM bni_members m
   WHERE m.active = true
     AND bni_normalize_claim_name(m.name) = v_name
     AND bni_normalize_claim_branch(m.branch) = v_branch
+    AND m.auth_user_id IS NULL
   ORDER BY
     CASE WHEN m.status = 'roster' THEN 0 ELSE 1 END,
-    CASE WHEN m.auth_user_id IS NULL THEN 0 ELSE 1 END,
     CASE WHEN bni_member_profile_filled(m.profession, m.have, m.want_meet, m.want_referral, m.bio) THEN 0 ELSE 1 END,
     m.created_at NULLS LAST
   LIMIT 1
   FOR UPDATE;
 
-  SELECT bni_current_jwt_email() INTO v_email;
-
   IF FOUND THEN
-    IF v_member.status = 'roster' AND bni_is_ateam_roster_branch(v_member.branch) THEN
-      IF v_member.auth_user_id IS NOT NULL THEN
-        INSERT INTO bni_members (
-          name, branch, region, profession, have, want_meet, want_referral,
-          line_id, line_link, tags, industries, auth_user_id, google_email, status, active
-        ) VALUES (
-          v_member.name, v_member.branch, v_member.region, v_member.profession, v_member.have,
-          v_member.want_meet, v_member.want_referral, v_member.line_id, v_member.line_link,
-          v_member.tags, COALESCE(v_member.industries, '{}'::text[]),
-          v_user_id, v_email, 'self_registered', true
-        ) RETURNING id INTO v_target_id;
-      ELSE
-        UPDATE bni_members
-          SET auth_user_id = v_user_id,
-              google_email = v_email,
-              status = 'claimed',
-              updated_at = now()
-        WHERE id = v_member.id;
-        v_target_id := v_member.id;
-      END IF;
-    ELSIF v_member.auth_user_id IS NULL THEN
-      UPDATE bni_members
-        SET auth_user_id = v_user_id,
-            google_email = COALESCE(NULLIF(trim(v_member.google_email), ''), v_email),
-            updated_at = now()
-      WHERE id = v_member.id;
-      v_target_id := v_member.id;
-    ELSE
-      INSERT INTO bni_members (
-        name, branch, region, profession, have, want_meet, want_referral,
-        line_id, line_link, tags, industries, auth_user_id, google_email, status, active
-      ) VALUES (
-        v_member.name, v_member.branch, v_member.region, v_member.profession, v_member.have,
-        v_member.want_meet, v_member.want_referral, v_member.line_id, v_member.line_link,
-        v_member.tags, COALESCE(v_member.industries, '{}'::text[]),
-        v_user_id, v_email, 'self_registered', true
-      ) RETURNING id INTO v_target_id;
-    END IF;
+    v_from_roster := v_member.status = 'roster';
+    UPDATE bni_members
+      SET auth_user_id = v_user_id,
+          google_email = COALESCE(NULLIF(trim(v_email), ''), v_member.google_email),
+          status = CASE
+            WHEN v_member.status = 'roster' AND bni_is_ateam_roster_branch(v_member.branch) THEN 'claimed'
+            ELSE v_member.status
+          END,
+          updated_at = now()
+    WHERE id = v_member.id;
+    v_target_id := v_member.id;
 
     INSERT INTO bni_onboarding (auth_user_id, bound_member_id, tutorial_done, updated_at)
       VALUES (v_user_id, v_target_id, false, now())
@@ -116,11 +91,22 @@ BEGIN
       'member_id', v_target_id,
       'name', v_member.name,
       'branch', v_member.branch,
-      'duplicate', v_member.auth_user_id IS NOT NULL,
-      'from_roster', v_member.status = 'roster'
+      'duplicate', false,
+      'from_roster', v_from_roster
     );
   END IF;
 
+  -- 2) 已有他人認領的同名同分會 → 拒絕（不再 INSERT 幽靈列）
+  IF EXISTS (
+    SELECT 1 FROM bni_members m
+    WHERE m.active = true
+      AND bni_normalize_claim_name(m.name) = v_name
+      AND bni_normalize_claim_branch(m.branch) = v_branch
+  ) THEN
+    RAISE EXCEPTION 'NAME_BRANCH_TAKEN';
+  END IF;
+
+  -- 3) 完全新名單
   INSERT INTO bni_members (
     name, branch, region, profession, have, want_meet, want_referral,
     line_id, line_link, tags, industries, auth_user_id, google_email, status, active
