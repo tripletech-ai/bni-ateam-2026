@@ -391,6 +391,7 @@ export const translations = {
     leaders_donggu_suffix: '董顧',
     leaders_card:     '我的名片',
     leaders_line:     '加 LINE',
+    leaders_facebook: '臉書',
     leaders_phone:    '電話',
     leaders_email:    'Email',
     leaders_pending:  '待補充',
