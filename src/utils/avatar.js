@@ -11,6 +11,10 @@ export function getPhotoFile(name) {
   return PHOTOS[name] || null;
 }
 
+export function hasPhoto(name) {
+  return !!getPhotoFile(name);
+}
+
 function nameInitial(name) {
   return (name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
 }
@@ -29,13 +33,11 @@ export function avatarInner(name, initial) {
   return `${fallback}<img class="avatar-img" src="${src}" alt="" loading="lazy" onerror="this.remove()">`;
 }
 
-/** Developer / contributor card photo block */
+/** Developer / contributor card photo block — 僅在有照片檔時顯示 */
 export function developerPhotoHTML(name, photoFile) {
-  const initial = nameInitial(name);
   const file = getPhotoFile(name) || photoFile;
-  if (!file) {
-    return `<div class="developer-photo no-photo"><span class="developer-photo-fallback" aria-hidden="true">${escHtml(initial)}</span></div>`;
-  }
+  if (!file) return '';
+  const initial = nameInitial(name);
   const src = photoUrl(file);
   return `<div class="developer-photo">
     <img src="${src}" alt="" loading="lazy"

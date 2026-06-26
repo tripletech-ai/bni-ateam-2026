@@ -3,7 +3,6 @@ import { showToast } from '../utils/toast.js';
 import { renderTabBar } from '../components/TabBar.js';
 import { goalProgressHTML, MARK_PARTNER_GOAL, MARK_ONE_GOAL } from '../components/GoalProgress.js';
 import { escHtml, escAttr }     from '../utils/html.js';
-import { avatarInner }          from '../utils/avatar.js';
 import { t }                    from '../i18n/translations.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
 import { guestHomeReminderHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
@@ -38,11 +37,9 @@ function goalHintHTML(connected, oneCount) {
 
 function markCardHTML(m, i) {
   const stagger = i < 6 ? `stagger-${i + 1}` : '';
-  const initial = (m.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
   return `
     <div class="mark-card ${stagger}" data-key="${escAttr(m.key)}">
       <div class="mark-card-top">
-        <div class="mark-avatar" aria-hidden="true">${avatarInner(m.name, initial)}</div>
         <div style="flex:1;min-width:0">
           <div class="mark-name">${escHtml(m.name)}</div>
           <div class="mark-meta">${escHtml(m.branch)} · ${escHtml(m.profession)}</div>

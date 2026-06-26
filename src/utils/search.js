@@ -1,8 +1,35 @@
 // Members data is loaded via classic <script> tag as window.BNI_MEMBERS
 
 import { getMembersByIndustry as filterMembersByIndustry, INDUSTRY_CATEGORIES, inferIndustriesFromText } from '../data/industries.js';
+import { normalizeBranchName } from '../data/branches.js';
 import { normalizeIntent } from './searchIntent.js';
 import { getMark, memberKey, isMutuallyConnected } from './storage.js';
+
+function getMyMemberKey() {
+  return (typeof window !== 'undefined' && window.BNI_MY_MEMBER_KEY) || '';
+}
+
+function normalizeKey(key) {
+  return String(key || '').replace(/\s+/g, '').toLowerCase();
+}
+
+function isSelfMember(member) {
+  const myKey = getMyMemberKey();
+  const key = memberKey(member);
+  if (myKey && key === myKey) return true;
+  if (myKey && normalizeKey(key) === normalizeKey(myKey)) return true;
+
+  const myId = typeof window !== 'undefined' ? window.BNI_MY_MEMBER_ID : '';
+  if (myId && (member.dbId === myId || member.id === myId)) return true;
+
+  const myName = typeof window !== 'undefined' ? window.BNI_MY_NAME : '';
+  const myBranch = getMyBranch();
+  if (myName && member.name === myName && myBranch
+      && normalizeBranchName(member.branch) === normalizeBranchName(myBranch)) {
+    return true;
+  }
+  return false;
+}
 
 function getMembers() {
   return window.BNI_MEMBERS || [];
@@ -276,8 +303,8 @@ function scoreMemberByIntent(member, intent) {
   }
 
   const myBranch = getMyBranch();
-  if (myBranch && member.branch === myBranch) {
-    socialBonus += 3;
+  if (myBranch && normalizeBranchName(member.branch) === normalizeBranchName(myBranch)) {
+    socialBonus += 1;
     matchReasons.push({ type: 'branch', text: `同分會（${myBranch}）` });
   }
 
@@ -316,6 +343,7 @@ export function searchMembersByIntent(keywordsOrIntent) {
   const buckets = { precise: [], network: [], referral: [], possible: [] };
 
   for (const member of getMembers()) {
+    if (isSelfMember(member)) continue;
     const hit = scoreMemberByIntent(member, intent);
     if (!hit) continue;
     if (hit._tier === 'precise') buckets.precise.push(hit);

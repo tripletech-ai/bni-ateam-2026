@@ -1,7 +1,6 @@
 import { LEADERS }          from '../data/leaders.js';
 import { t }                from '../i18n/translations.js';
 import { escHtml, escAttr } from '../utils/html.js';
-import { avatarInner }      from '../utils/avatar.js';
 import { getCardLink }      from '../data/cardLinks.js';
 import { showToast }        from '../utils/toast.js';
 
@@ -44,15 +43,14 @@ export function renderLeaders(container) {
 }
 
 function leaderCardPrimary(l) {
-  const initial = (l.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
   const cardLink = getCardLink(l.name) || l.cardLink || '';
   return `
     <div class="leader-card-primary">
       <div class="lc-top">
-        <div class="leader-avatar">${avatarInner(l.name, initial)}</div>
         <div>
           <div class="leader-name">${escHtml(l.name)}</div>
           <div class="leader-title">${escHtml(l.title)}</div>
+          <div class="leader-region">${escHtml(l.region || '')}</div>
         </div>
       </div>
       <div class="leader-contact-grid">
@@ -81,11 +79,9 @@ function leaderCardPrimary(l) {
 }
 
 function leaderCardSecondary(l) {
-  const initial = (l.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
   const cardLink = getCardLink(l.name) || l.cardLink || '';
   return `
     <div class="leader-card-secondary">
-      <div class="leader-avatar leader-avatar-sm">${avatarInner(l.name, initial)}</div>
       <div style="flex:1">
         <div class="leader-name">${escHtml(l.name)}</div>
         <div class="leader-title">${escHtml(l.title)}</div>
@@ -98,7 +94,6 @@ function leaderCardSecondary(l) {
 }
 
 function directorCardHTML(p, index) {
-  const initial = (p.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
   const dirCard = getCardLink(p.name) || p.cardLink || '';
   const metaParts = [p.branch, p.profession].filter(Boolean);
   const metaLine  = metaParts.length ? `<div class="dir-meta">${escHtml(metaParts.join(' · '))}</div>` : '';
@@ -113,7 +108,6 @@ function directorCardHTML(p, index) {
 
   return `<div class="director-card-v2" data-expanded="false">
     <div class="dir-header">
-      <div class="director-avatar" aria-hidden="true">${avatarInner(p.name, initial)}</div>
       <div class="dir-name-wrap">
         <div class="director-name">${escHtml(nameLabel)}</div>
         ${metaLine}

@@ -1,294 +1,27 @@
 import { escHtml } from '../utils/html.js';
 import {
-  getRegionForBranch,
-  normalizeBranchName,
-} from '../data/branches.js';
-import {
-  regionPickerHTML,
-  eventBranchPickerHTML,
   searchEventChapters,
-  isAteamRosterChapterName,
+  ATEAM_ROSTER_NAMES,
+  chapterFullName,
 } from '../data/eventChapters.js';
 import {
   signInWithGoogle,
-  bindExistingMember,
-  registerNewMember,
+  ensureAuthSession,
   getCurrentUser,
-  ensureSessionFresh,
 } from '../services/auth.js';
 import { showToast } from '../utils/toast.js';
 import { t } from '../i18n/translations.js';
 import { isInAppBrowser } from '../utils/inAppBrowser.js';
 import { inAppBrowserGateHTML, bindInAppBrowserGate } from '../components/InAppBrowserGate.js';
-import { branchHasPickableRoster, getBranchMembers } from '../utils/rosterPick.js';
 import { startGuestTrial } from '../utils/guestTrial.js';
-
-/** region | branch | pick | manual */
-let mode = 'region';
-let selectedRegion = '';
-let selectedBranch = '';
-
-export function renderOnboard(container, { onComplete }) {
-  container.innerHTML = buildHTML();
-  bindEvents(container, onComplete);
-}
-
-function buildHTML() {
-  return `
-    <div class="onboard-wrap onboard-flow-wrap">
-      <header class="login-hero login-hero-compact">
-        <h1 class="login-hero-title serif">${escHtml(t('onboard_title'))}</h1>
-      </header>
-      <div class="onboard-card">
-
-        <div id="onboard-region" class="onboard-panel${mode !== 'region' ? ' hidden' : ''}">
-          <label class="field-label" for="chapter-search">${escHtml(t('onboard_chapter_search_lbl'))}</label>
-          <input id="chapter-search" class="field-input" placeholder="${escHtml(t('onboard_chapter_search_ph'))}" autocomplete="off" autofocus>
-          <div id="chapter-search-results" class="chapter-search-results hidden"></div>
-          <details class="onboard-region-fallback">
-            <summary>${escHtml(t('onboard_or_pick_region'))}</summary>
-            <div class="onboard-area-groups">${regionPickerHTML()}</div>
-          </details>
-        </div>
-
-        <div id="onboard-branch" class="onboard-panel${mode !== 'branch' ? ' hidden' : ''}">
-          <p class="onboard-branch-label">${escHtml(t('onboard_branch_hint'))}</p>
-          <div id="branch-picker" class="ateam-branch-picker event-chapter-picker">${eventBranchPickerHTML(selectedRegion, selectedBranch)}</div>
-          <button type="button" class="btn-text" data-back="region">${escHtml(t('onboard_back'))}</button>
-        </div>
-
-        <div id="onboard-pick" class="onboard-panel${mode !== 'pick' ? ' hidden' : ''}">
-          <p class="onboard-branch-label">${escHtml(t('onboard_pick_hint_short'))} · ${escHtml(selectedBranch)}</p>
-          <div id="roster-pick-list" class="bind-results"></div>
-          <button type="button" class="btn-text onboard-link-btn" data-mode="manual">${escHtml(t('onboard_pick_not_found'))}</button>
-          <button type="button" class="btn-text" data-back="branch">${escHtml(t('onboard_back'))}</button>
-        </div>
-
-        <div id="onboard-manual" class="onboard-panel${mode !== 'manual' ? ' hidden' : ''}">
-          ${manualNameFormHTML()}
-          <button type="button" class="btn-text" data-back="branch">${escHtml(t('onboard_back'))}</button>
-        </div>
-      </div>
-    </div>
-  `;
-}
-
-function normalizeRegisterBranch(branch) {
-  const s = String(branch || '').trim();
-  if (!s || s.startsWith('~') || s.includes('海外') || s.includes('籌備')) return s;
-  return normalizeBranchName(s);
-}
-
-function memberRegionForRegister(branch) {
-  const r = getRegionForBranch(branch);
-  if (r !== 'guest') return r;
-  return selectedRegion || 'guest';
-}
-
-function manualNameFormHTML() {
-  return `
-    <form id="manual-name-form" class="register-form">
-      <label class="field-label">${escHtml(t('onboard_name_lbl'))} · ${escHtml(selectedBranch)}</label>
-      <input name="name" class="field-input" required maxlength="50" autocomplete="name"
-        placeholder="${escHtml(t('onboard_name_ph'))}">
-      <input type="hidden" name="branch" value="${escHtml(selectedBranch)}">
-      <button type="submit" class="btn-ai onboard-btn">${escHtml(t('onboard_manual_submit'))}</button>
-      <p class="field-hint onboard-profile-later">${escHtml(t('onboard_profile_later'))}</p>
-    </form>
-  `;
-}
-
-function rosterPickListHTML() {
-  const members = getBranchMembers(selectedBranch, { filledOnly: true });
-  if (!members.length) return `<div class="bind-empty">${escHtml(t('onboard_pick_empty'))}</div>`;
-  const short = selectedBranch.replace(/分會$/, '');
-  const canBind = isAteamRosterChapterName(short);
-  return members.map(m => {
-    const claimed = !!m.authUserId;
-    return `
-      <button type="button" class="bind-item roster-pick-item${claimed ? ' bind-item-claimed' : ''}"
-        data-id="${escHtml(m.dbId)}" data-name="${escHtml(m.name)}" data-can-bind="${canBind ? '1' : '0'}">
-        <div class="bind-name">${escHtml(m.name)}</div>
-        ${m.profession ? `<div class="bind-meta">${escHtml(m.profession)}</div>` : ''}
-      </button>`;
-  }).join('');
-}
-
-function setMode(next) {
-  mode = next;
-  for (const key of ['region', 'branch', 'pick', 'manual']) {
-    const el = document.getElementById(`onboard-${key}`);
-    if (!el) continue;
-    const show = mode === key;
-    el.classList.toggle('hidden', !show);
-  }
-  if (mode === 'pick') {
-    const list = document.getElementById('roster-pick-list');
-    if (list) list.innerHTML = rosterPickListHTML();
-  }
-}
-
-function rerender(container, onComplete) {
-  container.innerHTML = buildHTML();
-  bindEvents(container, onComplete);
-  setMode(mode);
-  if (mode === 'pick') {
-    bindRosterPick(container, onComplete);
-  }
-}
-
-function mapAuthError(err) {
-  const msg = err?.message || '';
-  if (/jwt expired|invalid jwt|token expired|unauthorized|invalid token|not authenticated/i.test(msg)) {
-    return t('onboard_err_session');
-  }
-  if (msg.includes('ALREADY_BOUND')) return t('onboard_err_bound');
-  if (msg.includes('REGISTER_RPC_MISSING') || /could not find the function.*bni_register/i.test(msg)) {
-    return t('onboard_err_register_rpc');
-  }
-  return msg || '操作失敗';
-}
-
-function goAfterBranchSelected(container, onComplete) {
-  const short = selectedBranch.replace(/分會$/, '');
-  if (isAteamRosterChapterName(short) && branchHasPickableRoster(selectedBranch)) {
-    setMode('pick');
-    rerender(container, onComplete);
-  } else {
-    setMode('manual');
-    rerender(container, onComplete);
-  }
-}
-
-function bindEvents(container, onComplete) {
-  const searchInput = container.querySelector('#chapter-search');
-  const searchBox = container.querySelector('#chapter-search-results');
-  let searchTimer;
-  searchInput?.addEventListener('input', () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => {
-      const q = searchInput.value.trim();
-      if (!searchBox) return;
-      if (q.length < 1) {
-        searchBox.classList.add('hidden');
-        searchBox.innerHTML = '';
-        return;
-      }
-      const hits = searchEventChapters(q, 25);
-      if (!hits.length) {
-        searchBox.classList.remove('hidden');
-        searchBox.innerHTML = `<div class="bind-empty">${escHtml(t('onboard_search_empty'))}</div>`;
-        return;
-      }
-      searchBox.classList.remove('hidden');
-      searchBox.innerHTML = hits.map(h => `
-        <button type="button" class="bind-item chapter-search-hit" data-region-id="${escHtml(h.regionId)}" data-branch="${escHtml(h.fullName)}">
-          <div class="bind-name">${escHtml(h.fullName)}</div>
-        </button>`).join('');
-      searchBox.querySelectorAll('.chapter-search-hit').forEach(btn => {
-        btn.addEventListener('click', () => {
-          selectedRegion = btn.dataset.regionId;
-          selectedBranch = btn.dataset.branch;
-          goAfterBranchSelected(container, onComplete);
-        });
-      });
-    }, 200);
-  });
-
-  container.querySelectorAll('.onboard-area-groups [data-region-id]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      selectedRegion = btn.dataset.regionId;
-      selectedBranch = '';
-      setMode('branch');
-      rerender(container, onComplete);
-    });
-  });
-
-  container.querySelectorAll('[data-back]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const back = btn.dataset.back;
-      if (back === 'region') {
-        selectedRegion = '';
-        selectedBranch = '';
-      }
-      setMode(back);
-      rerender(container, onComplete);
-    });
-  });
-
-  container.querySelectorAll('[data-mode]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      setMode(btn.dataset.mode);
-      rerender(container, onComplete);
-    });
-  });
-
-  container.querySelector('#branch-picker')?.querySelectorAll('[data-branch]').forEach(chip => {
-    chip.addEventListener('click', () => {
-      selectedBranch = chip.dataset.branch;
-      goAfterBranchSelected(container, onComplete);
-    });
-  });
-
-  bindRosterPick(container, onComplete);
-  bindManualForm(container, onComplete);
-}
-
-function bindRosterPick(container, onComplete) {
-  container.querySelectorAll('.roster-pick-item').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const canBind = btn.dataset.canBind === '1';
-      const memberId = btn.dataset.id;
-      const name = btn.dataset.name;
-      if (canBind && memberId) {
-        try {
-          if (!(await ensureSessionFresh())) {
-            showToast(t('onboard_err_session'));
-            return;
-          }
-          await bindExistingMember(memberId);
-          onComplete();
-        } catch (err) {
-          showToast(mapAuthError(err));
-        }
-        return;
-      }
-      setMode('manual');
-      rerender(container, onComplete);
-      const input = container.querySelector('#manual-name-form [name="name"]');
-      if (input) input.value = name;
-    });
-  });
-}
-
-function bindManualForm(container, onComplete) {
-  container.querySelector('#manual-name-form')?.addEventListener('submit', async e => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    const name = String(fd.get('name') || '').trim();
-    const branch = normalizeRegisterBranch(String(fd.get('branch') || selectedBranch));
-    if (!name || !branch) return;
-    try {
-      if (!(await ensureSessionFresh())) {
-        showToast(t('onboard_err_session'));
-        return;
-      }
-      await registerNewMember({
-        name,
-        branch,
-        region: memberRegionForRegister(branch),
-        profession: '',
-        have: '',
-        wantMeet: '',
-        wantReferral: '',
-        industries: [],
-      });
-      onComplete();
-    } catch (err) {
-      showToast(mapAuthError(err));
-    }
-  });
-}
+import {
+  claimByNameBranch,
+  isValidChineseName,
+  savePendingClaim,
+  loadPendingClaim,
+  clearPendingClaim,
+} from '../utils/memberClaim.js';
+import { getCollect800Stats } from '../components/Collect800Game.js';
 
 const GOOGLE_ICON_SVG = `<svg class="google-logo" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -297,40 +30,259 @@ const GOOGLE_ICON_SVG = `<svg class="google-logo" viewBox="0 0 24 24" width="20"
   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
 </svg>`;
 
-export function renderLoginGate(container, { onGuestTrial } = {}) {
-  const inApp = isInAppBrowser();
+function memberCountLine() {
+  const { registered, goal } = getCollect800Stats();
+  return `<p class="login-member-count">${escHtml(t('login_member_count_prefix'))}<strong>${registered}</strong>${escHtml(t('login_member_count_suffix'))} · ${escHtml(t('collect800_goal_hint'))} ${goal}</p>`;
+}
+
+function ateamQuickChipsHTML(selectedBranch) {
+  return ATEAM_ROSTER_NAMES.map(short => {
+    const full = chapterFullName(short);
+    const active = full === selectedBranch ? ' active' : '';
+    return `<button type="button" class="quick-filter-chip branch ateam-roster${active}" data-branch="${escHtml(full)}">${escHtml(short)}</button>`;
+  }).join('');
+}
+
+function simpleClaimFormHTML({ branch = '', name = '' } = {}) {
+  return `
+    <form id="simple-claim-form" class="simple-claim-form">
+      <label class="field-label" for="claim-branch-input">${escHtml(t('onboard_chapter_search_lbl'))}</label>
+      <input id="claim-branch-input" class="field-input" value="${escHtml(branch)}"
+        placeholder="${escHtml(t('onboard_chapter_search_ph'))}" autocomplete="off" required>
+      <div id="claim-branch-results" class="chapter-search-results hidden"></div>
+      <div class="simple-claim-ateam">
+        <div class="simple-claim-ateam-label">${escHtml(t('onboard_ateam_quick'))}</div>
+        <div class="quick-filter-scroll simple-claim-chips" role="list">${ateamQuickChipsHTML(branch)}</div>
+      </div>
+      <input type="hidden" id="claim-branch-value" name="branch" value="${escHtml(branch)}">
+
+      <label class="field-label" for="claim-name-input">${escHtml(t('onboard_name_lbl'))}</label>
+      <input id="claim-name-input" name="name" class="field-input" value="${escHtml(name)}"
+        required maxlength="20" autocomplete="name"
+        placeholder="${escHtml(t('onboard_name_ph_full'))}">
+
+      <button type="submit" class="btn-ai onboard-btn" id="claim-submit-btn">${escHtml(t('onboard_submit'))}</button>
+      <p class="field-hint onboard-profile-later">${escHtml(t('onboard_profile_later'))}</p>
+    </form>`;
+}
+
+function optionalGoogleHTML() {
+  if (isInAppBrowser()) return '';
+  return `
+    <div class="login-google-divider" aria-hidden="true"><span>${escHtml(t('login_or'))}</span></div>
+    <button type="button" class="btn-google login-google-optional" id="google-login-btn">
+      ${GOOGLE_ICON_SVG}<span class="btn-google-label">${escHtml(t('login_google_optional'))}</span>
+    </button>
+    <p class="field-hint login-google-hint">${escHtml(t('login_google_hint'))}</p>`;
+}
+
+export function mapAuthError(err) {
+  const msg = err?.message || '';
+  if (err?.message === 'INVALID_NAME') return t('onboard_err_name');
+  if (err?.message === 'INVALID_BRANCH') return t('onboard_pick_branch_first');
+  if (err?.message === 'MULTIPLE_MATCHES') return t('onboard_err_multiple');
+  if (/jwt expired|invalid jwt|token expired|unauthorized|invalid token|not authenticated/i.test(msg)) {
+    return t('onboard_err_session');
+  }
+  if (msg.includes('ALREADY_BOUND')) return t('onboard_err_taken');
+  if (msg.includes('REGISTER_RPC_MISSING') || /could not find the function.*bni_register/i.test(msg)) {
+    return t('onboard_err_register_rpc');
+  }
+  if (msg === 'AUTH_NETWORK') return t('onboard_err_network');
+  return msg || '操作失敗';
+}
+
+function readClaimForm(container) {
+  const branch = container.querySelector('#claim-branch-value')?.value?.trim()
+    || container.querySelector('#claim-branch-input')?.value?.trim()
+    || '';
+  const name = container.querySelector('#claim-name-input')?.value?.trim() || '';
+  return { branch, name };
+}
+
+function validateClaimForm({ branch, name }) {
+  if (!branch) {
+    showToast(t('onboard_pick_branch_first'));
+    return false;
+  }
+  if (!isValidChineseName(name)) {
+    showToast(t('onboard_err_name'));
+    return false;
+  }
+  return true;
+}
+
+function bindBranchSearch(container) {
+  const input = container.querySelector('#claim-branch-input');
+  const hidden = container.querySelector('#claim-branch-value');
+  const box = container.querySelector('#claim-branch-results');
+  let timer;
+
+  const selectBranch = (full) => {
+    if (input) input.value = full;
+    if (hidden) hidden.value = full;
+    box?.classList.add('hidden');
+    container.querySelectorAll('.simple-claim-chips .quick-filter-chip').forEach(chip => {
+      chip.classList.toggle('active', chip.dataset.branch === full);
+    });
+  };
+
+  input?.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(() => {
+      const q = input.value.trim();
+      if (hidden) hidden.value = q;
+      if (!box) return;
+      if (q.length < 1) {
+        box.classList.add('hidden');
+        box.innerHTML = '';
+        return;
+      }
+      const hits = searchEventChapters(q, 20);
+      if (!hits.length) {
+        box.classList.remove('hidden');
+        box.innerHTML = `<div class="bind-empty">${escHtml(t('onboard_search_empty'))}</div>`;
+        return;
+      }
+      box.classList.remove('hidden');
+      box.innerHTML = hits.map(h => `
+        <button type="button" class="bind-item chapter-search-hit" data-region-id="${escHtml(h.regionId)}" data-branch="${escHtml(h.fullName)}">
+          <div class="bind-name">${escHtml(h.fullName)}</div>
+        </button>`).join('');
+      box.querySelectorAll('.chapter-search-hit').forEach(btn => {
+        btn.addEventListener('click', () => selectBranch(btn.dataset.branch));
+      });
+    }, 180);
+  });
+
+  container.querySelectorAll('.simple-claim-chips [data-branch]').forEach(chip => {
+    chip.addEventListener('click', () => selectBranch(chip.dataset.branch));
+  });
+
+  return { selectBranch };
+}
+
+async function submitClaim(container, { onComplete }) {
+  const payload = readClaimForm(container);
+  if (!validateClaimForm(payload)) return;
+
+  const btn = container.querySelector('#claim-submit-btn');
+  if (btn) btn.disabled = true;
+  try {
+    if (!(await ensureAuthSession())) {
+      showToast(t('onboard_err_session'));
+      return;
+    }
+    await claimByNameBranch(payload);
+    clearPendingClaim();
+    onComplete?.();
+  } catch (err) {
+    showToast(mapAuthError(err));
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
+function bindSimpleClaimForm(container, { onComplete } = {}) {
+  bindBranchSearch(container);
+
+  container.querySelector('#simple-claim-form')?.addEventListener('submit', async e => {
+    e.preventDefault();
+    await submitClaim(container, { onComplete });
+  });
+}
+
+function bindOptionalGoogle(container) {
+  container.querySelector('#google-login-btn')?.addEventListener('click', async () => {
+    const payload = readClaimForm(container);
+    if (!validateClaimForm(payload)) return;
+    const regionId = searchEventChapters(payload.branch, 1)[0]?.regionId || '';
+    savePendingClaim({ ...payload, region: regionId });
+    try {
+      await signInWithGoogle();
+    } catch (err) {
+      if (err.code === 'INAPP_BROWSER') {
+        showToast(t('inapp_toast'));
+        return;
+      }
+      showToast(mapAuthError(err));
+    }
+  });
+}
+
+function renderClaimScreen(container, {
+  titleKey,
+  subKey,
+  showGuestTrial = false,
+  showGoogleOptional = false,
+  onComplete,
+  onGuestTrial,
+} = {}) {
+  const pending = loadPendingClaim();
   container.innerHTML = `
-    <div class="onboard-wrap login-gate-wrap">
+    <div class="onboard-wrap onboard-flow-wrap">
       <header class="login-hero login-hero-compact">
-        <h1 class="login-hero-title serif">${escHtml(t('hero_title'))}</h1>
-        <p class="login-hero-sub">${escHtml(t('login_sub'))}</p>
+        <h1 class="login-hero-title serif">${escHtml(t(titleKey || 'onboard_title'))}</h1>
+        <p class="login-hero-sub">${escHtml(t(subKey || 'onboard_simple_sub'))}</p>
       </header>
-      <div class="onboard-card login-card">
-        ${inApp ? inAppBrowserGateHTML() : ''}
-        ${inApp ? '' : `
-        <button type="button" id="google-login-btn" class="btn-google">
-          ${GOOGLE_ICON_SVG}
-          <span class="btn-google-label">${escHtml(t('login_google_btn'))}</span>
-        </button>`}
+      <div class="onboard-card">
+        ${memberCountLine()}
+        ${isInAppBrowser() ? inAppBrowserGateHTML() : simpleClaimFormHTML({
+          branch: pending?.branch || '',
+          name: pending?.name || '',
+        })}
+        ${showGoogleOptional && !isInAppBrowser() ? optionalGoogleHTML() : ''}
+        ${showGuestTrial ? `
         <button type="button" id="guest-trial-btn" class="btn-text login-guest-link">
           ${escHtml(t('login_guest_trial_btn'))}
-        </button>
+        </button>` : ''}
       </div>
-    </div>
-  `;
-  if (inApp) {
+    </div>`;
+
+  if (isInAppBrowser()) {
     bindInAppBrowserGate(container);
-  } else {
-    document.getElementById('google-login-btn')?.addEventListener('click', async () => {
-      try {
-        await signInWithGoogle();
-      } catch (err) {
-        showToast(err.message || '登入失敗');
-      }
-    });
+    return;
   }
+
+  bindSimpleClaimForm(container, { onComplete });
+  if (showGoogleOptional) bindOptionalGoogle(container);
+
   document.getElementById('guest-trial-btn')?.addEventListener('click', () => {
     startGuestTrial();
     onGuestTrial?.();
+  });
+}
+
+/** 登入後自動完成待處理的認領（Google 登入前已填分會+姓名） */
+export async function tryPendingClaim() {
+  const pending = loadPendingClaim();
+  if (!pending || !getCurrentUser()) return false;
+  try {
+    if (!(await ensureAuthSession())) return false;
+    await claimByNameBranch(pending);
+    clearPendingClaim();
+    return true;
+  } catch (e) {
+    console.warn('pending claim:', e.message);
+    return false;
+  }
+}
+
+export function renderOnboard(container, { onComplete }) {
+  renderClaimScreen(container, {
+    titleKey: 'onboard_title',
+    subKey: 'onboard_simple_sub',
+    onComplete,
+  });
+}
+
+export function renderLoginGate(container, { onGuestTrial, onComplete } = {}) {
+  renderClaimScreen(container, {
+    titleKey: 'hero_title',
+    subKey: 'login_sub',
+    showGuestTrial: true,
+    showGoogleOptional: true,
+    onComplete,
+    onGuestTrial,
   });
 }

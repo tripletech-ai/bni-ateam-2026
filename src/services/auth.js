@@ -6,6 +6,7 @@ import { isAdminEmail, normalizeAdminEmail } from '../config/admins.js';
 import { isInAppBrowser } from '../utils/inAppBrowser.js';
 
 const PKCE_KEY = 'bni_oauth_code_verifier';
+const DEVICE_CREDS_KEY = 'bni_device_creds';
 
 let client = null;
 let clientTokenKey = null;
@@ -98,6 +99,10 @@ async function loadStatus() {
     myStatus = data;
     if (typeof window !== 'undefined') {
       window.BNI_MY_BRANCH = myStatus?.member?.branch || '';
+      const m = myStatus?.member;
+      window.BNI_MY_MEMBER_KEY = m?.name && m?.branch ? `${m.name}||${m.branch}` : '';
+      window.BNI_MY_MEMBER_ID = m?.id || m?.roster_id || '';
+      window.BNI_MY_NAME = m?.name || '';
     }
     return myStatus;
   }, { label: 'bni_get_my_status' });
@@ -124,7 +129,135 @@ function persistAuthResponse(insforge, data) {
   saveSession(session);
   resetClient();
   applySessionToClient(getClient(), session);
+  currentUser = session.user;
   return session;
+}
+
+function loadDeviceCreds() {
+  try {
+    const raw = localStorage.getItem(DEVICE_CREDS_KEY);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!data?.email || !data?.password) return null;
+    return data;
+  } catch {
+    return null;
+  }
+}
+
+function saveDeviceCreds(creds) {
+  try {
+    localStorage.setItem(DEVICE_CREDS_KEY, JSON.stringify(creds));
+  } catch (e) {
+    console.warn('device creds save failed:', e);
+  }
+}
+
+function clearDeviceCreds() {
+  try {
+    localStorage.removeItem(DEVICE_CREDS_KEY);
+  } catch {
+    /* ignore */
+  }
+}
+
+function createDeviceCreds() {
+  const id = crypto.randomUUID();
+  return {
+    email: `device-${id}@ateam2026.local`,
+    password: `${crypto.randomUUID()}Aa1!`,
+  };
+}
+
+async function authPostMobile(path, body) {
+  const res = await fetch(`${INSFORGE_BASE_URL}${path}?client_type=mobile`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: INSFORGE_ANON_KEY,
+    },
+    body: JSON.stringify(body),
+  });
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error('AUTH_NETWORK');
+  }
+  if (!res.ok) {
+    const err = new Error(data?.message || data?.error || 'AUTH_FAILED');
+    err.status = res.status;
+    err.code = data?.error;
+    throw err;
+  }
+  return data;
+}
+
+function applyMobileAuthPayload(data) {
+  return persistAuthResponse(getClient(), data);
+}
+
+/** 現場快速登入：裝置專用帳號（無需 Google） */
+export async function ensureDeviceSession() {
+  if (await ensureSessionFresh()) return true;
+
+  let creds = loadDeviceCreds();
+  if (!creds) {
+    creds = createDeviceCreds();
+    saveDeviceCreds(creds);
+  }
+
+  try {
+    const data = await authPostMobile('/api/auth/sessions', {
+      email: creds.email,
+      password: creds.password,
+    });
+    applyMobileAuthPayload(data);
+    try { await loadStatus(); } catch { /* bound state optional here */ }
+    return true;
+  } catch (signInErr) {
+    if (signInErr.status !== 401 && signInErr.status !== 404) {
+      console.warn('device signIn:', signInErr.message);
+    }
+  }
+
+  try {
+    const data = await authPostMobile('/api/auth/users', {
+      email: creds.email,
+      password: creds.password,
+      name: 'BNI Member',
+    });
+    applyMobileAuthPayload(data);
+    try { await loadStatus(); } catch { /* ignore */ }
+    return true;
+  } catch (signUpErr) {
+    console.warn('device signUp:', signUpErr.message);
+    clearDeviceCreds();
+    const fresh = createDeviceCreds();
+    saveDeviceCreds(fresh);
+    const data = await authPostMobile('/api/auth/users', {
+      email: fresh.email,
+      password: fresh.password,
+      name: 'BNI Member',
+    });
+    applyMobileAuthPayload(data);
+    try { await loadStatus(); } catch { /* ignore */ }
+    return true;
+  }
+}
+
+/** 認領／寫入資料前確保有登入 session（Google 或裝置帳號） */
+export async function ensureAuthSession() {
+  if (await ensureSessionFresh()) return true;
+  return ensureDeviceSession();
+}
+
+export function hasGoogleAccount() {
+  const u = currentUser || loadSession()?.user;
+  const providers = u?.providers || u?.app_metadata?.providers || [];
+  if (Array.isArray(providers) && providers.includes('google')) return true;
+  const email = u?.email || '';
+  return email && !email.endsWith('@ateam2026.local');
 }
 
 async function handleOAuthCallback() {
@@ -286,9 +419,15 @@ export async function signOut() {
   }
   clearSession();
   resetClient();
+  clearDeviceCreds();
   currentUser = null;
   myStatus = { authenticated: false };
-  if (typeof window !== 'undefined') window.BNI_MY_BRANCH = '';
+  if (typeof window !== 'undefined') {
+    window.BNI_MY_BRANCH = '';
+    window.BNI_MY_MEMBER_KEY = '';
+    window.BNI_MY_MEMBER_ID = '';
+    window.BNI_MY_NAME = '';
+  }
 }
 
 export async function refreshStatus() {
@@ -323,7 +462,12 @@ export async function selfUnbind() {
     const { data, error } = await getClient().database.rpc('bni_self_unbind');
     if (error) throw error;
     myStatus = { authenticated: true, bound: false, tutorial_done: false };
-    if (typeof window !== 'undefined') window.BNI_MY_BRANCH = '';
+    if (typeof window !== 'undefined') {
+    window.BNI_MY_BRANCH = '';
+    window.BNI_MY_MEMBER_KEY = '';
+    window.BNI_MY_MEMBER_ID = '';
+    window.BNI_MY_NAME = '';
+  }
     return data;
   });
 }

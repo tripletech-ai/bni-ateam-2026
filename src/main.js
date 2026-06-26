@@ -4,7 +4,7 @@ import { renderSearch } from './pages/Search.js';
 import { renderMarks }  from './pages/Marks.js';
 import { renderLeaders }from './pages/Leaders.js';
 import { renderLive, stopLivePoll } from './pages/Live.js';
-import { renderOnboard, renderLoginGate } from './pages/Onboard.js';
+import { renderOnboard, renderLoginGate, tryPendingClaim } from './pages/Onboard.js';
 import { renderAdmin }  from './pages/Admin.js';
 import { renderProfileEdit } from './pages/ProfileEdit.js';
 import { t }            from './i18n/translations.js';
@@ -35,7 +35,7 @@ import { isGuestTrial, endGuestTrial } from './utils/guestTrial.js';
 import { guestTrialBannerHTML, bindGuestTrialLogin } from './components/GuestTrialBanner.js';
 import { showToast } from './utils/toast.js';
 import { notifyProfileMilestone } from './utils/profileMilestone.js';
-import { normalizeAppUrl } from './utils/inAppBrowser.js';
+import { clearPendingClaim } from './utils/memberClaim.js';
 
 // ── Language ──────────────────────────────────────
 window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
@@ -51,7 +51,7 @@ function initLangToggle() {
     if (appReady) {
       const hash = window.location.hash || '';
       navigate();
-      renderTabBar(tabBar, hash, { isAdmin });
+      renderTabBar(tabBar, hash, { isAdmin, isBound: isBound() });
       renderUserBar(userBar);
     } else {
       boot();
@@ -79,6 +79,7 @@ function initFontToggle() {
     const next = FONT_SIZES[(FONT_SIZES.indexOf(window.BNI_FONT) + 1) % FONT_SIZES.length];
     applyFontSize(next);
     import('./utils/toast.js').then(({ showToast }) => showToast(`${t('font_label')}${t(FONT_LABEL_KEYS[next])}`));
+    if (appReady) navigate();
   });
 }
 
@@ -149,7 +150,7 @@ function navigate() {
     console.error('Page render error:', err);
     app.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#f87171">頁面載入失敗，請重新整理</div>';
   }
-  renderTabBar(tabBar, hash, { isAdmin });
+  renderTabBar(tabBar, hash, { isAdmin, isBound: isBound() });
   renderUserBar(userBar);
   window.scrollTo(0, 0);
 }
@@ -219,6 +220,7 @@ function startIncomingPoll() {
 }
 
 async function afterBindComplete() {
+  clearPendingClaim();
   try {
     await loadMembersWithRetry();
     await loadPublicStatsWithRetry();
@@ -351,13 +353,17 @@ async function boot() {
       await enterGuestMode();
       return;
     }
-    renderLoginGate(app, { onGuestTrial: enterGuestMode });
+    renderLoginGate(app, { onGuestTrial: enterGuestMode, onComplete: afterBindComplete });
     return;
   }
 
   if (!isBound()) {
     const auto = await tryAutoBindOnLogin();
     if (auto?.bound) {
+      await afterBindComplete();
+      return;
+    }
+    if (await tryPendingClaim()) {
       await afterBindComplete();
       return;
     }

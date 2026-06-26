@@ -1,8 +1,8 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
-import { signInWithGoogle } from '../services/auth.js';
 import { showToast } from '../utils/toast.js';
 import { isInAppBrowser, tryOpenExternalBrowser } from '../utils/inAppBrowser.js';
+import { endGuestTrial } from '../utils/guestTrial.js';
 
 export function guestTrialBannerHTML() {
   return `
@@ -42,26 +42,20 @@ export function guestFeedLoginHTML() {
     </div>`;
 }
 
+function goToClaimLogin(onBeforeLogin) {
+  if (isInAppBrowser()) {
+    showToast(t('inapp_toast'));
+    tryOpenExternalBrowser();
+    return;
+  }
+  onBeforeLogin?.();
+  endGuestTrial();
+  location.hash = '';
+  location.reload();
+}
+
 export function bindGuestTrialLogin(container, { onBeforeLogin } = {}) {
-  const go = async () => {
-    if (isInAppBrowser()) {
-      showToast(t('inapp_toast'));
-      tryOpenExternalBrowser();
-      return;
-    }
-    onBeforeLogin?.();
-    try {
-      await signInWithGoogle();
-    } catch (e) {
-      if (e.code === 'INAPP_BROWSER') {
-        showToast(t('inapp_toast'));
-        tryOpenExternalBrowser();
-        return;
-      }
-      showToast(e.message || t('guest_login_fail'));
-    }
-  };
   container?.querySelectorAll('.guest-trial-login-btn').forEach(btn => {
-    btn.addEventListener('click', go);
+    btn.addEventListener('click', () => goToClaimLogin(onBeforeLogin));
   });
 }

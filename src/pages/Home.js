@@ -4,6 +4,8 @@ import { t }            from '../i18n/translations.js';
 import { DEVELOPERS } from '../data/contributors.js';
 import { developerPhotoHTML } from '../utils/avatar.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
+import { collect800HTML, bindCollect800Game } from '../components/Collect800Game.js';
+import { yangIntroHTML } from '../components/YangIntroCard.js';
 import { leadersEmbedHTML, bindLeaderEvents } from '../pages/Leaders.js';
 import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
@@ -49,6 +51,10 @@ export function renderHome(container) {
 
     ${profileEnrichBannerHTML()}
 
+    ${collect800HTML()}
+
+    ${yangIntroHTML()}
+
     ${markCount > 0 ? `
     <div class="home-mark-summary">
       ${escHtml(t('home_mark_summary_prefix'))}<strong>${markCount}</strong>${escHtml(t('home_mark_summary_suffix'))}
@@ -74,6 +80,7 @@ export function renderHome(container) {
 
   bindLeaderEvents(container);
   bindProfileEnrichBanner();
+  bindCollect800Game();
   if (isGuestTrial()) {
     bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
   }

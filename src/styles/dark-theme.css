@@ -2129,3 +2129,56 @@ textarea.field-input {
   border-color: rgba(250, 199, 117, 0.3);
   color: var(--dark-text);
 }
+
+/* Compact home / onboarding — font scale (main.css fixed px overrides) */
+.hero-compact .hero-title { font-size: calc(26px * var(--fs-k)); }
+.hero-compact .hero-sub { font-size: calc(14px * var(--fs-k)); }
+.home-primary-cta { font-size: calc(16px * var(--fs-k)); }
+.section-sub { font-size: calc(14px * var(--fs-k)); }
+.profile-enrich-minimal .profile-enrich-text,
+.profile-enrich-minimal .profile-enrich-btn { font-size: calc(13px * var(--fs-k)); }
+.collect800-eyebrow { font-size: calc(11px * var(--fs-k)); }
+.collect800-title { font-size: calc(22px * var(--fs-k)); }
+.collect800-sub,
+.collect800-metric-head,
+.collect800-msg { font-size: calc(13px * var(--fs-k)); }
+.collect800-count strong { font-size: calc(18px * var(--fs-k)); }
+.yang-intro-eyebrow { font-size: calc(11px * var(--fs-k)); }
+.yang-intro-name { font-size: calc(22px * var(--fs-k)); }
+.yang-intro-title { font-size: calc(13px * var(--fs-k)); }
+.yang-intro-text { font-size: calc(14px * var(--fs-k)); }
+.leader-region { font-size: calc(12px * var(--fs-k)); }
+.home-mark-summary { font-size: calc(14px * var(--fs-k)); }
+.developer-name { font-size: calc(18px * var(--fs-k)); }
+.developer-role,
+.developer-branch { font-size: calc(13px * var(--fs-k)); }
+.developer-tag { font-size: calc(12px * var(--fs-k)); }
+.developer-highlight-item { font-size: calc(13px * var(--fs-k)); }
+.developer-contact-note { font-size: calc(12px * var(--fs-k)); }
+.company-chip { font-size: calc(11px * var(--fs-k)); }
+.ai-result-compact .ai-result-analysis { font-size: calc(14px * var(--fs-k)); }
+.first-run-title { font-size: calc(22px * var(--fs-k)); }
+.first-run-body { font-size: calc(15px * var(--fs-k)); }
+.login-member-count { font-size: calc(13px * var(--fs-k)); }
+.yang-intro-card {
+  background: linear-gradient(145deg, rgba(16,33,69,0.95), rgba(10,15,30,0.98));
+  border-color: rgba(250,199,117,0.22);
+}
+.account-identity-card {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--dark-border);
+}
+.account-auth-badge {
+  background: rgba(250,199,117,0.12);
+  color: var(--gold-bright);
+}
+.profile-account-section { border-top-color: var(--dark-border); }
+.user-bar-menu {
+  background: #101629;
+  border-color: var(--dark-border);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+}
+.user-bar-menu button { color: var(--dark-text); }
+.user-bar-menu button:hover { background: rgba(255,255,255,0.06); }
+.login-google-divider::before, .login-google-divider::after { background: var(--dark-border); }
+.user-bar { position: relative; }

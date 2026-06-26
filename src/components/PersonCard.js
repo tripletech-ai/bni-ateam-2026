@@ -3,7 +3,6 @@ import { syncMarkToServer } from '../utils/markSync.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
 import { showToast }                   from '../utils/toast.js';
 import { escHtml, escAttr }            from '../utils/html.js';
-import { avatarInner }                 from '../utils/avatar.js';
 import { getCardLink }                 from '../data/cardLinks.js';
 import { industryBadgesHTML }            from '../components/IndustryPicker.js';
 import { t }                           from '../i18n/translations.js';
@@ -12,7 +11,6 @@ export function personCardHTML(member, opts = {}) {
   const { matchedKeywords = [], matchReasons = [], staggerIndex = 0 } = opts;
   const mark         = getMark(member);
   const key          = memberKey(member);
-  const initial      = (member.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
   const staggerClass = staggerIndex < 6 ? `stagger-${staggerIndex + 1}` : '';
 
   const badge = matchedKeywords.length > 0
@@ -45,7 +43,6 @@ export function personCardHTML(member, opts = {}) {
   const kwSection = matchedKeywords.length > 0
     ? `<div class="person-keywords">${matchedKeywords.map(k => escHtml(k)).join('、')}</div>` : '';
 
-  const regionClass = member.region === 'sanlu' ? 'region-sanlu' : member.region === 'zhongshan' ? 'region-zhongshan' : '';
   const mutual = isMutuallyConnected(member);
   const mutualBadge = mutual
     ? `<span class="mutual-badge">${escHtml(t('card_mutual'))}</span>` : '';
@@ -66,7 +63,6 @@ export function personCardHTML(member, opts = {}) {
 
   return `<div class="person-card ${staggerClass}" data-key="${escAttr(key)}" data-expanded="false">
     <div class="person-card-header">
-      <div class="person-avatar ${regionClass}" aria-hidden="true">${avatarInner(member.name, initial)}</div>
       <div style="flex:1;min-width:0">
         <div class="person-name">${escHtml(member.name)}</div>
         <div class="person-meta">${escHtml(member.branch)}</div>

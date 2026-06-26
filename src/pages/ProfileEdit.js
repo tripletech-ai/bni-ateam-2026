@@ -1,6 +1,6 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
-import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, selfUnbind, signOut, ensureSessionFresh } from '../services/auth.js';
+import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, selfUnbind, signOut, ensureAuthSession, hasGoogleAccount } from '../services/auth.js';
 import { getCardLink } from '../data/cardLinks.js';
 import { fieldPlaceholder, referralPlaceholder } from '../utils/profileHints.js';
 import {
@@ -58,13 +58,20 @@ export function renderProfileEdit(container) {
   }
 
   const f = fieldMember();
+  const authLabel = hasGoogleAccount() ? t('account_auth_google') : t('account_auth_device');
   container.innerHTML = `
     <div class="profile-edit-wrap">
       <div class="profile-edit-head">
         <button type="button" class="btn-text profile-edit-back" id="profile-back">← ${escHtml(t('profile_back'))}</button>
         <h1 class="profile-edit-title serif">${escHtml(t('profile_title'))}</h1>
-        <p class="profile-edit-sub">${escHtml(f.name)} · ${escHtml(f.branch)}</p>
       </div>
+
+      <section class="account-identity-card" aria-label="${escHtml(t('account_identity'))}">
+        <div class="account-identity-label">${escHtml(t('account_identity'))}</div>
+        <div class="account-identity-name serif">${escHtml(f.name)}</div>
+        <div class="account-identity-meta">${escHtml(f.branch)}</div>
+        <div class="account-auth-badge">${escHtml(authLabel)}</div>
+      </section>
 
       <div class="profile-edit-tip profile-edit-tip-compact">${escHtml(t('profile_tip_short'))}</div>
       ${profileTemplatePanelHTML()}
@@ -116,11 +123,13 @@ export function renderProfileEdit(container) {
         <button type="submit" class="btn-ai profile-save-btn">${escHtml(t('profile_save'))}</button>
       </form>
 
-      <div class="profile-reclaim-section">
-        <p class="profile-reclaim-hint">${escHtml(t('profile_reclaim_hint'))}</p>
+      <section class="profile-account-section" aria-labelledby="profile-account-heading">
+        <h2 id="profile-account-heading" class="profile-account-title">${escHtml(t('account_section_title'))}</h2>
+        <p class="profile-reclaim-hint">${escHtml(t('account_switch_hint'))}</p>
         <button type="button" class="btn-outline profile-reclaim-btn" id="profile-reclaim-btn">${escHtml(t('user_bar_reclaim'))}</button>
+        <p class="profile-signout-hint">${escHtml(t('account_signout_hint'))}</p>
         <button type="button" class="btn-text profile-signout-btn" id="profile-signout-btn">${escHtml(t('user_bar_signout'))}</button>
-      </div>
+      </section>
     </div>
   `;
 
@@ -132,7 +141,7 @@ export function renderProfileEdit(container) {
   });
 
   container.querySelector('#profile-reclaim-btn')?.addEventListener('click', async () => {
-    if (!window.confirm(t('reclaim_confirm'))) return;
+    if (!window.confirm(t('reclaim_confirm_detail'))) return;
     try {
       await selfUnbind();
       showToast(t('reclaim_ok'));
@@ -144,6 +153,7 @@ export function renderProfileEdit(container) {
   });
 
   container.querySelector('#profile-signout-btn')?.addEventListener('click', async () => {
+    if (!window.confirm(t('signout_confirm'))) return;
     try {
       await signOut();
       location.hash = '';
@@ -181,7 +191,7 @@ export function renderProfileEdit(container) {
     }
     if (btn) btn.disabled = true;
     try {
-      if (!(await ensureSessionFresh())) {
+      if (!(await ensureAuthSession())) {
         showToast(t('onboard_err_session'));
         return;
       }
