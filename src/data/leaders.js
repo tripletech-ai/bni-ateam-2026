@@ -6,9 +6,10 @@ export const LEADERS = {
     titleEn: 'Senior Regional Director',
     region: '台北市北區 Anderson Team / 新北市西北B區',
     phone: '',
-    email: '',
-    lineLink: '',
+    email: 'ayheygo@gmail.com',
+    lineLink: 'https://line.me/R/ti/p/6K_dtLkBMr',
     lineId: '',
+    facebookLink: 'https://www.facebook.com/share/1BVRinUHZe',
     cardLink: '',
   },
   secondary: {

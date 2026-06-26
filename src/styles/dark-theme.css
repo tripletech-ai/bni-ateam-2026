@@ -285,6 +285,7 @@ body {
 .leader-contact-btn:active  { background: var(--dark-surface3); }
 .leader-contact-btn svg     { width: 20px; height: 20px; stroke: currentColor; fill: none; }
 .leader-contact-btn.line    { color: #4ade80; border-color: rgba(74,222,128,0.3); }
+.leader-contact-btn.fb    { color: #93c5fd; border-color: rgba(147,197,253,0.35); }
 .leader-contact-btn.pending { opacity: 0.4; cursor: default; }
 
 .leader-card-secondary {

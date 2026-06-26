@@ -1995,6 +1995,29 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 .yang-intro-name { font-size: calc(22px * var(--fs-k, 0.78)); color: var(--gold, #c9a227); margin: 0 0 6px; }
 .yang-intro-title { font-size: calc(13px * var(--fs-k, 0.78)); opacity: 0.8; margin: 0 0 0; line-height: 1.5; }
 .yang-intro-text { font-size: calc(14px * var(--fs-k, 0.78)); line-height: 1.65; opacity: 0.88; margin: 0 0 14px; }
+.yang-intro-contact {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  margin: 0 0 14px;
+}
+.yang-contact-btn {
+  display: flex; align-items: center; justify-content: center;
+  padding: 10px 6px; border-radius: var(--r-sm);
+  font-size: calc(12px * var(--fs-k, 0.78)); font-weight: 600;
+  text-decoration: none; text-align: center;
+  border: 1px solid rgba(250,199,117,0.35);
+  background: rgba(250,199,117,0.08);
+  color: #fac775;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.yang-contact-btn.line { color: #4ade80; border-color: rgba(74,222,128,0.35); background: rgba(74,222,128,0.08); }
+.yang-contact-btn.fb { color: #93c5fd; border-color: rgba(147,197,253,0.35); background: rgba(59,130,246,0.1); }
+.yang-contact-btn.email { color: #fcd34d; }
+.developer-actions { margin-top: 12px; }
+.developer-line-btn {
+  display: block; width: 100%; margin-top: 0;
+  padding: 10px 12px; text-align: center; text-decoration: none;
+  font-size: calc(13px * var(--fs-k, 0.78));
+}
 .home-donggu-advisors-body { padding: 0 0 4px; }
 .home-donggu-advisors-inner { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .yang-intro-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }

@@ -23,6 +23,9 @@ function developerCardHTML(d) {
         `<span class="company-chip">${escHtml(t(k))}</span>`).join('')}</div>` : '';
   const branchLine = d.branchKey
     ? `<div class="developer-branch">${escHtml(t(d.branchKey))}</div>` : '';
+  const lineBtn = d.lineLink
+    ? `<a href="${escAttr(d.lineLink)}" class="btn-gold-outline developer-line-btn" target="_blank" rel="noopener">${escHtml(t('marks_line'))}</a>`
+    : '';
 
   return `
     <article class="developer-card" data-developer="${escHtml(d.id)}">
@@ -37,6 +40,7 @@ function developerCardHTML(d) {
       </div>
       <ul class="developer-highlights">${highlights}</ul>
       ${companies}
+      ${lineBtn ? `<div class="developer-actions">${lineBtn}</div>` : ''}
       ${d.contactKey ? `<p class="developer-contact-note">${escHtml(t(d.contactKey))}</p>` : ''}
     </article>`;
 }

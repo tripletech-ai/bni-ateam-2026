@@ -4,6 +4,7 @@ export const DEVELOPERS = [
     id: 'wangqi',
     name: '王祈',
     photo: '王祈.jpg',
+    lineLink: 'https://line.me/ti/p/j_8AmmGNkN',
     branchKey: 'dev_wangqi_branch',
     roleKey: 'dev_wangqi_role',
     tagKeys: ['dev_wangqi_tag_ai', 'dev_wangqi_tag_arch'],
@@ -19,6 +20,7 @@ export const DEVELOPERS = [
     id: 'limengyi',
     name: '李孟一',
     photo: '李孟一.png',
+    lineLink: 'https://line.me/ti/p/7tuHahjYQ4',
     roleKey: 'dev_limengyi_role',
     tagKeys: ['dev_limengyi_tag_edu', 'contributor_cocreator_tag'],
     highlightKeys: [
