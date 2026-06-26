@@ -133,10 +133,16 @@ body {
   border-color: #991b1b;
 }
 .btn-ai {
-  background: linear-gradient(135deg, #BA7517 0%, #FAC775 100%);
-  box-shadow: 0 6px 18px -6px rgba(186,117,23,0.55);
+  background: linear-gradient(160deg, #c9922a 0%, #fac775 50%, #fde4a8 100%);
+  color: #0a0f1e;
+  font-weight: 700;
+  box-shadow: 0 4px 16px -6px rgba(250, 199, 117, 0.45);
+  border: none;
 }
-.btn-ai:active { box-shadow: 0 3px 10px -4px rgba(186,117,23,0.5); }
+.btn-ai:active {
+  box-shadow: 0 2px 8px -4px rgba(186, 117, 23, 0.45);
+  filter: brightness(0.97);
+}
 
 .ai-result-card {
   background: rgba(186,117,23,0.12);
@@ -215,7 +221,7 @@ body {
 .mark-badge.biz { background: rgba(163,45,45,0.25); color: #fca5a5; }
 .mark-name      { color: var(--dark-text); }
 .mark-meta      { color: var(--dark-muted); }
-.btn-remove     { background: var(--dark-surface2); color: var(--dark-muted); }
+.btn-remove     { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.72); border: 1px solid rgba(255,255,255,0.14); }
 
 .progress-bar-wrap { background: var(--dark-surface2); }
 .progress-bar-fill {
@@ -548,7 +554,22 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .btn-line, .btn-one, .btn-biz,
 .btn-remove, .btn-add-line,
 .btn-reset, .btn-search-members { font-size: calc(18px * var(--fs-k)); }
-.btn-yang { font-size: calc(18px * var(--fs-k)); padding: 9px 18px; }
+.btn-yang {
+  font-size: calc(15px * var(--fs-k, 0.78));
+  padding: 11px 16px;
+  font-weight: 700;
+  background: linear-gradient(160deg, #c9922a 0%, #fac775 50%, #fde4a8 100%);
+  color: #0a0f1e;
+  box-shadow: 0 3px 12px -4px rgba(250, 199, 117, 0.4);
+  text-decoration: none;
+  display: inline-block;
+}
+.yang-intro-card-link.btn-yang {
+  background: linear-gradient(180deg, rgba(250, 199, 117, 0.24) 0%, rgba(250, 199, 117, 0.14) 100%);
+  color: #fde4a8;
+  border: 1.5px solid rgba(250, 199, 117, 0.72);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
 
 /* Branch section */
 .branch-region-title          { font-size: calc(18px * var(--fs-k)); }
@@ -747,15 +768,17 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 }
 .welcome-btn-primary {
   flex: 1;
-  background: linear-gradient(135deg, #BA7517 0%, #FAC775 100%);
-  color: #080d1a;
+  background: linear-gradient(160deg, #c9922a 0%, #fac775 50%, #fde4a8 100%);
+  color: #0a0f1e;
+  box-shadow: 0 4px 16px -6px rgba(250, 199, 117, 0.45);
 }
 .welcome-btn-ghost {
-  background: transparent;
-  color: rgba(250,199,117,0.85);
-  border: 1px solid rgba(250,199,117,0.3);
+  background: linear-gradient(180deg, rgba(250, 199, 117, 0.2) 0%, rgba(250, 199, 117, 0.1) 100%);
+  color: #fde4a8;
+  border: 1.5px solid rgba(250, 199, 117, 0.55);
   padding: 12px 16px;
   font-size: 15px;
+  font-weight: 700;
 }
 .welcome-card-tutorial .welcome-title { text-align: center; margin-bottom: 14px; }
 .welcome-card-tutorial .welcome-fs { margin-top: 8px; }
@@ -965,10 +988,12 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   color: rgba(255, 255, 255, 0.82);
 }
 .login-guest-trial-btn {
-  border-color: rgba(250, 199, 117, 0.45) !important;
-  background: rgba(250, 199, 117, 0.08) !important;
-  color: var(--dark-text);
+  border-color: rgba(250, 199, 117, 0.55) !important;
+  background: linear-gradient(180deg, rgba(250, 199, 117, 0.2) 0%, rgba(250, 199, 117, 0.1) 100%) !important;
+  color: #fde4a8;
 }
+.login-guest-trial-btn:active { background: rgba(250, 199, 117, 0.28) !important; }
+.login-guest-trial-label { color: #fde4a8; font-weight: 700; }
 .inline-results-panel { border-top-color: var(--dark-border); }
 .inline-results-close { color: var(--dark-muted); }
 .branch-chip.active { box-shadow: 0 0 0 2px rgba(250,199,117,0.45); }
@@ -1079,12 +1104,12 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   font-size: 11px; font-weight: 700;
   padding: 6px 10px;
   border-radius: 8px;
-  border: 1px solid rgba(96, 165, 250, 0.4);
-  background: rgba(96, 165, 250, 0.15);
-  color: #93c5fd;
+  border: 1px solid rgba(250, 199, 117, 0.5);
+  background: rgba(250, 199, 117, 0.14);
+  color: var(--gold-bright);
   cursor: pointer;
 }
-.user-bar-edit:active { background: rgba(96, 165, 250, 0.28); }
+.user-bar-edit:active { background: rgba(250, 199, 117, 0.26); }
 .user-bar-edit-warn {
   border-color: rgba(250, 199, 117, 0.45);
   background: rgba(186, 117, 23, 0.2);
@@ -1522,24 +1547,47 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   border-color: rgba(255,255,255,0.12);
 }
 .onboard-wrap .btn-outline {
-  color: var(--gold-bright);
-  border-color: rgba(250,199,117,0.45);
-  background: rgba(250,199,117,0.06);
+  color: #fde4a8;
+  border-color: rgba(250, 199, 117, 0.7);
+  background: linear-gradient(180deg, rgba(250, 199, 117, 0.22) 0%, rgba(250, 199, 117, 0.12) 100%);
 }
-.btn-gold-outline {
-  color: var(--gold-bright);
-  border-color: rgba(250,199,117,0.6);
-  background: rgba(250,199,117,0.14);
+.btn-gold-outline,
+.btn-outline {
+  color: #fde4a8;
+  border: 1.5px solid rgba(250, 199, 117, 0.72);
+  background: linear-gradient(180deg, rgba(250, 199, 117, 0.24) 0%, rgba(250, 199, 117, 0.14) 100%);
+  font-weight: 700;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  font-family: 'Noto Sans TC', sans-serif;
 }
-.btn-gold-outline:active {
-  background: rgba(250,199,117,0.24);
+.btn-gold-outline:active,
+.btn-outline:active {
+  background: rgba(250, 199, 117, 0.3);
+  border-color: rgba(250, 199, 117, 0.85);
+}
+.profile-edit-wrap .btn-gold-outline,
+.profile-edit-wrap .btn-outline {
+  margin-top: 0;
+}
+/* 並排主/次按鈕：同高同字級 */
+.collect800-actions .btn-ai,
+.collect800-actions .btn-gold-outline,
+.collect800-actions .btn-outline,
+.guest-blocked-actions .btn-ai,
+.guest-blocked-actions .btn-outline,
+.guest-blocked-actions .btn-gold-outline {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+  padding: 13px 10px;
+  font-size: calc(15px * var(--fs-k, 0.78));
+  line-height: 1.35;
+  text-align: center;
 }
 .home-quest-strip .btn-gold-outline,
 .collect800-card .btn-gold-outline {
-  color: #fac775;
-  border-color: rgba(250,199,117,0.65);
-  background: rgba(250,199,117,0.16);
-  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+  text-shadow: none;
 }
 .onboard-wrap .btn-text { color: var(--dark-muted); }
 .onboard-wrap .field-label { color: var(--dark-muted); }
@@ -2314,13 +2362,6 @@ textarea.field-input {
   background: rgba(250,199,117,0.15);
   color: var(--gold-bright);
 }
-.login-guest-trial-btn {
-  border-color: rgba(255,255,255,0.22);
-  background: rgba(255,255,255,0.04);
-}
-.login-guest-trial-btn:active { background: rgba(255,255,255,0.08); }
-.login-guest-trial-label { color: var(--dark-text); }
-.login-guest-trial-sub { color: var(--dark-muted); }
 
 .login-steps-guide {
   background: rgba(250,199,117,0.08);

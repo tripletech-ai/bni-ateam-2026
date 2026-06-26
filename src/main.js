@@ -41,6 +41,7 @@ import { notifyProfileMilestone } from './utils/profileMilestone.js';
 import { clearPendingClaim } from './utils/memberClaim.js';
 import { mergePendingMarks } from './utils/storage.js';
 import { syncAllMarksToServer } from './utils/markSync.js';
+import { refreshLeaderboardCache } from './utils/leaderboardCache.js';
 import { normalizeAppUrl } from './utils/appUrl.js';
 import { profileBackendEmpty } from './utils/profileHints.js';
 import { registerNavigator, goToPage } from './utils/nav.js';
@@ -185,6 +186,7 @@ async function pollIncomingMarks() {
     cacheIncomingOneKeys(all);
     setIncomingUnseenCount(unseen.length);
     await syncMutualStats();
+    refreshLeaderboardCache().catch(() => {});
 
     if (isMarksRoute()) {
       dismissIncomingOverlay();

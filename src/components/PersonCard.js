@@ -1,6 +1,7 @@
 import { getMark, setMark, setPendingMark, memberKey, isMutuallyConnected } from '../utils/storage.js';
 import { syncMarkToServer } from '../utils/markSync.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
+import { isBound } from '../services/auth.js';
 import { showToast }                   from '../utils/toast.js';
 import { escHtml, escAttr }            from '../utils/html.js';
 import { getCardLink }                 from '../data/cardLinks.js';
@@ -131,7 +132,13 @@ export function bindCardEvents(container, members) {
         setMark(member, action);
       }
       const updated = getMark(member);
-      syncMarkToServer(member, action, updated[action]);
+      if (!isGuestTrial() && isBound()) {
+        syncMarkToServer(member, action, updated[action]).then(result => {
+          if (result?.ok === false && !result.skipped) {
+            showToast(t('mark_sync_fail'));
+          }
+        });
+      }
       const card = container.querySelector(`.person-card[data-key="${CSS.escape(key)}"]`);
       if (card) {
         const oneBtn = card.querySelector('[data-action="one"]');

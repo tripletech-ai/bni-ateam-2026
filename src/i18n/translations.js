@@ -403,6 +403,7 @@ export const translations = {
     toast_line_copy:   'LINE ID 已複製，到 LINE 搜尋貼上',
     toast_line_manual: '請手動搜尋 LINE ID：',
     toast_line_none:   '這位夥伴沒有填 LINE 連結',
+    mark_sync_fail:    '標記同步失敗，排行榜可能未更新，請稍後再試',
 
     user_bar_hello:   '你好',
     user_bar_member:  '會員',
@@ -1039,6 +1040,7 @@ export const translations = {
     toast_line_copy:   'LINE ID copied — paste in LINE to search',
     toast_line_manual: 'LINE ID: ',
     toast_line_none:   'No LINE contact for this member',
+    mark_sync_fail:    'Mark sync failed — leaderboard may be stale. Try again.',
 
     user_bar_hello:   'Hi',
     user_bar_member:  'Member',

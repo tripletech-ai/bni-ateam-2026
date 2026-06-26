@@ -633,21 +633,25 @@ async function updateMyProfileOnce(payload) {
 }
 
 export async function recordConnectionMark(toMemberId, markType) {
-  const { data, error } = await getClient().database.rpc('bni_record_connection_mark', {
-    p_to_member_id: toMemberId,
-    p_mark_type: markType,
+  return withAuthRetry(async () => {
+    const { data, error } = await getClient().database.rpc('bni_record_connection_mark', {
+      p_to_member_id: toMemberId,
+      p_mark_type: markType,
+    });
+    if (error) throw error;
+    return data;
   });
-  if (error) throw error;
-  return data;
 }
 
 export async function removeConnectionMark(toMemberId, markType) {
-  const { data, error } = await getClient().database.rpc('bni_remove_connection_mark', {
-    p_to_member_id: toMemberId,
-    p_mark_type: markType,
+  return withAuthRetry(async () => {
+    const { data, error } = await getClient().database.rpc('bni_remove_connection_mark', {
+      p_to_member_id: toMemberId,
+      p_mark_type: markType,
+    });
+    if (error) throw error;
+    return data;
   });
-  if (error) throw error;
-  return data;
 }
 
 export async function fetchIncomingMarks(unseenOnly = true) {

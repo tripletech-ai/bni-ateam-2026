@@ -1613,6 +1613,8 @@ body.guest-trial-mode #user-bar { display: none !important; }
 .home-primary-cta {
   display: inline-block; margin-top: 16px; text-decoration: none;
   width: calc(100% - 32px); max-width: 320px; text-align: center;
+  padding: 15px 16px;
+  font-size: calc(17px * var(--fs-k, 0.78));
 }
 .home-mark-summary {
   margin: 16px; font-size: calc(14px * var(--fs-k, 0.78)); text-align: center; opacity: 0.85;
@@ -2136,4 +2138,11 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
   margin: 0 0 14px 18px; padding: 0;
   font-size: calc(13px * var(--fs-k, 0.78)); line-height: 1.6; opacity: 0.88;
 }
-.profile-reclaim-btn-prominent { width: 100%; font-weight: 600; }
+.search-invite-copy-btn,
+.guest-blocked-secondary,
+.inapp-copy-btn,
+.lb-more-btn {
+  margin-top: 0;
+}
+.profile-import-bio { margin: 8px 0 12px; }
+.profile-reclaim-btn-prominent { width: 100%; font-weight: 700; }

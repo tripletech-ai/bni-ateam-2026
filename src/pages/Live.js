@@ -345,6 +345,7 @@ export async function renderLive(container) {
 
   bindLiveMainTabs(container);
   bindLbModeTabs(container);
+  bindLeaderboardUpdateListener(container);
 
   if (isGuestTrial()) {
     bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
@@ -364,7 +365,24 @@ export async function renderLive(container) {
   }, 8000);
 }
 
+/** @type {AbortController | null} */
+let liveEventsCtrl = null;
+
+function bindLeaderboardUpdateListener(container) {
+  liveEventsCtrl?.abort();
+  liveEventsCtrl = new AbortController();
+  window.addEventListener('bni-leaderboard-updated', () => {
+    if (liveMainTab !== 'leaderboard') return;
+    const lbWrap = container.querySelector('#live-leaderboard-list');
+    if (!lbWrap) return;
+    const rows = window.BNI_LEADERBOARDS?.[liveLbMode] || [];
+    lbWrap.innerHTML = leaderboardHTML(rows, { mode: liveLbMode });
+  }, { signal: liveEventsCtrl.signal });
+}
+
 export function stopLivePoll() {
+  liveEventsCtrl?.abort();
+  liveEventsCtrl = null;
   if (livePollTimer) {
     clearInterval(livePollTimer);
     livePollTimer = null;

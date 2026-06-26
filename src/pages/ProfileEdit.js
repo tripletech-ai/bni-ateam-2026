@@ -91,7 +91,7 @@ export function renderProfileEdit(container) {
           <li>${escHtml(t('account_switch_steps_2'))}</li>
           <li>${escHtml(t('account_switch_steps_3'))}</li>
         </ol>
-        <button type="button" class="btn-outline profile-reclaim-btn profile-reclaim-btn-prominent" id="profile-reclaim-btn">${escHtml(t('user_bar_reclaim'))}</button>
+        <button type="button" class="btn-gold-outline profile-reclaim-btn profile-reclaim-btn-prominent" id="profile-reclaim-btn">${escHtml(t('user_bar_reclaim'))}</button>
       </section>
 
       <div class="profile-edit-tip profile-edit-tip-compact">${escHtml(t('profile_tip_short'))}</div>
@@ -130,7 +130,7 @@ export function renderProfileEdit(container) {
         <p class="field-hint">${escHtml(t('profile_bio_hint'))}</p>
         <textarea name="bio" class="field-input" rows="4"
           placeholder="${escHtml(t('profile_bio_ph'))}">${escHtml(f.bio)}</textarea>
-        ${f.cardLink ? `<button type="button" class="btn-outline profile-import-bio" id="import-bio-btn">${escHtml(t('profile_bio_import'))}</button>` : ''}
+        ${f.cardLink ? `<button type="button" class="btn-gold-outline profile-import-bio" id="import-bio-btn">${escHtml(t('profile_bio_import'))}</button>` : ''}
         <input type="hidden" name="cardLink" value="${escHtml(f.cardLink)}">
 
         <label class="field-label">LINE ID</label>
