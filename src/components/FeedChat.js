@@ -1,7 +1,8 @@
 import { escHtml, escAttr } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
+import { guestFeedLoginHTML } from './GuestTrialBanner.js';
 
-function feedItemHTML(item) {
+function feedItemHTML(item, { isAdmin = false } = {}) {
   const type = item.feed_type || 'message';
   const name = item.actor_name || t('feed_system');
   const branch = item.actor_branch || '';
@@ -12,17 +13,34 @@ function feedItemHTML(item) {
     body = escHtml(item.content || `${name} 與 ${item.meta.partner_name} 互相連結了！`);
   }
 
+  const deleteBtn = isAdmin && item.id
+    ? `<button type="button" class="feed-delete-btn" data-feed-id="${escAttr(item.id)}"
+        aria-label="${escAttr(t('feed_delete'))}">${escHtml(t('feed_delete'))}</button>`
+    : '';
+
+  if (type !== 'message') {
+    return `
+      <div class="chat-event feed-type-${type}" data-id="${escAttr(item.id || '')}">
+        <span class="chat-event-dot" aria-hidden="true"></span>
+        <p class="chat-event-text">${body}</p>
+        <time class="chat-event-time">${escHtml(time)}</time>
+        ${deleteBtn}
+      </div>`;
+  }
+
+  const initial = (name.match(/[一-鿿㐀-䶿]/g) || ['?']).slice(-1)[0];
   return `
-    <article class="feed-item feed-type-${type}" data-id="${escAttr(item.id || '')}">
-      <div class="feed-item-head">
-        <span class="feed-type-dot" aria-hidden="true"></span>
-        <div class="feed-actor">
-          <span class="feed-name">${escHtml(name)}</span>
-          ${branch ? `<span class="feed-branch">${escHtml(branch)}</span>` : ''}
+    <article class="chat-bubble" data-id="${escAttr(item.id || '')}">
+      <div class="chat-bubble-avatar" aria-hidden="true">${escHtml(initial)}</div>
+      <div class="chat-bubble-body">
+        <div class="chat-bubble-head">
+          <span class="chat-bubble-name">${escHtml(name)}</span>
+          ${branch ? `<span class="chat-bubble-branch">${escHtml(branch)}</span>` : ''}
+          <time class="chat-bubble-time">${escHtml(time)}</time>
+          ${deleteBtn}
         </div>
-        <time class="feed-time">${escHtml(time)}</time>
+        <p class="chat-bubble-text">${body}</p>
       </div>
-      <p class="feed-body">${body}</p>
     </article>`;
 }
 
@@ -37,18 +55,35 @@ function formatFeedTime(iso) {
   return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
 }
 
-export function feedListHTML(items = []) {
+export function feedListHTML(items = [], { isAdmin = false } = {}) {
   if (!items.length) {
-    return `<div class="feed-empty">${escHtml(t('feed_empty'))}</div>`;
+    return `<div class="chat-empty">${escHtml(t('feed_empty'))}</div>`;
   }
-  return `<div class="feed-list" id="feed-list">${items.map(feedItemHTML).join('')}</div>`;
+  const sorted = [...items].sort((a, b) =>
+    new Date(a.created_at || 0) - new Date(b.created_at || 0),
+  );
+  return `<div class="chat-messages" id="feed-list">${sorted.map(item => feedItemHTML(item, { isAdmin })).join('')}</div>`;
+}
+
+export function chatRoomHTML(feed = [], { isAdmin = false, isGuest = false } = {}) {
+  return `
+    <div class="chat-room">
+      <div class="chat-room-head">
+        <div class="chat-room-title">${escHtml(t('feed_title'))}</div>
+        <p class="chat-room-sub">${escHtml(t('feed_sub'))}</p>
+      </div>
+      ${feedListHTML(feed, { isAdmin })}
+      <div class="chat-composer-wrap">
+        ${isGuest ? guestFeedLoginHTML() : feedComposerHTML()}
+      </div>
+    </div>`;
 }
 
 export function feedComposerHTML() {
   return `
-    <div class="feed-composer">
+    <div class="feed-composer chat-composer">
       <label class="feed-composer-label" for="feed-input">${escHtml(t('feed_compose_label'))}</label>
-      <textarea id="feed-input" class="feed-input" rows="2" maxlength="500"
+      <textarea id="feed-input" class="feed-input chat-input" rows="2" maxlength="500"
         placeholder="${escHtml(t('feed_compose_placeholder'))}"
         aria-label="${escHtml(t('feed_compose_label'))}"></textarea>
       <div class="feed-composer-foot">
@@ -59,15 +94,12 @@ export function feedComposerHTML() {
 }
 
 export function feedSectionHTML(items) {
-  return `
-    <section class="feed-section">
-      <div class="section-header">
-        <div class="section-title">${escHtml(t('feed_title'))}</div>
-        <p class="section-sub">${escHtml(t('feed_sub'))}</p>
-      </div>
-      ${feedListHTML(items)}
-      ${feedComposerHTML()}
-    </section>`;
+  return chatRoomHTML(items);
+}
+
+export function scrollChatToBottom(container) {
+  const el = container?.querySelector('.chat-messages');
+  if (el) el.scrollTop = el.scrollHeight;
 }
 
 export function bindFeedComposer(onPost) {
@@ -96,14 +128,33 @@ export function bindFeedComposer(onPost) {
   });
 }
 
-export function updateFeedList(container, items) {
-  const el = container?.querySelector('#feed-list') || container?.querySelector('.feed-list');
+export function updateFeedList(container, items, { isAdmin = false } = {}) {
+  const el = container?.querySelector('#feed-list') || container?.querySelector('.chat-messages');
   if (el) {
-    el.outerHTML = feedListHTML(items).trim();
+    el.outerHTML = feedListHTML(items, { isAdmin }).trim();
+    scrollChatToBottom(container?.closest('.live-page') || container);
     return;
   }
-  const empty = container?.querySelector('.feed-empty');
+  const empty = container?.querySelector('.chat-empty');
   if (empty && items.length) {
-    empty.outerHTML = feedListHTML(items);
+    empty.outerHTML = feedListHTML(items, { isAdmin });
+    scrollChatToBottom(container?.closest('.live-page') || container);
   }
+}
+
+export function bindFeedAdminActions(container, onDelete) {
+  if (!container || typeof onDelete !== 'function') return;
+  container.querySelectorAll('.feed-delete-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const id = btn.dataset.feedId;
+      if (!id) return;
+      if (!window.confirm(t('feed_delete_confirm'))) return;
+      btn.disabled = true;
+      try {
+        await onDelete(id);
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
 }

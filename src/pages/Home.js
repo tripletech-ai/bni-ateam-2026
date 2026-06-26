@@ -12,6 +12,8 @@ import { leaderboardSectionHTML } from '../components/Leaderboard.js';
 import { getMembersByBranch, getMembersByIndustry } from '../utils/search.js';
 import { industryLabel } from '../data/industries.js';
 import { showMemberList } from '../utils/memberList.js';
+import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
+import { guestHomeReminderHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 
 const VIDEO_URL = '';
 
@@ -87,6 +89,8 @@ export function renderHome(container) {
       <h1 class="hero-title serif hero-title-shimmer">${escHtml(t('hero_title'))}</h1>
       <p class="hero-sub">${escHtml(t('hero_sub')).replace('\n', '<br>')}</p>
     </div>
+
+    ${isGuestTrial() ? guestHomeReminderHTML() : ''}
 
     ${communityLiveHTML()}
 
@@ -236,4 +240,7 @@ export function renderHome(container) {
 
   bindProfileEnrichBanner();
   bindIndustryStats(container, { onSelect: showHomeIndustry });
+  if (isGuestTrial()) {
+    bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
+  }
 }

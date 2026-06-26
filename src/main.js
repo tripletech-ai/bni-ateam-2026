@@ -21,6 +21,7 @@ import {
   recordPresence,
   fetchLeaderboard,
   fetchFeed,
+  fetchLiveSettings,
 } from './services/auth.js';
 import { showIncomingOneOverlay } from './components/IncomingOneBanner.js';
 import { renderUserBar } from './components/UserBar.js';
@@ -28,6 +29,9 @@ import { bootSkeletonHTML } from './utils/skeleton.js';
 import { showWelcomeTutorial } from './pages/WelcomeTutorial.js';
 import { loadMembersFromDb } from './services/membersApi.js';
 import { withRetry } from './utils/retry.js';
+import { isGuestTrial, endGuestTrial } from './utils/guestTrial.js';
+import { guestTrialBannerHTML, bindGuestTrialLogin } from './components/GuestTrialBanner.js';
+import { showToast } from './utils/toast.js';
 
 // ── Language ──────────────────────────────────────
 window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
@@ -101,6 +105,7 @@ function setChromeVisible(showTabs) {
   document.getElementById('lang-toggle').style.display = showTabs ? '' : 'none';
   if (showTabs && isBound()) renderUserBar(userBar);
   else if (userBar) userBar.classList.add('hidden');
+  document.body.classList.toggle('guest-trial-mode', showTabs && isGuestTrial());
 }
 
 function navigate() {
@@ -118,11 +123,24 @@ function navigate() {
       history.replaceState(null, '', '#marks');
     }
   }
+  if (isGuestTrial()) {
+    if (hash === '#admin' || hash === '#profile') {
+      hash = '#home';
+      if (window.location.hash === '#admin' || window.location.hash === '#profile') {
+        history.replaceState(null, '', '#home');
+      }
+      showToast(t('guest_login_required'));
+    }
+  }
   const render = routes[hash] || renderHome;
   if (hash !== '#live') stopLivePoll();
   app.innerHTML = '';
   try {
     render(app);
+    if (isGuestTrial()) {
+      app.insertAdjacentHTML('afterbegin', guestTrialBannerHTML());
+      bindGuestTrialLogin(app, { onBeforeLogin: endGuestTrial });
+    }
   } catch (err) {
     console.error('Page render error:', err);
     app.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#f87171">頁面載入失敗，請重新整理</div>';
@@ -154,11 +172,16 @@ async function syncMutualStats() {
 
 async function preloadLiveData() {
   try {
-    const [board, feed] = await Promise.all([
-      fetchLeaderboard(30),
+    const settings = await fetchLiveSettings();
+    const modes = settings?.leaderboard_modes || ['mutual', 'received_one'];
+    const [feed, ...boards] = await Promise.all([
       fetchFeed(30),
+      ...modes.map(mode => fetchLeaderboard(30, mode)),
     ]);
-    window.BNI_LEADERBOARD = board;
+    window.BNI_LEADERBOARDS = {};
+    modes.forEach((mode, i) => { window.BNI_LEADERBOARDS[mode] = boards[i] || []; });
+    window.BNI_LIVE_SETTINGS = settings;
+    window.BNI_LEADERBOARD = window.BNI_LEADERBOARDS.mutual || boards[0] || [];
     window.BNI_FEED = feed;
   } catch (e) {
     console.warn('preload live:', e.message);
@@ -251,6 +274,27 @@ async function loadPublicStatsWithRetry() {
   }
 }
 
+async function enterGuestMode() {
+  try {
+    await loadMembersWithRetry();
+  } catch (e) {
+    console.warn('Guest mode members load:', e.message);
+    if (!window.BNI_MEMBERS?.length) {
+      showBootError('會員資料載入失敗，請檢查網路後重試');
+      return;
+    }
+  }
+  await loadPublicStatsWithRetry();
+  preloadLiveData();
+  isAdmin = false;
+  appReady = true;
+  setChromeVisible(true);
+  if (!window.location.hash || window.location.hash === '#profile' || window.location.hash === '#admin') {
+    location.hash = '#home';
+  }
+  navigate();
+}
+
 async function boot() {
   appReady = false;
   app.innerHTML = bootSkeletonHTML();
@@ -263,6 +307,8 @@ async function boot() {
     showBootError('登入狀態載入失敗，請檢查網路後重試');
     return;
   }
+
+  if (getCurrentUser()) endGuestTrial();
 
   isAdmin = await checkIsAdmin();
 
@@ -279,7 +325,11 @@ async function boot() {
 
   const user = getCurrentUser();
   if (!user) {
-    renderLoginGate(app);
+    if (isGuestTrial()) {
+      await enterGuestMode();
+      return;
+    }
+    renderLoginGate(app, { onGuestTrial: enterGuestMode });
     return;
   }
 

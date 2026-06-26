@@ -12,6 +12,9 @@ import { showToast } from '../utils/toast.js';
 import { loadMembersFromDb } from '../services/membersApi.js';
 import { industryPickerHTML, bindIndustryPicker, readIndustryPickerValues } from '../components/IndustryPicker.js';
 import { inferIndustriesFromText } from '../data/industries.js';
+import { isGuestTrial } from '../utils/guestTrial.js';
+import { guestHomeReminderHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
+import { endGuestTrial } from '../utils/guestTrial.js';
 
 function fieldMember() {
   const m = getMyStatus()?.member || {};
@@ -35,6 +38,15 @@ function fieldMember() {
 }
 
 export function renderProfileEdit(container) {
+  if (isGuestTrial()) {
+    container.innerHTML = `
+      <div class="profile-edit-wrap guest-profile-blocked">
+        ${guestHomeReminderHTML()}
+      </div>`;
+    bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
+    return;
+  }
+
   const f = fieldMember();
   container.innerHTML = `
     <div class="profile-edit-wrap">

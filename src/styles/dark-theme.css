@@ -1676,4 +1676,126 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .feed-body { color: var(--dark-text); }
 .feed-composer { background: #101629; border-color: var(--dark-border); }
 .feed-input { background: rgba(255,255,255,0.05); border-color: var(--dark-border2); color: var(--dark-text); }
-.live-hero { color: var(--dark-text); }
+.chat-room { background: rgba(255,255,255,0.03); border-color: var(--dark-border); }
+.chat-bubble-text { background: #101629; border-color: var(--dark-border); color: var(--dark-text); }
+.chat-event { background: rgba(255,255,255,0.04); border-color: var(--dark-border); }
+.chat-composer-wrap { border-top-color: rgba(255,255,255,0.06); }
+.feed-delete-btn { position: relative; z-index: 1; }
+
+.guest-trial-banner {
+  background: linear-gradient(135deg, rgba(248,113,113,0.14), rgba(250,199,117,0.08));
+  border-bottom-color: rgba(248,113,113,0.3);
+}
+.guest-trial-banner-title { color: #fca5a5; }
+.guest-trial-banner-sub { color: var(--dark-muted); }
+.guest-home-reminder {
+  border-color: rgba(248,113,113,0.35);
+  background: linear-gradient(165deg, rgba(248,113,113,0.10), rgba(16,33,69,0.5));
+}
+.guest-home-reminder-title { color: var(--dark-text); }
+.guest-home-reminder-lead,
+.guest-home-reminder-list { color: var(--dark-muted); }
+.guest-feed-login-card {
+  background: #101629; border-color: var(--dark-border); color: var(--dark-muted);
+}
+.login-guest-trial-note { color: var(--dark-muted); }
+
+/* ── Global form inputs (admin, profile edit, etc.) ── */
+.field-input,
+select.field-input,
+textarea.field-input {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--dark-border2);
+  color: var(--dark-text);
+}
+.field-input::placeholder { color: var(--dark-subtle); }
+.field-label { color: var(--dark-muted); }
+
+/* ── Yang page sections ── */
+.yang-section {
+  padding: 20px 16px;
+  background: #101629;
+  border-bottom: 1px solid var(--dark-border);
+}
+.yang-section-title { margin-bottom: 12px; color: var(--dark-text); }
+.yang-section-text {
+  font-size: inherit;
+  line-height: 1.9;
+  color: var(--dark-text);
+}
+.yang-contact-footer {
+  background: #101629;
+  padding: 16px 20px;
+  border-top: 1px solid var(--dark-border);
+}
+.yang-contact-info {
+  font-size: 13px;
+  color: var(--dark-muted);
+  line-height: 2.2;
+}
+
+/* ── Yang contact buttons ── */
+.contact-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--dark-border2);
+  color: var(--dark-text);
+}
+.contact-btn.line { color: var(--green-accent); border-color: rgba(74,222,128,0.35); }
+.contact-btn:active { background: var(--dark-surface2); opacity: 1; }
+
+/* ── Marks empty state ── */
+.marks-empty-inline {
+  background: rgba(255,255,255,0.03);
+  border-color: var(--dark-border2);
+  color: var(--dark-muted);
+}
+
+/* ── Admin panel ── */
+.admin-wrap { color: var(--dark-text); }
+.admin-sub,
+.admin-denied,
+.admin-bind-hint,
+.admin-recent-meta { color: var(--dark-muted); }
+.admin-row,
+.admin-stat-card,
+.admin-recent-row {
+  background: #101629;
+  border: 1px solid var(--dark-border);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px -12px rgba(2,10,28,0.6);
+}
+.admin-row-name,
+.admin-section-title,
+.admin-stat-num,
+.admin-recent-email { color: var(--dark-text); }
+.admin-row-meta { color: var(--dark-muted); }
+.admin-badge {
+  background: rgba(250,199,117,0.12);
+  color: var(--gold-bright);
+  border: 1px solid rgba(250,199,117,0.25);
+}
+.admin-tab {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--dark-border2);
+  color: var(--dark-muted);
+}
+.admin-tab.active {
+  background: var(--navy-accent);
+  color: #fff;
+  border-color: var(--navy-accent);
+}
+.admin-breakdown { color: var(--dark-muted); }
+.admin-breakdown span {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--dark-border);
+}
+.admin-branch-table th { color: var(--dark-muted); }
+.admin-branch-table th,
+.admin-branch-table td { border-bottom-color: var(--dark-border); }
+.admin-live-settings { border-top-color: var(--dark-border); }
+.admin-live-lb-checks label { color: var(--dark-text); }
+
+/* QR 碼區保留白底以便掃描，加深色外框 */
+.search-invite-qr {
+  border: 1px solid var(--dark-border2);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}

@@ -406,6 +406,15 @@ export async function adminUnbindMember(memberId) {
   return data;
 }
 
+export async function adminSetMemberActive(memberId, active) {
+  const { data, error } = await getClient().database.rpc('bni_admin_set_member_active', {
+    p_member_id: memberId,
+    p_active: active,
+  });
+  if (error) throw error;
+  return data;
+}
+
 export async function searchUnboundMembers(keyword) {
   const q = keyword.trim();
   if (q.length < 1) return [];
@@ -460,15 +469,35 @@ function isRpcMissing(error) {
   return /could not find the function|PGRST202|404/i.test(msg);
 }
 
-export async function fetchLeaderboard(limit = 30) {
+export async function fetchLeaderboard(limit = 30, mode = 'mutual') {
   const { data, error } = await getClient().database.rpc('bni_get_leaderboard', {
     p_limit: limit,
+    p_mode: mode,
   });
   if (error) {
     if (isRpcMissing(error)) return [];
     throw error;
   }
   return Array.isArray(data) ? data : [];
+}
+
+export async function fetchLiveSettings() {
+  const { data, error } = await getClient().database.rpc('bni_get_live_settings');
+  if (error) {
+    if (isRpcMissing(error)) {
+      return { leaderboard_modes: ['mutual', 'received_one'] };
+    }
+    throw error;
+  }
+  return data || { leaderboard_modes: ['mutual', 'received_one'] };
+}
+
+export async function adminSetLeaderboardModes(modes) {
+  const { data, error } = await getClient().database.rpc('bni_admin_set_leaderboard_modes', {
+    p_modes: modes,
+  });
+  if (error) throw error;
+  return data;
 }
 
 export async function fetchMyMutualStats() {
@@ -495,6 +524,14 @@ export async function fetchFeed(limit = 50, before = null) {
 export async function postFeedMessage(content) {
   const { data, error } = await getClient().database.rpc('bni_post_feed_message', {
     p_content: content,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function adminDeleteFeedMessage(feedId) {
+  const { data, error } = await getClient().database.rpc('bni_admin_delete_feed', {
+    p_feed_id: feedId,
   });
   if (error) throw error;
   return data;

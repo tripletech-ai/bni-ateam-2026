@@ -223,8 +223,48 @@ BEGIN
   RETURN jsonb_build_object('ok', true);
 END; $$;
 
+CREATE OR REPLACE FUNCTION bni_admin_delete_feed(p_feed_id uuid)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_deleted int;
+BEGIN
+  IF NOT bni_is_admin() THEN RAISE EXCEPTION 'NOT_ADMIN'; END IF;
+  IF p_feed_id IS NULL THEN RAISE EXCEPTION 'INVALID_ID'; END IF;
+
+  DELETE FROM bni_feed WHERE id = p_feed_id;
+  GET DIAGNOSTICS v_deleted = ROW_COUNT;
+  IF v_deleted < 1 THEN RAISE EXCEPTION 'NOT_FOUND'; END IF;
+
+  RETURN jsonb_build_object('ok', true, 'id', p_feed_id);
+END; $$;
+
+CREATE OR REPLACE FUNCTION bni_admin_set_member_active(p_member_id uuid, p_active boolean)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE
+  v_row bni_members%ROWTYPE;
+BEGIN
+  IF NOT bni_is_admin() THEN RAISE EXCEPTION 'NOT_ADMIN'; END IF;
+  IF p_member_id IS NULL THEN RAISE EXCEPTION 'INVALID_ID'; END IF;
+
+  UPDATE bni_members
+    SET active = COALESCE(p_active, false), updated_at = now()
+    WHERE id = p_member_id
+    RETURNING * INTO v_row;
+
+  IF NOT FOUND THEN RAISE EXCEPTION 'NOT_FOUND'; END IF;
+
+  RETURN jsonb_build_object(
+    'ok', true,
+    'id', v_row.id,
+    'name', v_row.name,
+    'active', v_row.active
+  );
+END; $$;
+
 GRANT EXECUTE ON FUNCTION bni_get_leaderboard(int) TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION bni_get_my_mutual_stats() TO authenticated;
 GRANT EXECUTE ON FUNCTION bni_get_feed(int, timestamptz) TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION bni_post_feed_message(text) TO authenticated;
 GRANT EXECUTE ON FUNCTION bni_record_presence() TO authenticated;
+GRANT EXECUTE ON FUNCTION bni_admin_delete_feed(uuid) TO authenticated;
+GRANT EXECUTE ON FUNCTION bni_admin_set_member_active(uuid, boolean) TO authenticated;

@@ -24,6 +24,7 @@ import {
 import { mapDbMember } from '../services/membersApi.js';
 import { showToast } from '../utils/toast.js';
 import { t } from '../i18n/translations.js';
+import { startGuestTrial } from '../utils/guestTrial.js';
 import { industryPickerHTML, bindIndustryPicker, readIndustryPickerValues } from '../components/IndustryPicker.js';
 import { inferIndustriesFromText } from '../data/industries.js';
 
@@ -399,7 +400,7 @@ function loginMemberCountHTML() {
   return `<p class="login-member-count">${escHtml(t('login_member_count_prefix'))}<strong>${n}</strong>${escHtml(t('login_member_count_suffix'))}</p>`;
 }
 
-export function renderLoginGate(container) {
+export function renderLoginGate(container, { onGuestTrial } = {}) {
   container.innerHTML = `
     <div class="onboard-wrap login-gate-wrap">
       <header class="login-hero">
@@ -419,6 +420,10 @@ export function renderLoginGate(container) {
           ${GOOGLE_ICON_SVG}
           <span class="btn-google-label">${escHtml(t('login_google_btn'))}</span>
         </button>
+        <button type="button" id="guest-trial-btn" class="btn-outline login-guest-trial-btn">
+          ${escHtml(t('login_guest_trial_btn'))}
+        </button>
+        <p class="login-guest-trial-note">${escHtml(t('login_guest_trial_note'))}</p>
         <p class="onboard-foot">${escHtml(t('login_foot_v2'))}</p>
       </div>
     </div>
@@ -429,5 +434,9 @@ export function renderLoginGate(container) {
     } catch (err) {
       showToast(err.message || '登入失敗');
     }
+  });
+  document.getElementById('guest-trial-btn')?.addEventListener('click', () => {
+    startGuestTrial();
+    onGuestTrial?.();
   });
 }

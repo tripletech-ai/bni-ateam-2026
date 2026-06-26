@@ -9,6 +9,9 @@ import {
   adminUnbindMember,
   fetchAdminBranches,
   adminMergeBranches,
+  adminSetMemberActive,
+  fetchLiveSettings,
+  adminSetLeaderboardModes,
 } from '../services/auth.js';
 import { isAdminEmail } from '../config/admins.js';
 import { normalizeBranchName } from '../data/branches.js';
@@ -99,8 +102,17 @@ async function renderStatsPanel(panel) {
         `).join('') : '<div class="bind-empty">尚無綁定紀錄</div>'}
       </div>
       <button type="button" id="admin-refresh-stats" class="btn-outline" style="margin-top:12px">重新整理</button>
+      <div class="admin-live-settings" id="admin-live-settings">
+        <h3 class="admin-section-title">${escHtml(t('admin_live_settings_title'))}</h3>
+        <p class="admin-sub">${escHtml(t('admin_live_lb_modes'))}</p>
+        <div class="admin-live-lb-checks" id="admin-live-lb-checks">
+          <div class="bind-loading">載入…</div>
+        </div>
+        <button type="button" id="admin-save-lb-modes" class="btn-ai" style="margin-top:10px">${escHtml(t('admin_live_lb_save'))}</button>
+      </div>
     `;
     panel.querySelector('#admin-refresh-stats').addEventListener('click', () => renderStatsPanel(panel));
+    await bindLiveSettingsPanel(panel);
   } catch (err) {
     panel.innerHTML = `<div class="bind-empty">${escHtml(err.message)}</div>`;
   }
@@ -167,6 +179,9 @@ async function renderMembersPanel(panel) {
           <div class="admin-form-actions">
             <button type="submit" class="btn-ai">儲存</button>
             ${m.auth_user_id ? `<button type="button" class="btn-outline admin-unbind" data-id="${escHtml(m.id)}">解除 Google 綁定</button>` : ''}
+            ${m.active
+              ? `<button type="button" class="btn-outline admin-ban" data-id="${escHtml(m.id)}" data-name="${escHtml(m.name)}">停用帳號</button>`
+              : `<button type="button" class="btn-outline admin-unban" data-id="${escHtml(m.id)}" data-name="${escHtml(m.name)}">恢復帳號</button>`}
           </div>
         </form>
       </details>`;
@@ -210,6 +225,32 @@ async function renderMembersPanel(panel) {
           await loadMembers();
         } catch (err) {
           showToast(err.message || '解除失敗');
+        }
+      });
+    });
+    listEl.querySelectorAll('.admin-ban').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const name = btn.dataset.name || '此會員';
+        if (!confirm(`確定停用「${name}」？停用後無法發文、也不會出現在公開名單。`)) return;
+        try {
+          await adminSetMemberActive(btn.dataset.id, false);
+          showToast('已停用帳號');
+          await loadMembers();
+        } catch (err) {
+          showToast(err.message || '停用失敗');
+        }
+      });
+    });
+    listEl.querySelectorAll('.admin-unban').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const name = btn.dataset.name || '此會員';
+        if (!confirm(`確定恢復「${name}」？`)) return;
+        try {
+          await adminSetMemberActive(btn.dataset.id, true);
+          showToast('已恢復帳號');
+          await loadMembers();
+        } catch (err) {
+          showToast(err.message || '恢復失敗');
         }
       });
     });
@@ -339,4 +380,39 @@ function formatTime(ts) {
   } catch {
     return String(ts);
   }
+}
+
+async function bindLiveSettingsPanel(panel) {
+  const wrap = panel.querySelector('#admin-live-lb-checks');
+  const saveBtn = panel.querySelector('#admin-save-lb-modes');
+  if (!wrap || !saveBtn) return;
+
+  let modes = ['mutual', 'received_one'];
+  try {
+    const settings = await fetchLiveSettings();
+    modes = settings?.leaderboard_modes || modes;
+  } catch (e) {
+    console.warn('live settings:', e.message);
+  }
+
+  wrap.innerHTML = `
+    <label class="field-check"><input type="checkbox" name="lb-mutual" ${modes.includes('mutual') ? 'checked' : ''}> ${escHtml(t('admin_live_lb_mutual'))}</label>
+    <label class="field-check"><input type="checkbox" name="lb-received" ${modes.includes('received_one') ? 'checked' : ''}> ${escHtml(t('admin_live_lb_received'))}</label>
+  `;
+
+  saveBtn.onclick = async () => {
+    const next = [];
+    if (wrap.querySelector('[name=lb-mutual]')?.checked) next.push('mutual');
+    if (wrap.querySelector('[name=lb-received]')?.checked) next.push('received_one');
+    if (!next.length) {
+      showToast(t('admin_live_lb_min'));
+      return;
+    }
+    try {
+      await adminSetLeaderboardModes(next);
+      showToast(t('admin_live_lb_saved'));
+    } catch (err) {
+      showToast(err.message || '儲存失敗');
+    }
+  };
 }

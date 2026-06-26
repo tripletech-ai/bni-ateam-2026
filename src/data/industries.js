@@ -134,3 +134,10 @@ export function mergeIndustryStatsFromPublic(publicStats, members) {
   }
   return countIndustriesFromMembers(members);
 }
+
+/** 圓餅圖中心：唯一會員總數（來自 DB total_members，勿用產業加總） */
+export function getMemberTotalFromStats(publicStats, members) {
+  const n = publicStats?.total_members;
+  if (typeof n === 'number' && n >= 0) return n;
+  return Array.isArray(members) ? members.length : 0;
+}

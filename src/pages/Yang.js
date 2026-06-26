@@ -18,9 +18,9 @@ export function renderYang(container) {
       <div class="yang-hero-title">資深區域董事顧問<br>台北北區 &amp; 新北西北B</div>
     </div>
 
-    <div style="padding:20px 16px;background:var(--surface);border-bottom:1px solid var(--border)">
-      <div class="section-title serif" style="margin-bottom:12px">帶領理念</div>
-      <p style="font-size:inherit;line-height:1.9;color:var(--text)">
+    <div class="yang-section">
+      <div class="section-title serif yang-section-title">帶領理念</div>
+      <p class="yang-section-text">
         在艱難的時代中，我們更要團結一致，透過 A Team 商務連結平台，讓 20 個分會彼此連結、彼此成就，共同創造無限商機。
       </p>
     </div>
@@ -47,8 +47,8 @@ export function renderYang(container) {
       </div>
     </div>
 
-    <div style="background:var(--surface);padding:16px 20px;border-top:1px solid var(--border)">
-      <div id="yang-contact-info" style="font-size:13px;color:var(--muted);line-height:2.2">
+    <div class="yang-contact-footer">
+      <div id="yang-contact-info" class="yang-contact-info">
         ${YANG_INFO.phone
           ? `<div>📱 ${escHtml(YANG_INFO.phone)}</div>` :
             '<div style="color:var(--border)">聯絡資訊待確認後補充</div>'}

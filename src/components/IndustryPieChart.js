@@ -1,6 +1,6 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
-import { industryLabel, mergeIndustryStatsFromPublic } from '../data/industries.js';
+import { industryLabel, mergeIndustryStatsFromPublic, getMemberTotalFromStats } from '../data/industries.js';
 
 const PIE_COLORS = [
   '#FAC775', '#185FA5', '#4ade80', '#f87171', '#a78bfa',
@@ -11,10 +11,12 @@ export function industryPieChartHTML({ stats, members } = {}) {
   const rows = mergeIndustryStatsFromPublic(stats, members).filter(r => r.count > 0);
   if (!rows.length) return '';
 
-  const total = rows.reduce((s, r) => s + r.count, 0);
+  const memberTotal = getMemberTotalFromStats(stats, members);
+  const tagTotal = rows.reduce((s, r) => s + r.count, 0);
+  const pieBase = tagTotal > 0 ? tagTotal : memberTotal;
   let acc = 0;
   const segments = rows.map((row, i) => {
-    const pct = (row.count / total) * 100;
+    const pct = (row.count / pieBase) * 100;
     const start = acc;
     acc += pct;
     return {
@@ -40,12 +42,13 @@ export function industryPieChartHTML({ stats, members } = {}) {
       <div class="section-header industry-pie-header">
         <div class="section-title">${escHtml(t('ind_pie_title'))}</div>
         <p class="section-sub">${escHtml(t('ind_pie_sub'))}</p>
+        ${tagTotal > memberTotal ? `<p class="section-sub ind-pie-note">${escHtml(t('ind_pie_overlap_hint'))}</p>` : ''}
       </div>
       <div class="industry-pie-wrap">
         <div class="industry-pie-chart" style="background:conic-gradient(${gradient})" role="img"
-          aria-label="${escHtml(t('ind_pie_title'))} ${total}">
+          aria-label="${escHtml(t('ind_pie_title'))} ${memberTotal}">
           <div class="industry-pie-hole">
-            <span class="industry-pie-total serif">${total}</span>
+            <span class="industry-pie-total serif">${memberTotal}</span>
             <span class="industry-pie-total-label">${escHtml(t('stat_members'))}</span>
           </div>
         </div>

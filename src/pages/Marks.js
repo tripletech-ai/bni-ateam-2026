@@ -4,6 +4,9 @@ import { renderTabBar } from '../components/TabBar.js';
 import { goalProgressHTML, MARK_PARTNER_GOAL, MARK_ONE_GOAL } from '../components/GoalProgress.js';
 import { escHtml, escAttr } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
+import { isGuestTrial } from '../utils/guestTrial.js';
+import { guestHomeReminderHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
+import { endGuestTrial } from '../utils/guestTrial.js';
 
 function statsGridHTML(connected, oneCount, bizCount) {
   return `
@@ -102,6 +105,21 @@ function bindMarksList(container) {
 }
 
 export function renderMarks(container) {
+  if (isGuestTrial()) {
+    container.innerHTML = `
+      <div class="marks-page guest-marks-page">
+        ${guestHomeReminderHTML()}
+        <div class="guest-marks-actions">
+          <button type="button" class="btn-outline" data-hash="search">${escHtml(t('marks_go'))}</button>
+        </div>
+      </div>`;
+    container.querySelector('[data-hash="search"]')?.addEventListener('click', () => {
+      location.hash = 'search';
+    });
+    bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
+    return;
+  }
+
   const marks = getMarks().filter(m => m.one || m.biz);
   const oneCount = getOneMarkCount();
   const connected = getConnectionCount();

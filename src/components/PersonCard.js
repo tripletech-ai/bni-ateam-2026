@@ -1,5 +1,6 @@
 import { getMark, setMark, memberKey, isMutuallyConnected } from '../utils/storage.js';
 import { syncMarkToServer } from '../utils/markSync.js';
+import { isGuestTrial } from '../utils/guestTrial.js';
 import { showToast }                   from '../utils/toast.js';
 import { escHtml, escAttr }            from '../utils/html.js';
 import { avatarInner }                 from '../utils/avatar.js';
@@ -115,7 +116,11 @@ export function bindCardEvents(container, members) {
       const lineLink = btn.dataset.lineLink || member?.lineLink || '';
       const lineId   = btn.dataset.lineId   || member?.lineId   || '';
       handleLine({ lineLink, lineId });
-    } else {
+    } else if (action === 'one' || action === 'biz') {
+      if (isGuestTrial()) {
+        showToast(t('guest_mark_login'));
+        return;
+      }
       setMark(member, action);
       const updated = getMark(member);
       syncMarkToServer(member, action, updated[action]);

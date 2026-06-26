@@ -7,13 +7,33 @@ const RANK_STYLES = {
   3: 'lb-rank-bronze',
 };
 
-export function leaderboardHTML(rows = [], { compact = false, limit = 30 } = {}) {
+const LB_MODE_KEYS = {
+  mutual: {
+    hint: 'lb_hint',
+    empty: 'lb_empty',
+    emptySub: 'lb_empty_sub',
+    scoreUnit: 'lb_score_mutual',
+  },
+  received_one: {
+    hint: 'lb_hint_received',
+    empty: 'lb_empty_received',
+    emptySub: 'lb_empty_received_sub',
+    scoreUnit: 'lb_score_received',
+  },
+};
+
+export function getLeaderboardModeKeys(mode = 'mutual') {
+  return LB_MODE_KEYS[mode] || LB_MODE_KEYS.mutual;
+}
+
+export function leaderboardHTML(rows = [], { compact = false, limit = 30, mode = 'mutual' } = {}) {
   const list = (rows || []).slice(0, limit);
+  const keys = getLeaderboardModeKeys(mode);
   if (!list.length) {
     return `
       <div class="leaderboard-empty">
-        <p>${escHtml(t('lb_empty'))}</p>
-        <p class="leaderboard-empty-sub">${escHtml(t('lb_empty_sub'))}</p>
+        <p>${escHtml(t(keys.empty))}</p>
+        <p class="leaderboard-empty-sub">${escHtml(t(keys.emptySub))}</p>
       </div>`;
   }
 
@@ -32,9 +52,26 @@ export function leaderboardHTML(rows = [], { compact = false, limit = 30 } = {})
   }).join('');
 
   return `
-    <div class="leaderboard-panel${compact ? ' leaderboard-panel-compact' : ''}">
-      ${compact ? '' : `<p class="leaderboard-hint">${escHtml(t('lb_hint'))}</p>`}
+    <div class="leaderboard-panel${compact ? ' leaderboard-panel-compact' : ''}" data-lb-mode="${escHtml(mode)}">
+      ${compact ? '' : `<p class="leaderboard-hint">${escHtml(t(keys.hint))}</p>`}
       <div class="leaderboard-list" role="list">${items}</div>
+    </div>`;
+}
+
+export function leaderboardModeTabsHTML(modes = ['mutual', 'received_one'], active = 'mutual') {
+  const defs = [
+    { id: 'mutual', label: t('lb_mode_mutual') },
+    { id: 'received_one', label: t('lb_mode_received') },
+  ];
+  const visible = defs.filter(d => modes.includes(d.id));
+  if (visible.length < 2) return '';
+  return `
+    <div class="lb-mode-tabs" role="tablist" aria-label="${escHtml(t('lb_mode_label'))}">
+      ${visible.map(d => `
+        <button type="button" class="lb-mode-tab${d.id === active ? ' active' : ''}"
+          role="tab" aria-selected="${d.id === active}"
+          data-lb-mode="${escHtml(d.id)}">${escHtml(d.label)}</button>
+      `).join('')}
     </div>`;
 }
 
