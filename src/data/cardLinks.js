@@ -15,6 +15,7 @@ const E = {
   '方榮久': 'fcf8d38e-041f-4509-b428-cbc9246dd39e?ref=bb33eb828306',
   '葉奕廷': '936cc968-9557-4f15-abbb-eca2a0f3ebf4?ref=0d31ca51cd8d',
   '張凱竣': '3c9416d0-5ae8-40b1-82e1-f7755285e85b',
+  '張巧瑜': 'clairechang',
   '曾筱婷': 'c259da51-7199-4d51-ada7-d3d577366916?ref=6e338ce28269',
   '工藤七海': 'afb9bfdc-9669-4578-91b8-646fc895467d?ref=57375fa4eec3',
   '馮志綱': '1d627510-733c-4d1d-8f49-8efd74b8af6d?ref=f8f062cbe836',
