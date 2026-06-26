@@ -28,7 +28,7 @@ import { guestFeedLoginHTML, bindGuestTrialLogin } from '../components/GuestTria
 
 let livePollTimer = null;
 let liveIsAdmin = false;
-let liveMainTab = 'chat';
+let liveMainTab = 'leaderboard';
 let liveLbMode = 'mutual';
 let liveLbModes = ['mutual', 'received_one'];
 let liveSessionWarned = false;
@@ -67,7 +67,7 @@ function leaderboardPanelHTML() {
   const boards = window.BNI_LEADERBOARDS || {};
   const rows = boards[liveLbMode] || [];
   return `
-    <section class="live-panel live-panel-leaderboard" ${liveMainTab !== 'leaderboard' ? 'hidden' : ''}>
+    <section class="live-panel live-panel-leaderboard${liveMainTab !== 'leaderboard' ? ' hidden' : ''}">
       ${leaderboardModeTabsHTML(liveLbModes, liveLbMode)}
       <div id="live-leaderboard-list">${leaderboardHTML(rows, { mode: liveLbMode })}</div>
     </section>`;
@@ -76,7 +76,7 @@ function leaderboardPanelHTML() {
 function chatPanelHTML(feed) {
   const opts = { isAdmin: liveIsAdmin, isGuest: isGuestTrial(), myName: myMemberName() };
   return `
-    <section class="live-panel live-panel-chat" ${liveMainTab !== 'chat' ? 'hidden' : ''}>
+    <section class="live-panel live-panel-chat${liveMainTab !== 'chat' ? ' hidden' : ''}">
       <div id="live-feed-wrap">
         ${chatRoomHTML(feed, opts)}
       </div>
@@ -91,6 +91,13 @@ function sessionBannerHTML() {
     </div>`;
 }
 
+function setLivePanelVisible(el, visible) {
+  if (!el) return;
+  el.classList.toggle('hidden', !visible);
+  if (visible) el.removeAttribute('hidden');
+  else el.setAttribute('hidden', '');
+}
+
 function switchLiveTab(container, tab) {
   liveMainTab = tab;
   const page = container.querySelector('.live-page');
@@ -100,8 +107,8 @@ function switchLiveTab(container, tab) {
     b.classList.toggle('active', on);
     b.setAttribute('aria-selected', on ? 'true' : 'false');
   });
-  container.querySelector('.live-panel-leaderboard')?.classList.toggle('hidden', tab !== 'leaderboard');
-  container.querySelector('.live-panel-chat')?.classList.toggle('hidden', tab !== 'chat');
+  setLivePanelVisible(container.querySelector('.live-panel-leaderboard'), tab === 'leaderboard');
+  setLivePanelVisible(container.querySelector('.live-panel-chat'), tab === 'chat');
   if (tab === 'chat') scrollChatToBottom(container);
 }
 
@@ -303,6 +310,13 @@ export async function refreshLiveData(container) {
 
 export async function renderLive(container) {
   container.classList.add('page-root');
+  try {
+    const pendingTab = sessionStorage.getItem('bni_live_tab');
+    if (pendingTab === 'leaderboard' || pendingTab === 'chat') {
+      liveMainTab = pendingTab;
+      sessionStorage.removeItem('bni_live_tab');
+    }
+  } catch { /* ignore */ }
   liveIsAdmin = await checkIsAdmin();
   liveSessionWarned = false;
 

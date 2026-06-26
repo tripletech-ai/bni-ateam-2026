@@ -1,7 +1,7 @@
 const KEY = "bni_ateam_marks_2026";
 
 export const MARK_PARTNER_GOAL = 10;
-export const MARK_ONE_GOAL = 10;
+export const MARK_ONE_GOAL = 30;
 
 export function getMarks() {
   try { return JSON.parse(localStorage.getItem(KEY) || "[]"); }

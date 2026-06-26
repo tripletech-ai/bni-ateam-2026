@@ -35,7 +35,7 @@ export function homeQuestStripHTML() {
         ${needProfile
           ? `<button type="button" class="btn-ai home-quest-btn" id="home-quest-profile">${escHtml(t('collect800_profile_cta'))}</button>`
           : `<button type="button" class="btn-ai home-quest-btn" id="home-quest-search">${escHtml(t('first_run_go'))}</button>`}
-        <button type="button" class="btn-outline home-quest-btn" id="home-quest-invite">${escHtml(t('claim_game_invite_btn'))}</button>
+        <button type="button" class="btn-gold-outline home-quest-btn" id="home-quest-invite">${escHtml(t('claim_game_invite_btn'))}</button>
       </div>
     </section>`;
 }

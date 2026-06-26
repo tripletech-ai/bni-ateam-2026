@@ -1524,6 +1524,21 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   border-color: rgba(250,199,117,0.45);
   background: rgba(250,199,117,0.06);
 }
+.btn-gold-outline {
+  color: var(--gold-bright);
+  border-color: rgba(250,199,117,0.6);
+  background: rgba(250,199,117,0.14);
+}
+.btn-gold-outline:active {
+  background: rgba(250,199,117,0.24);
+}
+.home-quest-strip .btn-gold-outline,
+.collect800-card .btn-gold-outline {
+  color: #fac775;
+  border-color: rgba(250,199,117,0.65);
+  background: rgba(250,199,117,0.16);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.35);
+}
 .onboard-wrap .btn-text { color: var(--dark-muted); }
 .onboard-wrap .field-label { color: var(--dark-muted); }
 .onboard-wrap .field-input,

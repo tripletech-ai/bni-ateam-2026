@@ -65,7 +65,7 @@ export function collect800HTML({ context = 'home' } = {}) {
 
       <p class="collect800-msg">${escHtml(t(context === 'login' ? 'collect800_msg_login' : msgKey))}</p>
       <div class="${actionsClass}">
-        <button type="button" class="btn-outline collect800-copy-link" id="collect800-copy-link">
+        <button type="button" class="btn-gold-outline collect800-copy-link" id="collect800-copy-link">
           ${escHtml(t('search_invite_copy'))}
         </button>
         ${secondary}

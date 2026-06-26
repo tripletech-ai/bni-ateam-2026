@@ -785,6 +785,21 @@ html { scroll-behavior: smooth; }
   border: 1.5px solid var(--navy); border-radius: var(--r-sm);
   background: transparent; color: var(--navy); font-weight: 600;
 }
+.btn-gold-outline {
+  width: 100%; padding: 14px;
+  border: 1.5px solid rgba(250, 199, 117, 0.6);
+  border-radius: var(--r-sm);
+  background: rgba(250, 199, 117, 0.14);
+  color: #fac775;
+  font-weight: 700;
+  font-family: 'Noto Sans TC', sans-serif;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.btn-gold-outline:active {
+  background: rgba(250, 199, 117, 0.24);
+  border-color: rgba(250, 199, 117, 0.85);
+}
 .btn-text { background: none; border: none; color: var(--muted); margin-top: 12px; font-size: 13px; }
 .btn-google {
   display: flex; align-items: center; justify-content: center; gap: 12px;
@@ -1775,6 +1790,13 @@ body.guest-trial-mode #user-bar { display: none !important; }
 .home-quest-item-done::after { content: ' ✓'; color: #86efac; }
 .home-quest-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .home-quest-btn { flex: 1; min-width: 120px; font-size: calc(13px * var(--fs-k, 0.78)); padding: 10px 8px; }
+.home-quest-actions .btn-gold-outline { margin-top: 0; padding: 10px 8px; font-size: calc(13px * var(--fs-k, 0.78)); }
+
+/* Home leaderboard */
+.home-leaderboard-section { margin: 0 0 8px; }
+.home-lb-sub { font-size: calc(13px * var(--fs-k, 0.78)); color: rgba(255,255,255,0.55); margin: 4px 16px 0; line-height: 1.45; }
+.home-leaderboard-section .lb-mode-tabs { margin: 0 16px 10px; }
+.home-lb-more { margin: 12px 16px 0; width: calc(100% - 32px); display: block; }
 .collect800-actions-single .collect800-copy-link { flex: 1; width: 100%; }
 
 /* Chat room v2 — full height + inline composer */
@@ -1944,6 +1966,7 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 .collect800-msg { font-size: calc(13px * var(--fs-k, 0.78)); line-height: 1.55; opacity: 0.75; margin: 4px 0 14px; }
 .collect800-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .collect800-actions .btn-outline,
+.collect800-actions .btn-gold-outline,
 .collect800-actions .btn-ai { flex: 1; min-width: 120px; text-align: center; text-decoration: none; }
 
 /* Yang intro (home) */
