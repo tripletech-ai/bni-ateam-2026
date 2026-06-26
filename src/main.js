@@ -25,6 +25,7 @@ import {
   tryAutoBindOnLogin,
   fetchEventChapters,
   getMyStatus,
+  refreshStatus,
 } from './services/auth.js';
 import { showIncomingOneOverlay } from './components/IncomingOneBanner.js';
 import { renderUserBar } from './components/UserBar.js';
@@ -34,6 +35,7 @@ import { loadMembersFromDb } from './services/membersApi.js';
 import { withRetry } from './utils/retry.js';
 import { isGuestTrial, endGuestTrial } from './utils/guestTrial.js';
 import { guestTrialBannerHTML, bindGuestTrialLogin } from './components/GuestTrialBanner.js';
+import { showGuestTrialIntro } from './components/GuestTrialIntro.js';
 import { showToast } from './utils/toast.js';
 import { notifyProfileMilestone } from './utils/profileMilestone.js';
 import { clearPendingClaim } from './utils/memberClaim.js';
@@ -286,6 +288,13 @@ async function enterGuestMode() {
     location.hash = '#home';
   }
   navigate();
+  showGuestTrialIntro({
+    onGoLogin: () => {
+      endGuestTrial();
+      location.hash = '';
+      location.reload();
+    },
+  });
 }
 
 async function boot() {
@@ -326,6 +335,10 @@ async function boot() {
     }
     renderLoginGate(app, { onGuestTrial: enterGuestMode, onComplete: afterBindComplete });
     return;
+  }
+
+  if (!isBound()) {
+    await refreshStatus();
   }
 
   if (!isBound()) {

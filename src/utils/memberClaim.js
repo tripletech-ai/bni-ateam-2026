@@ -1,5 +1,5 @@
 import { normalizeBranchName, getRegionForBranch } from '../data/branches.js';
-import { bindExistingMember, registerNewMember, getClient, refreshStatus } from '../services/auth.js';
+import { bindExistingMember, registerNewMember, getClient, refreshStatus, getMyStatus, isBound } from '../services/auth.js';
 
 const PENDING_CLAIM_KEY = 'bni_pending_claim';
 
@@ -62,6 +62,27 @@ function regionForBranch(branch, fallbackRegion = '') {
 function isRpcMissing(err) {
   const msg = err?.message || '';
   return /could not find the function|PGRST202|404/i.test(msg);
+}
+
+function isAlreadyBoundError(err) {
+  return /ALREADY_BOUND/i.test(err?.message || '');
+}
+
+/** 此裝置已綁定且與表單分會／姓名一致 → 可直接視為登入成功 */
+export function matchesBoundIdentity({ name, branch }) {
+  const member = getMyStatus()?.member;
+  if (!member?.name || !member?.branch) return false;
+  return normalizeChineseName(member.name) === normalizeChineseName(name)
+    && normalizeBranchName(member.branch) === normalizeRegisterBranch(branch);
+}
+
+async function resumeIfAlreadyBound(payload, err) {
+  if (!isAlreadyBoundError(err)) return null;
+  await refreshStatus();
+  if (isBound() && matchesBoundIdentity(payload)) {
+    return { matched: true, from_roster: true, already_bound: true };
+  }
+  throw err;
 }
 
 /** 後端 RPC：依分會 + 姓名在 DB 精準匹配並認領 */
@@ -134,8 +155,16 @@ export async function claimByNameBranch({ name, branch, region = '' }) {
   try {
     return await claimViaBackendRpc(payload);
   } catch (err) {
+    const resumed = await resumeIfAlreadyBound(payload, err);
+    if (resumed) return resumed;
     if (!isRpcMissing(err)) throw err;
     console.warn('bni_claim_by_name_branch missing, fallback to client match');
-    return claimViaClientMatch(payload);
+    try {
+      return await claimViaClientMatch(payload);
+    } catch (fallbackErr) {
+      const resumedFallback = await resumeIfAlreadyBound(payload, fallbackErr);
+      if (resumedFallback) return resumedFallback;
+      throw fallbackErr;
+    }
   }
 }

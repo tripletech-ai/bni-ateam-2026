@@ -1778,6 +1778,8 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 }
 .guest-trial-banner-title { color: #fca5a5; }
 .guest-trial-banner-sub { color: var(--dark-muted); }
+.guest-trial-banner-list { color: rgba(255,255,255,0.72); }
+.guest-trial-banner-list li { margin-bottom: 4px; }
 .guest-home-reminder {
   border-color: rgba(248,113,113,0.35);
   background: linear-gradient(165deg, rgba(248,113,113,0.10), rgba(16,33,69,0.5));
@@ -2172,6 +2174,35 @@ textarea.field-input {
   background: rgba(250,199,117,0.15);
   color: var(--gold-bright);
 }
+.login-guest-trial-btn {
+  border-color: rgba(255,255,255,0.22);
+  background: rgba(255,255,255,0.04);
+}
+.login-guest-trial-btn:active { background: rgba(255,255,255,0.08); }
+.login-guest-trial-label { color: var(--dark-text); }
+.login-guest-trial-sub { color: var(--dark-muted); }
+
+.login-steps-guide {
+  background: rgba(250,199,117,0.08);
+  border-color: rgba(250,199,117,0.22);
+}
+.login-steps-title { color: var(--gold-bright); }
+.login-steps-list { color: var(--dark-text); }
+.login-steps-note { color: var(--dark-muted); }
+
+.guest-trial-intro-card {
+  background: #101629;
+  border-color: rgba(248,113,113,0.4);
+}
+.guest-trial-intro-title { color: #fca5a5; }
+.guest-trial-intro-lead,
+.guest-trial-intro-list li { color: var(--dark-text); border-bottom-color: var(--dark-border); }
+.guest-trial-intro-foot { color: var(--dark-muted); }
+
+.guest-home-reminder-list { color: var(--dark-muted); }
+.guest-home-reminder-title { color: #fca5a5; font-size: 17px; font-weight: 700; margin: 0 0 8px; }
+.guest-feed-login-sub { color: var(--dark-muted); }
+
 .login-google-divider::before, .login-google-divider::after { background: var(--dark-border); }
 .user-bar { position: relative; }
 

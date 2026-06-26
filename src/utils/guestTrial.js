@@ -11,6 +11,8 @@ export function startGuestTrial() {
 }
 
 export function endGuestTrial() {
-  try { sessionStorage.removeItem(KEY); }
-  catch (e) { console.warn('guest trial:', e); }
+  try {
+    sessionStorage.removeItem(KEY);
+    sessionStorage.removeItem('bni_guest_intro_shown');
+  } catch (e) { console.warn('guest trial:', e); }
 }

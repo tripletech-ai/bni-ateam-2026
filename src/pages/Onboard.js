@@ -4,23 +4,27 @@ import {
   ATEAM_ROSTER_NAMES,
   chapterFullName,
 } from '../data/eventChapters.js';
+import { claimByNameBranch,
+  isValidChineseName,
+  loadPendingClaim,
+  clearPendingClaim,
+  matchesBoundIdentity,
+} from '../utils/memberClaim.js';
 import {
   ensureAuthSession,
   getCurrentUser,
+  isBound,
+  refreshStatus,
 } from '../services/auth.js';
 import { showToast } from '../utils/toast.js';
 import { t } from '../i18n/translations.js';
 import { isInAppBrowser } from '../utils/inAppBrowser.js';
 import { inAppBrowserGateHTML, bindInAppBrowserGate } from '../components/InAppBrowserGate.js';
 import { startGuestTrial } from '../utils/guestTrial.js';
-import { claimByNameBranch,
-  isValidChineseName,
-  loadPendingClaim,
-  clearPendingClaim,
-} from '../utils/memberClaim.js';
 import { describeClaimOutcome } from '../utils/claimFeedback.js';
 import { collect800HTML, bindCollect800Game, getCollect800Stats } from '../components/Collect800Game.js';
 import { loginPrefsHTML, bindLoginPrefs } from '../components/LoginPrefsPanel.js';
+import { loginStepsGuideHTML } from '../components/LoginStepsGuide.js';
 
 function memberCountLine() {
   const { registered, goal } = getCollect800Stats();
@@ -159,14 +163,23 @@ async function submitClaim(container, { onComplete }) {
       showToast(t('onboard_err_session'));
       return;
     }
+    await refreshStatus();
+    if (isBound() && matchesBoundIdentity(payload)) {
+      clearPendingClaim();
+      showToast(t('onboard_welcome_back'));
+      onComplete?.();
+      return;
+    }
     const result = await claimByNameBranch(payload);
     clearPendingClaim();
     sessionStorage.setItem('bni_last_claim_result', JSON.stringify(result || {}));
-    showToast(describeClaimOutcome(result));
-    const { registered, goal } = getCollect800Stats();
-    setTimeout(() => {
-      showToast(t('claim_game_toast', { n: registered, goal }));
-    }, 1200);
+    showToast(result?.already_bound ? t('onboard_welcome_back') : describeClaimOutcome(result));
+    if (!result?.already_bound) {
+      const { registered, goal } = getCollect800Stats();
+      setTimeout(() => {
+        showToast(t('claim_game_toast', { n: registered, goal }));
+      }, 1200);
+    }
     onComplete?.();
   } catch (err) {
     showToast(mapAuthError(err));
@@ -187,12 +200,13 @@ function renderClaimScreen(container, {
   titleKey,
   subKey,
   showGuestTrial = false,
+  showLoginSteps = false,
   onComplete,
   onGuestTrial,
   preserveForm,
 } = {}) {
   const pending = preserveForm || loadPendingClaim();
-  const screenOpts = { titleKey, subKey, showGuestTrial, onComplete, onGuestTrial };
+  const screenOpts = { titleKey, subKey, showGuestTrial, showLoginSteps, onComplete, onGuestTrial };
   container.innerHTML = `
     <div class="onboard-wrap onboard-flow-wrap">
       <header class="login-hero login-hero-compact">
@@ -203,13 +217,15 @@ function renderClaimScreen(container, {
         ${memberCountLine()}
         ${collect800HTML({ context: 'login' })}
         ${loginPrefsHTML()}
+        ${showLoginSteps ? loginStepsGuideHTML() : ''}
         ${isInAppBrowser() ? inAppBrowserGateHTML() : simpleClaimFormHTML({
           branch: pending?.branch || '',
           name: pending?.name || '',
         })}
         ${showGuestTrial ? `
-        <button type="button" id="guest-trial-btn" class="btn-text login-guest-link">
-          ${escHtml(t('login_guest_trial_btn'))}
+        <button type="button" id="guest-trial-btn" class="btn-outline login-guest-trial-btn">
+          <span class="login-guest-trial-label">${escHtml(t('login_guest_trial_btn'))}</span>
+          <span class="login-guest-trial-sub">${escHtml(t('login_guest_trial_hint'))}</span>
         </button>` : ''}
       </div>
     </div>`;
@@ -263,6 +279,7 @@ export function renderLoginGate(container, { onGuestTrial, onComplete } = {}) {
     titleKey: 'hero_title',
     subKey: 'login_sub',
     showGuestTrial: true,
+    showLoginSteps: true,
     onComplete,
     onGuestTrial,
   });
