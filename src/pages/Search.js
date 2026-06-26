@@ -57,11 +57,6 @@ function buildSearchUI() {
         placeholder="${escHtml(t('search_placeholder'))}"
         rows="6" aria-label="${escHtml(t('search_label'))}" maxlength="500" autofocus></textarea>
       <button id="ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
-      <div class="ai-examples" aria-label="搜尋範例">
-        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example1'))}</div>
-        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example2'))}</div>
-        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example3'))}</div>
-      </div>
     </div>
     <div id="search-loading" style="display:none" role="status" aria-live="polite"></div>
     <div id="ai-result-area" style="display:none"></div>
@@ -77,17 +72,6 @@ function bindSearchEvents(container) {
   if (input && !input.value) {
     try { input.focus({ preventScroll: true }); } catch { input.focus(); }
   }
-  container.querySelectorAll('.ai-example-chip').forEach(chip => {
-    const trigger = () => {
-      const input = document.getElementById('ai-input');
-      if (input) input.value = chip.textContent.trim();
-      triggerSearch(chip.textContent.trim());
-    };
-    chip.addEventListener('click', trigger);
-    chip.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger(); }
-    });
-  });
 
   document.getElementById('ai-submit').addEventListener('click', () => {
     const input = document.getElementById('ai-input').value.trim();

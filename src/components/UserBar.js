@@ -1,20 +1,14 @@
 import { escHtml } from '../utils/html.js';
-import { getMyStatus, signOut, selfUnbind } from '../services/auth.js';
+import { getMyStatus, signOut } from '../services/auth.js';
 import { profileNeedsEnrichment, profileBackendEmpty } from '../utils/profileHints.js';
 import { t } from '../i18n/translations.js';
 import { goToPage } from '../utils/nav.js';
 import { showToast } from '../utils/toast.js';
+import { runReclaim } from '../utils/reclaim.js';
+import { showConfirmDialog } from '../utils/confirmDialog.js';
 
 async function confirmReclaim() {
-  if (!window.confirm(t('reclaim_confirm_detail'))) return;
-  try {
-    await selfUnbind();
-    showToast(t('reclaim_ok'));
-    location.hash = '';
-    location.reload();
-  } catch (e) {
-    showToast(e.message || t('reclaim_fail'));
-  }
+  await runReclaim();
 }
 
 export function renderUserBar(el) {
@@ -81,7 +75,12 @@ export function renderUserBar(el) {
 
   el.querySelector('#user-menu-signout')?.addEventListener('click', async () => {
     menu?.classList.add('hidden');
-    if (!window.confirm(t('signout_confirm'))) return;
+    const ok = await showConfirmDialog({
+      title: t('signout_confirm'),
+      message: t('signout_confirm'),
+      confirmLabel: t('user_bar_signout'),
+    });
+    if (!ok) return;
     try {
       await signOut();
       location.hash = '';

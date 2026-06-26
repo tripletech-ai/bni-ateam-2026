@@ -70,7 +70,7 @@ export function renderHome(container) {
     ${homeSectionAccordion(t('home_section_developers'), `
       <p class="home-section-sub">${escHtml(t('home_developers_sub'))}</p>
       <div class="developer-stack home-developer-stack">${DEVELOPERS.map(developerCardHTML).join('')}</div>
-    `, 'home-developers')}
+    `, 'home-developers', { defaultOpen: true })}
 
     <div style="height:24px"></div>
   `;

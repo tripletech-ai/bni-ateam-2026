@@ -25,6 +25,7 @@ import { describeClaimOutcome } from '../utils/claimFeedback.js';
 import { collect800HTML, bindCollect800Game, getCollect800Stats } from '../components/Collect800Game.js';
 import { loginPrefsHTML, bindLoginPrefs } from '../components/LoginPrefsPanel.js';
 import { loginStepsGuideHTML } from '../components/LoginStepsGuide.js';
+import { resolveClaimCredentials } from '../config/yangBoss.js';
 
 function memberCountLine() {
   const { registered, goal } = getCollect800Stats();
@@ -44,7 +45,7 @@ function simpleClaimFormHTML({ branch = '', name = '' } = {}) {
     <form id="simple-claim-form" class="simple-claim-form">
       <label class="field-label" for="claim-branch-input">${escHtml(t('onboard_chapter_search_lbl'))}</label>
       <input id="claim-branch-input" class="field-input" value="${escHtml(branch)}"
-        placeholder="${escHtml(t('onboard_chapter_search_ph'))}" autocomplete="off" required>
+        placeholder="${escHtml(t('onboard_chapter_search_ph'))}" autocomplete="off">
       <div id="claim-branch-results" class="chapter-search-results hidden"></div>
       <div class="simple-claim-ateam">
         <div class="simple-claim-ateam-label">${escHtml(t('onboard_ateam_quick'))}</div>
@@ -87,10 +88,11 @@ function readClaimForm(container) {
     || container.querySelector('#claim-branch-input')?.value?.trim()
     || '';
   const name = container.querySelector('#claim-name-input')?.value?.trim() || '';
-  return { branch, name };
+  return resolveClaimCredentials({ branch, name });
 }
 
-function validateClaimForm({ branch, name }) {
+function validateClaimForm({ branch, name, fromBoss }) {
+  if (fromBoss) return true;
   if (!branch) {
     showToast(t('onboard_pick_branch_first'));
     return false;

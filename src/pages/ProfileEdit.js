@@ -1,6 +1,6 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
-import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, selfUnbind, signOut, ensureAuthSession } from '../services/auth.js';
+import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, signOut, ensureAuthSession } from '../services/auth.js';
 import { getCardLink } from '../data/cardLinks.js';
 import { fieldPlaceholder, referralPlaceholder, profileBackendEmpty } from '../utils/profileHints.js';
 import {
@@ -17,6 +17,8 @@ import { isGuestTrial } from '../utils/guestTrial.js';
 import { guestHomeReminderHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 import { endGuestTrial } from '../utils/guestTrial.js';
 import { goToPage } from '../utils/nav.js';
+import { runReclaim } from '../utils/reclaim.js';
+import { showConfirmDialog } from '../utils/confirmDialog.js';
 
 function mapProfileError(err) {
   const msg = err?.message || '';
@@ -157,20 +159,17 @@ export function renderProfileEdit(container) {
     goToPage('home');
   });
 
-  container.querySelector('#profile-reclaim-btn')?.addEventListener('click', async () => {
-    if (!window.confirm(t('reclaim_confirm_detail'))) return;
-    try {
-      await selfUnbind();
-      showToast(t('reclaim_ok'));
-      location.hash = '';
-      location.reload();
-    } catch (err) {
-      showToast(err.message || t('reclaim_fail'));
-    }
+  container.querySelector('#profile-reclaim-btn')?.addEventListener('click', () => {
+    runReclaim();
   });
 
   container.querySelector('#profile-signout-btn')?.addEventListener('click', async () => {
-    if (!window.confirm(t('signout_confirm'))) return;
+    const ok = await showConfirmDialog({
+      title: t('signout_confirm'),
+      message: t('signout_confirm'),
+      confirmLabel: t('user_bar_signout'),
+    });
+    if (!ok) return;
     try {
       await signOut();
       location.hash = '';

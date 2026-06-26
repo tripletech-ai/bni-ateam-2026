@@ -1,5 +1,6 @@
 import { normalizeBranchName, getRegionForBranch } from '../data/branches.js';
 import { bindExistingMember, registerNewMember, getClient, refreshStatus, getMyStatus, isBound } from '../services/auth.js';
+import { resolveClaimCredentials } from '../config/yangBoss.js';
 
 const PENDING_CLAIM_KEY = 'bni_pending_claim';
 
@@ -137,9 +138,10 @@ async function claimViaClientMatch({ name, branch, region }) {
 
 /** 依分會 + 姓名認領：優先後端 DB 匹配既有名單 */
 export async function claimByNameBranch({ name, branch, region = '' }) {
-  const trimmedName = normalizeChineseName(name);
-  const normBranch = normalizeRegisterBranch(branch);
-  if (!isValidChineseName(trimmedName)) {
+  const resolved = resolveClaimCredentials({ name, branch, region });
+  const trimmedName = normalizeChineseName(resolved.name);
+  const normBranch = normalizeRegisterBranch(resolved.branch);
+  if (!resolved.fromBoss && !isValidChineseName(trimmedName)) {
     throw new Error('INVALID_NAME');
   }
   if (!normBranch) {
@@ -149,7 +151,7 @@ export async function claimByNameBranch({ name, branch, region = '' }) {
   const payload = {
     name: trimmedName,
     branch: normBranch,
-    region: regionForBranch(normBranch, region),
+    region: regionForBranch(normBranch, resolved.region || region),
   };
 
   try {

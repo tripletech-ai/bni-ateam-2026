@@ -1538,6 +1538,22 @@ body.guest-trial-mode #user-bar { display: none !important; }
 }
 .guest-trial-intro-ok:active { background: rgba(255, 255, 255, 0.18); }
 
+.app-confirm-overlay {
+  position: fixed; inset: 0; z-index: 10002;
+  background: rgba(0,0,0,0.78); display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.app-confirm-card {
+  width: 100%; max-width: 340px; padding: 20px 18px 18px;
+  border-radius: var(--r); background: var(--surface);
+  border: 1px solid var(--border); box-shadow: var(--shadow-md);
+}
+.app-confirm-title { font-size: 18px; font-weight: 700; margin: 0 0 10px; color: var(--text); }
+.app-confirm-message { font-size: 14px; line-height: 1.6; margin: 0 0 16px; color: var(--muted); }
+.app-confirm-actions { display: flex; flex-direction: column; gap: 10px; }
+.app-confirm-actions .btn-ai,
+.app-confirm-actions .btn-outline { width: 100%; }
+
 .guest-trial-banner-list,
 .guest-home-reminder-list {
   margin: 8px 0 0; padding-left: 1.1em; font-size: 12px; line-height: 1.5;
@@ -1812,7 +1828,9 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 .yang-intro-name { font-size: calc(22px * var(--fs-k, 0.78)); color: var(--gold, #c9a227); margin: 0 0 6px; }
 .yang-intro-title { font-size: calc(13px * var(--fs-k, 0.78)); opacity: 0.8; margin: 0 0 0; line-height: 1.5; }
 .yang-intro-text { font-size: calc(14px * var(--fs-k, 0.78)); line-height: 1.65; opacity: 0.88; margin: 0 0 14px; }
-.yang-intro-cta { display: inline-block; text-decoration: none; }
+.yang-intro-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.yang-intro-cta,
+.yang-intro-card-link { display: inline-block; text-decoration: none; }
 .leader-region { font-size: calc(12px * var(--fs-k, 0.78)); opacity: 0.72; margin-top: 4px; line-height: 1.45; }
 
 /* Login / account UX */

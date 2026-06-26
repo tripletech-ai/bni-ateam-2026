@@ -1,12 +1,17 @@
-import { escHtml } from '../utils/html.js';
+import { escHtml, escAttr } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { LEADERS } from '../data/leaders.js';
 import { heroPhotoHTML } from '../utils/avatar.js';
+import { getCardLink } from '../data/cardLinks.js';
 
 /** 首頁楊董介紹（含照片） */
 export function yangIntroHTML() {
   const y = LEADERS.primary;
   const photo = heroPhotoHTML(y.name, { className: 'yang-intro-photo' });
+  const cardLink = getCardLink(y.name);
+  const cardBtn = cardLink
+    ? `<a href="${escAttr(cardLink)}" class="btn-yang yang-intro-card-link" target="_blank" rel="noopener">${escHtml(t('leaders_card'))}</a>`
+    : '';
   return `
     <article class="yang-intro-card">
       <div class="yang-intro-top">
@@ -18,6 +23,9 @@ export function yangIntroHTML() {
         </div>
       </div>
       <p class="yang-intro-text">${escHtml(t('yang_intro_body'))}</p>
-      <a href="#leaders" class="btn-yang yang-intro-cta">${escHtml(t('home_view_leaders'))}</a>
+      <div class="yang-intro-actions">
+        <a href="#leaders" class="btn-yang yang-intro-cta">${escHtml(t('home_view_leaders'))}</a>
+        ${cardBtn}
+      </div>
     </article>`;
 }

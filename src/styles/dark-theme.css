@@ -2262,6 +2262,10 @@ textarea.field-input {
 }
 .guest-trial-intro-ok:active { background: rgba(250, 199, 117, 0.2); }
 
+.app-confirm-card { background: var(--dark-surface); border-color: var(--dark-border); }
+.app-confirm-title { color: var(--dark-text); }
+.app-confirm-message { color: var(--dark-muted); }
+
 .guest-home-reminder-list { color: var(--dark-muted); }
 .guest-home-reminder-title { color: #fca5a5; font-size: 17px; font-weight: 700; margin: 0 0 8px; }
 .guest-feed-login-sub { color: var(--dark-muted); }

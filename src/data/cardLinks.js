@@ -1,3 +1,5 @@
+import { YANG_CARD_SLUG } from '../config/yangBoss.js';
+
 // =============================================
 //  Electronic name-card (名片) links — NameGain
 //  Key   = person's Chinese name (no English suffix)
@@ -80,6 +82,7 @@ const E = {
   '張力文': '90a8de9d-87c0-4875-91e0-c33da3ee8e6a?ref=d34a3af6da3d',
   '陳沛緹': '6b095d74-f86c-4c27-8299-c4794210b3e6?ref=94f65f68e4db',
   '洪岳裕': 'ddf6283a-4b05-44b0-8c53-a08bbf4d0e8a?ref=e63e94bcf8a4',
+  ...(YANG_CARD_SLUG ? { '楊日陞': YANG_CARD_SLUG } : {}),
 };
 
 export const CARD_LINKS = Object.fromEntries(

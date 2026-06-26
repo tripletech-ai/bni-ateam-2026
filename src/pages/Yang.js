@@ -1,12 +1,12 @@
 import { escHtml } from '../utils/html.js';
 import { heroPhotoHTML } from '../utils/avatar.js';
+import { getCardLink } from '../data/cardLinks.js';
 
-// Yang's contact info — to be filled when provided
 const YANG_INFO = {
-  phone: '',       // e.g. '0912-345-678'
-  email: '',       // e.g. 'yang@bni.com'
-  lineLink: '',    // e.g. 'https://line.me/ti/p/xxxx'
-  cardLink: '',    // e.g. 'https://...'
+  phone: '',
+  email: '',
+  lineLink: '',
+  get cardLink() { return getCardLink('楊日陞'); },
 };
 
 export function renderYang(container) {
