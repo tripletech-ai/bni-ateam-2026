@@ -5,8 +5,12 @@ import { resolveBranchLists, normalizeBranchName } from '../data/branches.js';
 import { industryLabel, mergeIndustryStatsFromPublic } from '../data/industries.js';
 import { escHtml }                           from '../utils/html.js';
 import { t }                                 from '../i18n/translations.js';
+import { showMemberList }                    from '../utils/memberList.js';
+import { industryPieChartHTML } from '../components/IndustryPieChart.js';
+import { searchInviteBannerHTML, bindSearchInviteBanner } from '../components/SearchInviteBanner.js';
 
 export function renderSearch(container) {
+  container.classList.add('page-root');
   const pending       = sessionStorage.getItem('bni_pending_search');
   const pendingBranch = sessionStorage.getItem('bni_pending_branch');
   const pendingIndustry = sessionStorage.getItem('bni_pending_industry');
@@ -16,7 +20,8 @@ export function renderSearch(container) {
 
   container.innerHTML = buildSearchUI();
   bindSearchEvents(container);
-  renderIndustryBrowse(document.getElementById('industry-browse-area'));
+  bindSearchInviteBanner(container);
+  renderQuickFilters(document.getElementById('search-quick-filters'));
   renderBranchBrowse(document.getElementById('branch-browse-area'));
 
   if (pending)       setTimeout(() => triggerSearch(pending), 50);
@@ -41,7 +46,9 @@ function buildSearchUI() {
     <div id="search-loading" style="display:none" role="status" aria-live="polite"></div>
     <div id="ai-result-area"      style="display:none"></div>
     <div id="search-results-area" style="display:none"></div>
-    <div id="industry-browse-area"></div>
+    ${searchInviteBannerHTML()}
+    ${industryPieChartHTML({ stats: window.BNI_PUBLIC_STATS, members: window.BNI_MEMBERS })}
+    <div id="search-quick-filters"></div>
     <div id="branch-browse-area"></div>
   `;
 }
@@ -86,9 +93,7 @@ async function triggerSearch(input) {
   aiBox.style.display      = 'none';
   resultArea.style.display = 'none';
   searchArea.style.display = 'none';
-  if (branchArea) branchArea.style.display = 'none';
-  const industryArea = document.getElementById('industry-browse-area');
-  if (industryArea) industryArea.style.display = 'none';
+  hideBrowseChrome();
   loading.style.display    = 'block';
 
   // Premium AI loading animation
@@ -135,7 +140,6 @@ async function triggerSearch(input) {
 
   // Auto-search immediately (no manual button)
   showResults(keywords, searchArea);
-  if (branchArea) branchArea.style.display = 'none';
 }
 
 const REFINE_HINT = () => `
@@ -189,79 +193,109 @@ function showResults(keywords, container) {
   if (possibleEl) bindCardEvents(possibleEl, possibleList);
 }
 
+function hideBrowseChrome() {
+  const aiBox = document.getElementById('search-ai-box');
+  const quick = document.getElementById('search-quick-filters');
+  const branches = document.getElementById('branch-browse-area');
+  const invite = document.querySelector('.search-invite-banner');
+  const pie = document.querySelector('.industry-pie-section');
+  if (aiBox) aiBox.style.display = 'none';
+  if (quick) quick.style.display = 'none';
+  if (branches) branches.style.display = 'none';
+  if (invite) invite.style.display = 'none';
+  if (pie) pie.style.display = 'none';
+}
+
+function showBrowseChrome() {
+  const aiBox = document.getElementById('search-ai-box');
+  const quick = document.getElementById('search-quick-filters');
+  const branches = document.getElementById('branch-browse-area');
+  const invite = document.querySelector('.search-invite-banner');
+  const pie = document.querySelector('.industry-pie-section');
+  if (aiBox) aiBox.style.display = 'block';
+  if (quick) quick.style.display = 'block';
+  if (branches) branches.style.display = 'block';
+  if (invite) invite.style.display = '';
+  if (pie) pie.style.display = '';
+}
+
 function resetSearch() {
-  const aiBox    = document.getElementById('search-ai-box');
   const result   = document.getElementById('ai-result-area');
   const search   = document.getElementById('search-results-area');
-  const branches = document.getElementById('branch-browse-area');
-  const industries = document.getElementById('industry-browse-area');
-  if (aiBox)    aiBox.style.display    = 'block';
   if (result)   result.style.display   = 'none';
   if (search)   search.style.display   = 'none';
-  if (branches) branches.style.display = 'block';
-  if (industries) industries.style.display = 'block';
+  showBrowseChrome();
+  document.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
   const input = document.getElementById('ai-input');
   if (input) { input.value = ''; input.focus(); }
 }
 
-function renderIndustryBrowse(container) {
+function renderQuickFilters(container) {
   if (!container) return;
   const rows = mergeIndustryStatsFromPublic(window.BNI_PUBLIC_STATS, window.BNI_MEMBERS);
-  if (!rows.length) {
+  const { zhongshan, sanlu, guest } = resolveBranchLists(window.BNI_PUBLIC_STATS);
+  const topBranches = [
+    ...zhongshan.slice(0, 5).map(b => ({ ...b, region: 'zhongshan' })),
+    ...sanlu.slice(0, 5).map(b => ({ ...b, region: 'sanlu' })),
+    ...guest.slice(0, 4).map(b => ({ ...b, region: 'guest' })),
+  ];
+
+  const industryChips = rows.map(row => `
+    <button type="button" class="quick-filter-chip industry" data-industry="${escHtml(row.id)}">
+      ${escHtml(industryLabel(row.id, t))}<span class="chip-count">${row.count}</span>
+    </button>`).join('');
+
+  const branchChips = topBranches.map(b => {
+    const full = b.fullName || normalizeBranchName(b.name);
+    const label = b.fullName || full;
+    return `<button type="button" class="quick-filter-chip branch ${b.region}" data-branch="${escHtml(full)}">
+      ${escHtml(label)}<span class="chip-count">${b.count}</span>
+    </button>`;
+  }).join('');
+
+  if (!industryChips && !branchChips) {
     container.innerHTML = '';
     return;
   }
 
-  const chip = (row) => `
-    <div class="industry-chip-browse" data-industry="${escHtml(row.id)}" role="button" tabindex="0">
-      ${escHtml(industryLabel(row.id, t))}<span class="chip-count">${row.count}</span>
-    </div>`;
-
   container.innerHTML = `
-    <div class="section-header"><div class="section-title">${escHtml(t('ind_browse_title'))}</div></div>
-    <div class="branch-section">
-      <div class="industry-browse-grid">${rows.map(chip).join('')}</div>
+    <div class="quick-filter-section">
+      <div class="quick-filter-label">${escHtml(t('search_quick_filter'))}</div>
+      <div class="quick-filter-scroll" role="list">
+        ${industryChips}${branchChips}
+      </div>
     </div>`;
 
-  const go = (id) => showIndustryMembers(id);
   container.querySelectorAll('[data-industry]').forEach(el => {
-    el.addEventListener('click', () => go(el.dataset.industry));
-    el.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(el.dataset.industry); }
-    });
+    const go = () => {
+      container.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      showIndustryMembers(el.dataset.industry);
+    };
+    el.addEventListener('click', go);
+  });
+  container.querySelectorAll('[data-branch]').forEach(el => {
+    const go = () => {
+      container.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      showBranchMembers(el.dataset.branch);
+    };
+    el.addEventListener('click', go);
   });
 }
 
 function showIndustryMembers(industryId) {
   const members = getMembersByIndustry(industryId);
   const container = document.getElementById('search-results-area');
-  const branchArea = document.getElementById('branch-browse-area');
-  const industryArea = document.getElementById('industry-browse-area');
-  const aiBox = document.getElementById('search-ai-box');
-  if (!container) return;
-  if (branchArea) branchArea.style.display = 'none';
-  if (industryArea) industryArea.style.display = 'none';
-  if (aiBox) aiBox.style.display = 'none';
-  container.style.display = 'block';
-
   const label = industryLabel(industryId, t);
-  if (members.length === 0) {
-    container.innerHTML = `<div class="empty-state">
-      <div class="empty-state-title">${escHtml(label)} — ${escHtml(t('ind_browse_empty'))}</div>
-    </div>`;
-    return;
-  }
-
-  container.innerHTML = `
-    <div class="results-header">
-      <span>${members.length}</span> ${escHtml(t('search_branch_members'))}${escHtml(label)} ${escHtml(t('ind_browse_members_suffix'))}
-    </div>
-    <div id="cards-list"></div>`;
-
-  const cardsList = document.getElementById('cards-list');
-  cardsList.innerHTML = members.map((m, i) => personCardHTML(m, { staggerIndex: i })).join('');
-  bindCardEvents(cardsList, members);
-  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (!container) return;
+  hideBrowseChrome();
+  document.getElementById('ai-result-area').style.display = 'none';
+  showMemberList(container, {
+    title: `${label} ${t('ind_browse_members_suffix')}`,
+    members,
+    emptyTitle: `${label} — ${t('ind_browse_empty')}`,
+  });
 }
 
 function renderBranchBrowse(container) {
@@ -277,18 +311,20 @@ function renderBranchBrowse(container) {
   };
 
   container.innerHTML = `
-    <div class="section-header"><div class="section-title">${escHtml(t('search_browse'))}</div></div>
-    <div class="branch-section">
-      <div class="branch-region-title">${escHtml(t('search_zhongshan'))}</div>
-      <div class="branch-chips">${zhongshan.map(b => chip(b, 'zhongshan')).join('')}</div>
-      <div class="branch-region-title">${escHtml(t('search_sanlu'))}</div>
-      <div class="branch-chips">${sanlu.map(b => chip(b, 'sanlu')).join('')}</div>
-      <div class="branch-region-title">${escHtml(t('search_guest'))}</div>
-      <div class="branch-chips">${guest.length
-        ? guest.map(b => chip(b, 'guest')).join('')
-        : `<p class="branch-empty-hint">${escHtml(t('search_guest_empty'))}</p>`}
+    <details class="branch-browse-details">
+      <summary class="branch-browse-summary">${escHtml(t('search_browse_all_branches'))}</summary>
+      <div class="branch-section">
+        <div class="branch-region-title">${escHtml(t('search_zhongshan'))}</div>
+        <div class="branch-chips">${zhongshan.map(b => chip(b, 'zhongshan')).join('')}</div>
+        <div class="branch-region-title">${escHtml(t('search_sanlu'))}</div>
+        <div class="branch-chips">${sanlu.map(b => chip(b, 'sanlu')).join('')}</div>
+        <div class="branch-region-title">${escHtml(t('search_guest'))}</div>
+        <div class="branch-chips">${guest.length
+          ? guest.map(b => chip(b, 'guest')).join('')
+          : `<p class="branch-empty-hint">${escHtml(t('search_guest_empty'))}</p>`}
+        </div>
       </div>
-    </div>`;
+    </details>`;
 
   container.addEventListener('click', e => {
     const chip = e.target.closest('[data-branch]');
@@ -307,29 +343,12 @@ function renderBranchBrowse(container) {
 function showBranchMembers(branchName) {
   const members   = getMembersByBranch(branchName);
   const container = document.getElementById('search-results-area');
-  const branchArea = document.getElementById('branch-browse-area');
-  const industryArea = document.getElementById('industry-browse-area');
   if (!container) return;
-  if (branchArea) branchArea.style.display = 'none';
-  if (industryArea) industryArea.style.display = 'none';
-  container.style.display = 'block';
-
-  if (members.length === 0) {
-    container.innerHTML = `<div class="empty-state">
-      <div class="empty-state-title">${escHtml(branchName)} 目前沒有夥伴資料</div>
-    </div>`;
-    return;
-  }
-
-  const prefix = window.BNI_LANG === 'en' ? '' : '';
-  container.innerHTML = `
-    <div class="results-header">
-      <span>${members.length}</span> ${escHtml(t('search_branch_members'))}${escHtml(branchName)} 夥伴
-    </div>
-    <div id="cards-list"></div>`;
-
-  const cardsList = document.getElementById('cards-list');
-  cardsList.innerHTML = members.map((m, i) => personCardHTML(m, { staggerIndex: i })).join('');
-  bindCardEvents(cardsList, members);
-  container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  hideBrowseChrome();
+  document.getElementById('ai-result-area').style.display = 'none';
+  showMemberList(container, {
+    title: `${branchName} 夥伴`,
+    members,
+    emptyTitle: `${branchName} 目前沒有夥伴資料`,
+  });
 }

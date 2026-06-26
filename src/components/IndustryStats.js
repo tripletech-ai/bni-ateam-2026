@@ -23,11 +23,17 @@ export function industryStatsHTML({ stats, members } = {}) {
     </section>`;
 }
 
-export function bindIndustryStats(container) {
+export function bindIndustryStats(container, { onSelect } = {}) {
   container?.querySelectorAll('.industry-stat-chip[data-industry]').forEach(chip => {
-    chip.addEventListener('click', () => {
-      sessionStorage.setItem('bni_pending_industry', chip.dataset.industry);
-      location.hash = 'search';
-    });
+    const go = () => {
+      container.querySelectorAll('.industry-stat-chip.active').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      if (onSelect) onSelect(chip.dataset.industry);
+      else {
+        sessionStorage.setItem('bni_pending_industry', chip.dataset.industry);
+        location.hash = 'search';
+      }
+    };
+    chip.addEventListener('click', go);
   });
 }

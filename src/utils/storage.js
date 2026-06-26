@@ -61,5 +61,20 @@ export function getMarkCount() {
 }
 
 export function getConnectionCount() {
-  return getMarks().filter(m => m.one || m.biz).length;
+  if (typeof window.BNI_MUTUAL_COUNT === 'number') return window.BNI_MUTUAL_COUNT;
+  return getMutualConnectionCountLocal();
+}
+
+/** 本地估算：我標記 one + 對方也標記我（來自 incoming cache） */
+export function getMutualConnectionCountLocal() {
+  const incoming = window.BNI_INCOMING_ONE_KEYS;
+  if (!incoming?.size) return 0;
+  return getMarks().filter(m => m.one && incoming.has(m.key)).length;
+}
+
+export function isMutuallyConnected(member) {
+  const mark = getMark(member);
+  if (!mark.one) return false;
+  const incoming = window.BNI_INCOMING_ONE_KEYS;
+  return incoming?.has(memberKey(member)) ?? false;
 }

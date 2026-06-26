@@ -1,6 +1,5 @@
 import { getMarkCount } from '../utils/storage.js';
 import { resolveBranchLists } from '../data/branches.js';
-import { PHOTOS }       from '../data/photos.js';
 import { escHtml }      from '../utils/html.js';
 import { t }            from '../i18n/translations.js';
 import { goalProgressHTML } from '../components/GoalProgress.js';
@@ -8,6 +7,11 @@ import { DEVELOPERS } from '../data/contributors.js';
 import { communityLiveHTML } from '../components/CommunityLiveCard.js';
 import { industryStatsHTML, bindIndustryStats } from '../components/IndustryStats.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
+import { leadersEmbedHTML, bindLeaderEvents } from '../pages/Leaders.js';
+import { leaderboardSectionHTML } from '../components/Leaderboard.js';
+import { getMembersByBranch, getMembersByIndustry } from '../utils/search.js';
+import { industryLabel } from '../data/industries.js';
+import { showMemberList } from '../utils/memberList.js';
 
 const VIDEO_URL = '';
 
@@ -20,18 +24,21 @@ function developerCardHTML(d) {
   const companies = d.companyKeys
     ? `<div class="developer-companies">${d.companyKeys.map(k =>
         `<span class="company-chip">${escHtml(t(k))}</span>`).join('')}</div>` : '';
+  const branchLine = d.branchKey
+    ? `<div class="developer-branch">${escHtml(t(d.branchKey))}</div>` : '';
 
   return `
     <article class="developer-card" data-developer="${escHtml(d.id)}">
       <div class="developer-card-top">
         <div class="developer-photo">
           <img src="assets/photos/${encodeURIComponent(d.photo)}"
-            alt="${escHtml(d.name)}" loading="lazy"
+            alt="" loading="lazy"
             onerror="this.style.display='none';this.parentElement.classList.add('no-photo')">
           <span class="developer-photo-fallback" aria-hidden="true">${escHtml(initial)}</span>
         </div>
         <div class="developer-head-block">
           <div class="developer-name serif">${escHtml(d.name)}</div>
+          ${branchLine}
           <div class="developer-role">${escHtml(t(d.roleKey))}</div>
           <div class="developer-tags">${tags}</div>
         </div>
@@ -46,7 +53,27 @@ function resolveBranchListsLocal() {
   return resolveBranchLists(window.BNI_PUBLIC_STATS);
 }
 
+function showHomeIndustry(industryId) {
+  const label = industryLabel(industryId, t);
+  const members = getMembersByIndustry(industryId);
+  showMemberList(document.getElementById('home-inline-results'), {
+    title: `${label} ${t('ind_browse_members_suffix')}`,
+    members,
+    emptyTitle: `${label} — ${t('ind_browse_empty')}`,
+  });
+}
+
+function showHomeBranch(branchName) {
+  const members = getMembersByBranch(branchName);
+  showMemberList(document.getElementById('home-inline-results'), {
+    title: `${branchName} 夥伴`,
+    members,
+    emptyTitle: `${branchName} 目前沒有夥伴資料`,
+  });
+}
+
 export function renderHome(container) {
+  container.classList.add('page-root');
   const markCount = getMarkCount();
   const { zhongshan, sanlu, guest } = resolveBranchListsLocal();
   const totalMembers = window.BNI_PUBLIC_STATS?.total_members ?? (window.BNI_MEMBERS || []).length;
@@ -75,6 +102,11 @@ export function renderHome(container) {
         aria-label="${escHtml(t('search_label'))}"
         maxlength="200"></textarea>
       <button id="home-ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
+      <div class="ai-examples" aria-label="搜尋範例">
+        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example1'))}</div>
+        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example2'))}</div>
+        <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example3'))}</div>
+      </div>
     </div>
 
     <nav class="home-quick-nav" aria-label="${escHtml(t('home_quick_label'))}">
@@ -102,25 +134,7 @@ export function renderHome(container) {
 
     ${industryStatsHTML({ stats: window.BNI_PUBLIC_STATS, members: window.BNI_MEMBERS })}
 
-    <div class="section-header"><div class="section-title">${escHtml(t('home_leaders'))}</div></div>
-    <div class="yang-card yang-card-link" role="link" tabindex="0" data-hash="leaders">
-      <div class="yang-photo" aria-hidden="true" style="color:rgba(250,199,117,0.7)">
-        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
-          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-        </svg>
-        ${PHOTOS['楊日陞']
-          ? `<img class="yang-photo-img" src="assets/photos/${encodeURIComponent(PHOTOS['楊日陞'])}" alt="楊日陞" loading="lazy" onerror="this.remove()">`
-          : ''}
-      </div>
-      <div class="yang-info">
-        <div class="yang-name">楊日陞</div>
-        <div class="yang-title">區域資深董事<br>BNI Anderson Team</div>
-        <button type="button" class="btn-yang" data-hash="leaders">
-          ${escHtml(t('home_view'))}
-        </button>
-      </div>
-    </div>
+    <div id="home-inline-results" class="home-inline-results" style="display:none" aria-live="polite"></div>
 
     <div class="section-header">
       <div class="section-title">${escHtml(t('home_developers'))}</div>
@@ -129,6 +143,11 @@ export function renderHome(container) {
     <div class="developer-stack">
       ${DEVELOPERS.map(developerCardHTML).join('')}
     </div>
+
+    <div class="section-header"><div class="section-title">${escHtml(t('home_leaders'))}</div></div>
+    ${leadersEmbedHTML()}
+
+    ${leaderboardSectionHTML(window.BNI_LEADERBOARD || [], { compact: true, showMore: true })}
 
     <div class="section-header"><div class="section-title">${escHtml(t('home_branches'))}</div></div>
     <div class="branch-section">
@@ -162,10 +181,7 @@ export function renderHome(container) {
       </div>` : `
       <div class="branch-region-title">${escHtml(t('home_branches_guest'))}</div>
       <p class="branch-empty-hint">${escHtml(t('search_guest_empty'))}</p>`}
-      <button
-        onclick="location.hash='search'"
-        class="btn-ai"
-        style="margin-top:8px;border-radius:var(--r-sm)">
+      <button type="button" id="home-all-branches" class="btn-outline home-all-branches">
         ${escHtml(t('home_view_all'))}
       </button>
     </div>
@@ -173,43 +189,51 @@ export function renderHome(container) {
   `;
 
   container.querySelectorAll('.home-quick-btn[data-hash]').forEach(btn => {
-    const go = () => { location.hash = btn.dataset.hash; };
-    btn.addEventListener('click', go);
+    btn.addEventListener('click', () => { location.hash = btn.dataset.hash; });
   });
 
-  const yangCard = container.querySelector('.yang-card-link');
-  if (yangCard) {
-    const goLeaders = () => { location.hash = 'leaders'; };
-    yangCard.addEventListener('click', e => {
-      if (e.target.closest('.btn-yang')) return;
-      goLeaders();
-    });
-    yangCard.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goLeaders(); }
-    });
-  }
-  container.querySelectorAll('.btn-yang[data-hash]').forEach(btn => {
-    btn.addEventListener('click', e => {
-      e.stopPropagation();
-      location.hash = btn.dataset.hash;
-    });
+  container.querySelectorAll('.lb-more-btn[data-hash]').forEach(btn => {
+    btn.addEventListener('click', () => { location.hash = btn.dataset.hash; });
   });
+
+  bindLeaderEvents(container);
 
   container.querySelectorAll('.branch-chip[data-branch]').forEach(chip => {
     const go = () => {
-      sessionStorage.setItem('bni_pending_branch', chip.dataset.branch);
-      location.hash = 'search';
+      container.querySelectorAll('.branch-chip.active').forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      showHomeBranch(chip.dataset.branch);
     };
     chip.addEventListener('click', go);
     chip.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
   });
 
-  document.getElementById('home-ai-submit').addEventListener('click', () => {
-    const v = document.getElementById('home-ai-input').value.trim();
-    if (v.length >= 2) sessionStorage.setItem('bni_pending_search', v);
+  document.getElementById('home-all-branches')?.addEventListener('click', () => {
     location.hash = 'search';
   });
 
+  const runHomeSearch = (text) => {
+    if (text.length >= 2) sessionStorage.setItem('bni_pending_search', text);
+    location.hash = 'search';
+  };
+
+  document.getElementById('home-ai-submit').addEventListener('click', () => {
+    runHomeSearch(document.getElementById('home-ai-input').value.trim());
+  });
+
+  container.querySelectorAll('.ai-example-chip').forEach(chip => {
+    const trigger = () => {
+      const text = chip.textContent.trim();
+      const input = document.getElementById('home-ai-input');
+      if (input) input.value = text;
+      runHomeSearch(text);
+    };
+    chip.addEventListener('click', trigger);
+    chip.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); trigger(); }
+    });
+  });
+
   bindProfileEnrichBanner();
-  bindIndustryStats(container);
+  bindIndustryStats(container, { onSelect: showHomeIndustry });
 }

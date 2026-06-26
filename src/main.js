@@ -3,6 +3,7 @@ import { renderHome }   from './pages/Home.js';
 import { renderSearch } from './pages/Search.js';
 import { renderMarks }  from './pages/Marks.js';
 import { renderLeaders }from './pages/Leaders.js';
+import { renderLive, stopLivePoll } from './pages/Live.js';
 import { renderOnboard, renderLoginGate } from './pages/Onboard.js';
 import { renderAdmin }  from './pages/Admin.js';
 import { renderProfileEdit } from './pages/ProfileEdit.js';
@@ -16,6 +17,10 @@ import {
   fetchPublicStats,
   getCurrentUser,
   fetchIncomingMarks,
+  fetchMyMutualStats,
+  recordPresence,
+  fetchLeaderboard,
+  fetchFeed,
 } from './services/auth.js';
 import { showIncomingOneOverlay } from './components/IncomingOneBanner.js';
 import { renderUserBar } from './components/UserBar.js';
@@ -85,6 +90,7 @@ const routes = {
   '#marks'   : renderMarks,
   '#result'  : renderMarks,
   '#leaders' : renderLeaders,
+  '#live'    : renderLive,
   '#profile' : renderProfileEdit,
   '#admin'   : (c) => renderAdmin(c),
 };
@@ -113,6 +119,7 @@ function navigate() {
     }
   }
   const render = routes[hash] || renderHome;
+  if (hash !== '#live') stopLivePoll();
   app.innerHTML = '';
   try {
     render(app);
@@ -126,13 +133,54 @@ function navigate() {
 }
 
 let incomingPollTimer = null;
+let incomingMarksUnavailable = false;
+
+function cacheIncomingKeys(rows) {
+  window.BNI_INCOMING_ONE_KEYS = new Set(
+    (rows || []).map(r => `${r.name}||${r.branch}`),
+  );
+}
+
+async function syncMutualStats() {
+  try {
+    const stats = await fetchMyMutualStats();
+    if (stats && typeof stats.mutual_count === 'number') {
+      window.BNI_MUTUAL_COUNT = stats.mutual_count;
+    }
+  } catch (e) {
+    console.warn('mutual stats:', e.message);
+  }
+}
+
+async function preloadLiveData() {
+  try {
+    const [board, feed] = await Promise.all([
+      fetchLeaderboard(30),
+      fetchFeed(30),
+    ]);
+    window.BNI_LEADERBOARD = board;
+    window.BNI_FEED = feed;
+  } catch (e) {
+    console.warn('preload live:', e.message);
+  }
+}
 
 async function pollIncomingMarks() {
-  if (!isBound()) return;
+  if (!isBound() || incomingMarksUnavailable) return;
   try {
     const rows = await fetchIncomingMarks(true);
+    cacheIncomingKeys(rows);
+    await syncMutualStats();
     if (rows?.length) showIncomingOneOverlay(rows);
   } catch (e) {
+    if (e.code === 'RPC_NOT_DEPLOYED' || /could not find the function/i.test(e.message || '')) {
+      incomingMarksUnavailable = true;
+      if (incomingPollTimer) {
+        clearInterval(incomingPollTimer);
+        incomingPollTimer = null;
+      }
+      return;
+    }
     console.warn('incoming marks:', e.message);
   }
 }
@@ -152,6 +200,8 @@ async function afterBindComplete() {
   }
   isAdmin = await checkIsAdmin();
   showWelcomeIfNeeded();
+  recordPresence().catch(() => {});
+  preloadLiveData();
   startIncomingPoll();
   setChromeVisible(true);
   appReady = true;
@@ -241,6 +291,8 @@ async function boot() {
   appReady = true;
   setChromeVisible(true);
   showWelcomeIfNeeded();
+  recordPresence().catch(() => {});
+  preloadLiveData();
   startIncomingPoll();
   navigate();
 }

@@ -1,4 +1,4 @@
-import { getMark, setMark, memberKey } from '../utils/storage.js';
+import { getMark, setMark, memberKey, isMutuallyConnected } from '../utils/storage.js';
 import { syncMarkToServer } from '../utils/markSync.js';
 import { showToast }                   from '../utils/toast.js';
 import { escHtml, escAttr }            from '../utils/html.js';
@@ -45,6 +45,9 @@ export function personCardHTML(member, opts = {}) {
     ? `<div class="person-keywords">${matchedKeywords.map(k => escHtml(k)).join('、')}</div>` : '';
 
   const regionClass = member.region === 'sanlu' ? 'region-sanlu' : member.region === 'zhongshan' ? 'region-zhongshan' : '';
+  const mutual = isMutuallyConnected(member);
+  const mutualBadge = mutual
+    ? `<span class="mutual-badge">${escHtml(t('card_mutual'))}</span>` : '';
 
   const cardLink = member.cardLink || getCardLink(member.name);
   const rowCardBtn = cardLink
@@ -57,6 +60,7 @@ export function personCardHTML(member, opts = {}) {
         <div class="person-meta">${escHtml(member.branch)}</div>
         <div class="person-meta person-profession">${escHtml(member.profession)}</div>
         ${industryBadgesHTML(member.industries, { compact: true })}
+        ${mutualBadge}
       </div>
       <div class="person-card-right">
         ${badge}
@@ -69,16 +73,16 @@ export function personCardHTML(member, opts = {}) {
     </div>
     <div class="person-card-body">
       ${haveSection}${bioSection}${wantSection}${referralSection}${kwSection}
-      <div class="person-actions">
-        <button class="btn btn-line"
-          data-action="line" data-key="${escAttr(key)}"
-          data-line-link="${escAttr(member.lineLink || '')}"
-          data-line-id="${escAttr(member.lineId || '')}">${t('card_line')}</button>
-        <button class="btn btn-one ${mark.one ? 'active' : ''}"
-          data-action="one" data-key="${escAttr(key)}">${t('card_one')}</button>
-        <button class="btn btn-biz ${mark.biz ? 'active' : ''}"
-          data-action="biz" data-key="${escAttr(key)}">${t('card_biz')}</button>
-      </div>
+    </div>
+    <div class="person-actions">
+      <button class="btn btn-line"
+        data-action="line" data-key="${escAttr(key)}"
+        data-line-link="${escAttr(member.lineLink || '')}"
+        data-line-id="${escAttr(member.lineId || '')}">${t('card_line')}</button>
+      <button class="btn btn-one ${mark.one ? 'active' : ''}${mutual ? ' mutual' : ''}"
+        data-action="one" data-key="${escAttr(key)}">${mutual ? t('card_mutual') : t('card_one')}</button>
+      <button class="btn btn-biz ${mark.biz ? 'active' : ''}"
+        data-action="biz" data-key="${escAttr(key)}">${t('card_biz')}</button>
     </div>
   </div>`;
 }
@@ -88,7 +92,7 @@ export function bindCardEvents(container, members) {
   container.addEventListener('click', e => {
     // Card expand/collapse — click anywhere except action buttons
     const card = e.target.closest('.person-card');
-    if (card && !e.target.closest('[data-action]')) {
+    if (card && !e.target.closest('.person-actions') && !e.target.closest('[data-action]')) {
       const expanded = card.classList.contains('expanded');
       card.classList.toggle('expanded', !expanded);
       card.dataset.expanded = String(!expanded);

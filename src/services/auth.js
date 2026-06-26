@@ -332,13 +332,19 @@ export async function removeConnectionMark(toMemberId, markType) {
 }
 
 export async function fetchIncomingMarks(unseenOnly = true) {
-  return withRetry(async () => {
-    const { data, error } = await getClient().database.rpc('bni_get_incoming_marks', {
-      p_unseen_only: unseenOnly,
-    });
-    if (error) throw error;
-    return Array.isArray(data) ? data : [];
-  }, { label: 'fetchIncomingMarks' });
+  const { data, error } = await getClient().database.rpc('bni_get_incoming_marks', {
+    p_unseen_only: unseenOnly,
+  });
+  if (error) {
+    const msg = error.message || '';
+    if (/could not find the function|PGRST202|404/i.test(msg)) {
+      const e = new Error(msg);
+      e.code = 'RPC_NOT_DEPLOYED';
+      throw e;
+    }
+    throw error;
+  }
+  return Array.isArray(data) ? data : [];
 }
 
 export async function ackIncomingMarks(markIds = null) {
@@ -446,5 +452,59 @@ export async function adminMergeBranches(fromBranch, toBranch) {
     p_to: toBranch,
   });
   if (error) throw error;
+  return data;
+}
+
+function isRpcMissing(error) {
+  const msg = error?.message || '';
+  return /could not find the function|PGRST202|404/i.test(msg);
+}
+
+export async function fetchLeaderboard(limit = 30) {
+  const { data, error } = await getClient().database.rpc('bni_get_leaderboard', {
+    p_limit: limit,
+  });
+  if (error) {
+    if (isRpcMissing(error)) return [];
+    throw error;
+  }
+  return Array.isArray(data) ? data : [];
+}
+
+export async function fetchMyMutualStats() {
+  const { data, error } = await getClient().database.rpc('bni_get_my_mutual_stats');
+  if (error) {
+    if (isRpcMissing(error)) return null;
+    throw error;
+  }
+  return data;
+}
+
+export async function fetchFeed(limit = 50, before = null) {
+  const { data, error } = await getClient().database.rpc('bni_get_feed', {
+    p_limit: limit,
+    p_before: before,
+  });
+  if (error) {
+    if (isRpcMissing(error)) return [];
+    throw error;
+  }
+  return Array.isArray(data) ? data : [];
+}
+
+export async function postFeedMessage(content) {
+  const { data, error } = await getClient().database.rpc('bni_post_feed_message', {
+    p_content: content,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function recordPresence() {
+  const { data, error } = await getClient().database.rpc('bni_record_presence');
+  if (error) {
+    if (isRpcMissing(error)) return null;
+    throw error;
+  }
   return data;
 }

@@ -5,6 +5,18 @@ import { avatarInner }      from '../utils/avatar.js';
 import { getCardLink }      from '../data/cardLinks.js';
 import { showToast }        from '../utils/toast.js';
 
+export function leadersEmbedHTML() {
+  const { primary, secondary, zhongshan, sanlu } = LEADERS;
+  return `
+    <div class="home-leaders-embed">
+      ${leaderCardPrimary(primary)}
+      ${leaderCardSecondary(secondary)}
+      <div style="height:8px"></div>
+      ${accordion(t('leaders_section_zh'), zhongshan, 'zh-dir-home')}
+      ${accordion(t('leaders_section_san'), sanlu, 'san-dir-home')}
+    </div>`;
+}
+
 export function renderLeaders(container) {
   const { primary, secondary, zhongshan, sanlu } = LEADERS;
 
@@ -141,7 +153,7 @@ function accordion(title, people, id) {
     </div>`;
 }
 
-function bindLeaderEvents(container) {
+export function bindLeaderEvents(container) {
   container.addEventListener('click', e => {
     // Accordion section toggle
     const header = e.target.closest('.accordion-header');

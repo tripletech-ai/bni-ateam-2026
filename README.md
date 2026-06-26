@@ -75,6 +75,7 @@ docs/                   部署與重建手冊
 | [docs/DEPLOYMENT-INSFORGE.md](./docs/DEPLOYMENT-INSFORGE.md) | InsForge 日常部署 |
 | [docs/UIUX-GUIDE.md](./docs/UIUX-GUIDE.md) | 介面結構、UX 原則、已知限制 |
 | [docs/EVENT-DAY-CHECKLIST.md](./docs/EVENT-DAY-CHECKLIST.md) | 年會當日營運檢查 |
+| [docs/USER-SCENARIOS.md](./docs/USER-SCENARIOS.md) | 現場十種使用者情境（志工／驗收） |
 
 ## 重建後端（管理員）
 

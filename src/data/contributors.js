@@ -4,6 +4,7 @@ export const DEVELOPERS = [
     id: 'wangqi',
     name: '王祈',
     photo: '王祈.jpg',
+    branchKey: 'dev_wangqi_branch',
     roleKey: 'dev_wangqi_role',
     tagKeys: ['dev_wangqi_tag_ai', 'dev_wangqi_tag_arch'],
     highlightKeys: [
