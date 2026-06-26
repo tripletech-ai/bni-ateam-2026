@@ -300,15 +300,17 @@ export async function refreshStatus() {
 export async function tryAutoBindOnLogin() {
   if (!currentUser) return { ok: false, bound: false };
   try {
-    const { data, error } = await getClient().database.rpc('bni_auto_bind_on_login', {
-      p_display_name: getOAuthDisplayName(),
+    return await withAuthRetry(async () => {
+      const { data, error } = await getClient().database.rpc('bni_auto_bind_on_login', {
+        p_display_name: getOAuthDisplayName(),
+      });
+      if (error) {
+        if (isRpcMissing(error)) return { ok: false, bound: false, rpcMissing: true };
+        throw error;
+      }
+      if (data?.bound) await refreshStatus();
+      return data || { ok: false, bound: false };
     });
-    if (error) {
-      if (isRpcMissing(error)) return { ok: false, bound: false, rpcMissing: true };
-      throw error;
-    }
-    if (data?.bound) await refreshStatus();
-    return data || { ok: false, bound: false };
   } catch (e) {
     console.warn('tryAutoBindOnLogin:', e.message);
     return { ok: false, bound: false };
@@ -317,23 +319,31 @@ export async function tryAutoBindOnLogin() {
 
 /** 解除名單綁定，保留 Google 登入以便重新認領 */
 export async function selfUnbind() {
-  const { data, error } = await getClient().database.rpc('bni_self_unbind');
-  if (error) throw error;
-  myStatus = { authenticated: true, bound: false, tutorial_done: false };
-  if (typeof window !== 'undefined') window.BNI_MY_BRANCH = '';
-  return data;
+  return withAuthRetry(async () => {
+    const { data, error } = await getClient().database.rpc('bni_self_unbind');
+    if (error) throw error;
+    myStatus = { authenticated: true, bound: false, tutorial_done: false };
+    if (typeof window !== 'undefined') window.BNI_MY_BRANCH = '';
+    return data;
+  });
 }
 
 export async function bindExistingMember(memberId) {
-  const { data, error } = await getClient().database.rpc('bni_bind_existing_member', {
-    p_member_id: memberId,
+  return withAuthRetry(async () => {
+    const { data, error } = await getClient().database.rpc('bni_bind_existing_member', {
+      p_member_id: memberId,
+    });
+    if (error) throw error;
+    await refreshStatus();
+    return data;
   });
-  if (error) throw error;
-  await refreshStatus();
-  return data;
 }
 
 export async function registerNewMember(payload) {
+  return withAuthRetry(async () => registerNewMemberOnce(payload));
+}
+
+async function registerNewMemberOnce(payload) {
   const base = {
     p_name: payload.name,
     p_branch: payload.branch,

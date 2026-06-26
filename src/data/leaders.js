@@ -14,7 +14,7 @@ export const LEADERS = {
   secondary: {
     name: '李鴻毅',
     nameEn: 'Li Hong-Yi',
-    title: '區域董事',
+    title: '區董',
     titleEn: 'Regional Director',
     phone: '',
     email: '',
@@ -24,16 +24,22 @@ export const LEADERS = {
   },
   zhongshan: [
     {
-      name: '曾惠君', branch: '長佑分會', profession: '手工皂製造業',
-      have: '客製化禮贈品、品牌手工皂開發、企業ESG永續產品開發、與多特瑞&悠樂方老師合作開課',
-      wantMeet: '活動公關、禮贈品公司、精油芳療師、水晶療癒師、經絡理療師、上市櫃公司永續長',
-      lineId: 'sunny58fiona', lineLink: 'https://line.me/ti/p/-y2DdSqu2h', cardLink: '',
+      name: '陳麗惠', branch: '長城分會', profession: '龍巖生命產業代表',
+      have: '頂級養生宅、保險經紀人公司的總經理',
+      wantMeet: '',
+      lineId: '922110368', lineLink: '', cardLink: '',
     },
     {
       name: '張文婷', branch: '長悅分會', profession: '電商',
       have: '倉儲中心、媒體YT、網站製作、線上通路、小編美編',
       wantMeet: '行銷顧問、品牌顧問、品牌商',
       lineId: 'bd560812', lineLink: 'https://line.me/ti/p/rBeVdvXGPU', cardLink: '',
+    },
+    {
+      name: '曾惠君', branch: '長佑分會', profession: '手工皂製造業',
+      have: '客製化禮贈品、品牌手工皂開發、企業ESG永續產品開發、與多特瑞&悠樂方老師合作開課',
+      wantMeet: '活動公關、禮贈品公司、精油芳療師、水晶療癒師、經絡理療師、上市櫃公司永續長',
+      lineId: 'sunny58fiona', lineLink: 'https://line.me/ti/p/-y2DdSqu2h', cardLink: '',
     },
     {
       name: '鍾坤宏', branch: '長佑分會', profession: '風水地理師',
@@ -45,12 +51,6 @@ export const LEADERS = {
       have: '超過500位中小企業主（最高年營收百億）；美國納斯達克OTC公司；股東為國際頂級資本新加坡軟銀',
       wantMeet: '年營收2000萬-1億的企業負責人',
       lineId: '960586990', lineLink: 'https://line.me/ti/p/54AAR9-1Bf', cardLink: '',
-    },
-    {
-      name: '陳麗惠', branch: '長城分會', profession: '龍巖生命產業代表',
-      have: '頂級養生宅、保險經紀人公司的總經理',
-      wantMeet: '',
-      lineId: '922110368', lineLink: '', cardLink: '',
     },
     {
       name: '廖筱蘭', branch: '長佑分會', profession: '空調業',
@@ -72,16 +72,16 @@ export const LEADERS = {
       lineId: 'johnsonsuen', lineLink: 'https://line.me/ti/p/j7EDWNNnZl', cardLink: '',
     },
     {
-      name: '張松源', branch: '金暘分會', profession: '美容醫學',
-      have: '各種美容整形手術、微整醫美、光電雷射、腸胃健康管理、植髮、泌尿科、功能醫學、減重醫學、中醫漢方',
-      wantMeet: '空姐/空少、活動主持人、直播主、美妝網紅、產後媽媽、理專或保險業務、自媒體經營者',
-      lineId: 'aphro-songer', lineLink: '', cardLink: '',
-    },
-    {
       name: '郭愛珠', branch: '長翔分會', profession: '數位課程與平台',
       have: '想當講師/開課、把專業變成課程、發展斜槓收入、提升表達能力、建立個人品牌；企業內訓、線上課程、企業知識庫',
       wantMeet: '專業人士、管顧公司、雲端平台公司',
       lineId: '930849519', lineLink: 'https://line.me/ti/p/lvKp88vThL', cardLink: '',
+    },
+    {
+      name: '張松源', branch: '金暘分會', profession: '美容醫學',
+      have: '各種美容整形手術、微整醫美、光電雷射、腸胃健康管理、植髮、泌尿科、功能醫學、減重醫學、中醫漢方',
+      wantMeet: '空姐/空少、活動主持人、直播主、美妝網紅、產後媽媽、理專或保險業務、自媒體經營者',
+      lineId: 'aphro-songer', lineLink: '', cardLink: '',
     },
     {
       name: '蕭淑蓉', branch: '金安分會', profession: '整合行銷-統籌大型活動',

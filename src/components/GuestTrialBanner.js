@@ -19,21 +19,12 @@ export function guestTrialBannerHTML() {
     </aside>`;
 }
 
-/** 首頁較大的登入提醒卡 */
+/** 首頁登入提醒 — 精簡版（sticky banner 已涵蓋主要訊息） */
 export function guestHomeReminderHTML() {
   return `
-    <section class="guest-home-reminder" aria-labelledby="guest-home-reminder-title">
+    <section class="guest-home-reminder guest-home-reminder-compact" aria-labelledby="guest-home-reminder-title">
       <div class="guest-home-reminder-inner">
-        <h2 id="guest-home-reminder-title" class="guest-home-reminder-title serif">
-          ${escHtml(t('guest_home_title'))}
-        </h2>
-        <p class="guest-home-reminder-lead">${escHtml(t('guest_home_lead'))}</p>
-        <ul class="guest-home-reminder-list">
-          <li>${escHtml(t('guest_home_li1'))}</li>
-          <li>${escHtml(t('guest_home_li2'))}</li>
-          <li>${escHtml(t('guest_home_li3'))}</li>
-          <li>${escHtml(t('guest_home_li4'))}</li>
-        </ul>
+        <p id="guest-home-reminder-title" class="guest-home-reminder-lead">${escHtml(t('guest_home_lead'))}</p>
         <button type="button" class="btn-ai guest-home-login-btn guest-trial-login-btn">
           ${escHtml(t('guest_banner_login'))}
         </button>

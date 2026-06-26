@@ -76,16 +76,11 @@ export async function showWelcomeTutorial({ onDone, applyFontSize, onGoProfile }
     const langEn = window.BNI_LANG === 'en';
 
     card.innerHTML = `
-      <div class="welcome-eyebrow">BNI · ANDERSON TEAM · 2026 年會</div>
-      <div class="welcome-step-dots" aria-hidden="true">
-        ${steps.map((_, i) => `<span class="welcome-dot${i === stepIndex ? ' active' : ''}${i < stepIndex ? ' done' : ''}"></span>`).join('')}
-      </div>
       <div class="welcome-step-num">${stepIndex + 1} / ${steps.length}</div>
-      <div class="welcome-title hero-title-shimmer">${escHtml(tStep(step, 'title'))}</div>
+      <div class="welcome-title">${escHtml(tStep(step, 'title'))}</div>
       ${step.step_key === 'goal'
         ? `<div class="welcome-goal">${escHtml(personalize(tStep(step, 'body'), member))}</div>`
         : `<p class="welcome-desc-block">${escHtml(personalize(tStep(step, 'body'), member))}</p>`}
-      ${tStep(step, 'tip') ? `<div class="welcome-tip">${escHtml(personalize(tStep(step, 'tip'), member))}</div>` : ''}
       ${isProfile ? `
         <div class="welcome-profile-box">
           <div class="welcome-profile-preview">${escHtml(profileTemplatePreviewText())}</div>
@@ -103,13 +98,16 @@ export async function showWelcomeTutorial({ onDone, applyFontSize, onGoProfile }
             <button type="button" class="welcome-fs-btn" data-fs="fs-l">特大</button>
           </div>
         </div>
-        <div class="welcome-lang-hint">${window.BNI_LANG === 'en' ? 'Language: top-right <strong>中文 / EN</strong>' : '右上角可切換 <strong>中文 / EN</strong>'}</div>
+        <div class="welcome-lang-hint">${window.BNI_LANG === 'en' ? 'Language: top-right EN' : '右上角可切換 EN'}</div>
       ` : ''}
       <div class="welcome-nav">
         ${stepIndex > 0 ? `<button type="button" class="welcome-btn-ghost" id="welcome-prev">${window.BNI_LANG === 'en' ? 'Back' : '上一步'}</button>` : '<span></span>'}
         ${isLast
           ? `<button type="button" class="welcome-btn-primary" id="welcome-start">${window.BNI_LANG === 'en' ? 'Start' : '開始使用'}</button>`
           : `<button type="button" class="welcome-btn-primary" id="welcome-next">${window.BNI_LANG === 'en' ? 'Next' : '下一步'}</button>`}
+      </div>
+      <div class="intro-skip-wrap">
+        <button type="button" class="welcome-btn-skip" id="welcome-skip">${escHtml(t('intro_skip'))}</button>
       </div>
     `;
 
@@ -136,6 +134,7 @@ export async function showWelcomeTutorial({ onDone, applyFontSize, onGoProfile }
       finish(overlay, onDone, { goProfile: true, onGoProfile }),
     );
     card.querySelector('#welcome-start')?.addEventListener('click', () => finish(overlay, onDone));
+    card.querySelector('#welcome-skip')?.addEventListener('click', () => finish(overlay, onDone));
   }
 
   render();

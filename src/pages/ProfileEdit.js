@@ -57,7 +57,7 @@ export function renderProfileEdit(container) {
         <p class="profile-edit-sub">${escHtml(f.name)} · ${escHtml(f.branch)}</p>
       </div>
 
-      <div class="profile-edit-tip">${escHtml(t('profile_tip'))}</div>
+      <div class="profile-edit-tip profile-edit-tip-compact">${escHtml(t('profile_tip_short'))}</div>
       ${profileTemplatePanelHTML()}
 
       <form id="profile-form" class="profile-edit-form">

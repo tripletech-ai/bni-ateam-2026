@@ -8,11 +8,8 @@ export function profileEnrichBannerHTML() {
   if (!profileNeedsEnrichment(member)) return '';
 
   return `
-    <aside class="profile-enrich-banner" id="profile-enrich-banner">
-      <div class="profile-enrich-body">
-        <div class="profile-enrich-title">${escHtml(t('profile_enrich_title'))}</div>
-        <p class="profile-enrich-text">${escHtml(t('profile_enrich_body'))}</p>
-      </div>
+    <aside class="profile-enrich-banner profile-enrich-minimal" id="profile-enrich-banner">
+      <p class="profile-enrich-text">${escHtml(t('profile_enrich_short'))}</p>
       <button type="button" class="profile-enrich-btn" id="profile-enrich-go">
         ${escHtml(t('profile_enrich_btn'))}
       </button>

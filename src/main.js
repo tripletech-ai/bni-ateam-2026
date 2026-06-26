@@ -28,7 +28,7 @@ import {
 import { showIncomingOneOverlay } from './components/IncomingOneBanner.js';
 import { renderUserBar } from './components/UserBar.js';
 import { bootSkeletonHTML } from './utils/skeleton.js';
-import { showWelcomeTutorial } from './pages/WelcomeTutorial.js';
+import { showFirstRunHint, finishOnboardingTutorial } from './components/FirstRunHint.js';
 import { loadMembersFromDb } from './services/membersApi.js';
 import { withRetry } from './utils/retry.js';
 import { isGuestTrial, endGuestTrial } from './utils/guestTrial.js';
@@ -226,7 +226,8 @@ async function afterBindComplete() {
     console.warn('Reload members failed:', e);
   }
   isAdmin = await checkIsAdmin();
-  showWelcomeIfNeeded();
+  await finishOnboardingTutorial();
+  sessionStorage.setItem('bni_show_first_run', '1');
   recordPresence().catch(() => {});
   preloadLiveData();
   startIncomingPoll();
@@ -234,20 +235,18 @@ async function afterBindComplete() {
   appReady = true;
   location.hash = '#home';
   navigate();
+  maybeShowFirstRunHint();
 }
 
-function showWelcomeIfNeeded() {
-  if (!isTutorialDone()) {
-    showWelcomeTutorial({
-      applyFontSize,
-      onGoProfile: () => {
-        appReady = true;
-        setChromeVisible(true);
-        location.hash = 'profile';
-        navigate();
-      },
-    });
-  }
+function maybeShowFirstRunHint() {
+  if (sessionStorage.getItem('bni_show_first_run') !== '1') return;
+  sessionStorage.removeItem('bni_show_first_run');
+  showFirstRunHint({
+    onGoSearch: () => {
+      location.hash = '#search';
+      navigate();
+    },
+  });
 }
 
 function showBootError(message, { canRetry = true } = {}) {
@@ -359,7 +358,6 @@ async function boot() {
   if (!isBound()) {
     const auto = await tryAutoBindOnLogin();
     if (auto?.bound) {
-      showToast(t('auto_bind_toast'));
       await afterBindComplete();
       return;
     }
@@ -369,7 +367,9 @@ async function boot() {
 
   appReady = true;
   setChromeVisible(true);
-  showWelcomeIfNeeded();
+  if (!isTutorialDone()) {
+    finishOnboardingTutorial().catch(() => {});
+  }
   recordPresence().catch(() => {});
   preloadLiveData();
   startIncomingPoll();

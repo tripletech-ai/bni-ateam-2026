@@ -7,86 +7,58 @@ import {
   regionPickerHTML,
   eventBranchPickerHTML,
   searchEventChapters,
-  getRegionById,
   isAteamRosterChapterName,
 } from '../data/eventChapters.js';
-import { fieldPlaceholder, referralPlaceholder } from '../utils/profileHints.js';
-import {
-  profileTemplatePanelHTML,
-  profileFieldApplyButtonHTML,
-  bindProfileTemplatePanel,
-} from '../components/ProfileTemplatePanel.js';
 import {
   signInWithGoogle,
   bindExistingMember,
   registerNewMember,
   getCurrentUser,
+  ensureSessionFresh,
 } from '../services/auth.js';
 import { showToast } from '../utils/toast.js';
 import { t } from '../i18n/translations.js';
-import { industryPickerHTML, bindIndustryPicker, readIndustryPickerValues } from '../components/IndustryPicker.js';
-import { inferIndustriesFromText } from '../data/industries.js';
 import { isInAppBrowser } from '../utils/inAppBrowser.js';
 import { inAppBrowserGateHTML, bindInAppBrowserGate } from '../components/InAppBrowserGate.js';
 import { branchHasPickableRoster, getBranchMembers } from '../utils/rosterPick.js';
 import { startGuestTrial } from '../utils/guestTrial.js';
 
-/** region | branch | pick | manual | register-full */
+/** region | branch | pick | manual */
 let mode = 'region';
-let selectedRegion = ''; // regionId e.g. taipei-north
+let selectedRegion = '';
 let selectedBranch = '';
 
 export function renderOnboard(container, { onComplete }) {
-  const user = getCurrentUser();
-  container.innerHTML = buildHTML(user);
+  container.innerHTML = buildHTML();
   bindEvents(container, onComplete);
 }
 
-function memberCountHTML() {
-  const n = window.BNI_PUBLIC_STATS?.total_members;
-  if (n == null) return '';
-  return `<div class="onboard-live-stats" role="status">
-    ${escHtml(t('onboard_member_count_prefix'))}<strong>${n}</strong>${escHtml(t('onboard_member_count_suffix'))}
-  </div>`;
-}
-
-function buildHTML(user) {
-  const email = user?.email || '';
+function buildHTML() {
   return `
     <div class="onboard-wrap onboard-flow-wrap">
       <header class="login-hero login-hero-compact">
-        <div class="login-hero-eyebrow">BNI · ANDERSON TEAM · 2026 年會</div>
         <h1 class="login-hero-title serif">${escHtml(t('onboard_title'))}</h1>
       </header>
       <div class="onboard-card">
-        <div class="onboard-steps-hint">
-          <span class="onboard-step-pill done">① Google 登入</span>
-          <span class="onboard-step-pill${mode === 'region' ? ' active' : mode !== 'region' ? ' done' : ''}">② 區域與分會</span>
-          <span class="onboard-step-pill${mode === 'pick' || mode === 'manual' || mode === 'register-full' ? ' active' : ''}">③ 選擇或輸入姓名</span>
-        </div>
-        ${memberCountHTML()}
-        <h2 class="onboard-title serif">${escHtml(t('onboard_welcome'))}</h2>
-        <p class="onboard-sub">${escHtml(t('onboard_logged_in'))}<strong>${escHtml(email)}</strong></p>
-        <p class="onboard-hint">${escHtml(t('onboard_hint_v4'))}</p>
 
         <div id="onboard-region" class="onboard-panel${mode !== 'region' ? ' hidden' : ''}">
           <label class="field-label" for="chapter-search">${escHtml(t('onboard_chapter_search_lbl'))}</label>
-          <input id="chapter-search" class="field-input" placeholder="${escHtml(t('onboard_chapter_search_ph'))}" autocomplete="off">
+          <input id="chapter-search" class="field-input" placeholder="${escHtml(t('onboard_chapter_search_ph'))}" autocomplete="off" autofocus>
           <div id="chapter-search-results" class="chapter-search-results hidden"></div>
-          <p class="field-hint onboard-or-divider">${escHtml(t('onboard_or_pick_region'))}</p>
-          <div class="onboard-area-groups">${regionPickerHTML()}</div>
+          <details class="onboard-region-fallback">
+            <summary>${escHtml(t('onboard_or_pick_region'))}</summary>
+            <div class="onboard-area-groups">${regionPickerHTML()}</div>
+          </details>
         </div>
 
         <div id="onboard-branch" class="onboard-panel${mode !== 'branch' ? ' hidden' : ''}">
-          <p class="field-hint">${escHtml(t('onboard_branch_hint'))}${selectedRegion ? ` · ${escHtml(getRegionById(selectedRegion)?.regionLabel || '')}` : ''}</p>
+          <p class="onboard-branch-label">${escHtml(t('onboard_branch_hint'))}</p>
           <div id="branch-picker" class="ateam-branch-picker event-chapter-picker">${eventBranchPickerHTML(selectedRegion, selectedBranch)}</div>
-          <p class="field-hint onboard-picked-branch" id="picked-branch-label">${selectedBranch ? escHtml(selectedBranch) : escHtml(t('onboard_pick_branch_first'))}</p>
-          <button type="button" class="btn-ai onboard-btn" id="branch-next" ${selectedBranch ? '' : 'disabled'}>${escHtml(t('onboard_branch_next'))}</button>
           <button type="button" class="btn-text" data-back="region">${escHtml(t('onboard_back'))}</button>
         </div>
 
         <div id="onboard-pick" class="onboard-panel${mode !== 'pick' ? ' hidden' : ''}">
-          <p class="field-hint">${escHtml(t('onboard_pick_hint', { branch: selectedBranch }))}</p>
+          <p class="onboard-branch-label">${escHtml(t('onboard_pick_hint_short'))} · ${escHtml(selectedBranch)}</p>
           <div id="roster-pick-list" class="bind-results"></div>
           <button type="button" class="btn-text onboard-link-btn" data-mode="manual">${escHtml(t('onboard_pick_not_found'))}</button>
           <button type="button" class="btn-text" data-back="branch">${escHtml(t('onboard_back'))}</button>
@@ -94,13 +66,7 @@ function buildHTML(user) {
 
         <div id="onboard-manual" class="onboard-panel${mode !== 'manual' ? ' hidden' : ''}">
           ${manualNameFormHTML()}
-          <button type="button" class="btn-text onboard-link-btn" data-mode="register-full">${escHtml(t('onboard_manual_full_form'))}</button>
           <button type="button" class="btn-text" data-back="branch">${escHtml(t('onboard_back'))}</button>
-        </div>
-
-        <div id="onboard-register" class="onboard-panel${mode !== 'register-full' ? ' hidden' : ''}">
-          ${registerFormHTML()}
-          <button type="button" class="btn-text" data-back="manual">${escHtml(t('onboard_back'))}</button>
         </div>
       </div>
     </div>
@@ -121,43 +87,13 @@ function memberRegionForRegister(branch) {
 
 function manualNameFormHTML() {
   return `
-    <p class="field-hint">${escHtml(t('onboard_manual_hint', { branch: selectedBranch }))}</p>
     <form id="manual-name-form" class="register-form">
-      <label class="field-label">${escHtml(t('onboard_name_lbl'))} *</label>
+      <label class="field-label">${escHtml(t('onboard_name_lbl'))} · ${escHtml(selectedBranch)}</label>
       <input name="name" class="field-input" required maxlength="50" autocomplete="name"
         placeholder="${escHtml(t('onboard_name_ph'))}">
       <input type="hidden" name="branch" value="${escHtml(selectedBranch)}">
       <button type="submit" class="btn-ai onboard-btn">${escHtml(t('onboard_manual_submit'))}</button>
-    </form>
-  `;
-}
-
-function registerFormHTML() {
-  return `
-    <form id="register-form" class="register-form">
-      <label class="field-label">${escHtml(t('onboard_name_lbl'))} *</label>
-      <input name="name" class="field-input" required maxlength="50">
-      <label class="field-label">${escHtml(t('onboard_register_branch_lbl'))}</label>
-      <input name="branch" class="field-input" readonly value="${escHtml(selectedBranch)}">
-      ${profileTemplatePanelHTML()}
-      <label class="field-label">${escHtml(t('ind_picker_label'))} *</label>
-      <p class="field-hint">${escHtml(t('ind_picker_hint'))}</p>
-      ${industryPickerHTML([], { required: true })}
-      <label class="field-label">${escHtml(t('profile_profession_label'))} *</label>
-      ${profileFieldApplyButtonHTML('profession', 'profile_template_field_profession')}
-      <input name="profession" class="field-input" maxlength="120" required
-        placeholder="${escHtml(fieldPlaceholder('profession'))}">
-      <label class="field-label">${escHtml(t('card_have'))}</label>
-      ${profileFieldApplyButtonHTML('have', 'profile_template_field_have')}
-      <textarea name="have" class="field-input" rows="2" placeholder="${escHtml(fieldPlaceholder('have'))}"></textarea>
-      <label class="field-label">${escHtml(t('card_want'))}</label>
-      ${profileFieldApplyButtonHTML('wantMeet', 'profile_template_field_want')}
-      <textarea name="wantMeet" class="field-input" rows="2" placeholder="${escHtml(fieldPlaceholder('wantMeet'))}"></textarea>
-      <label class="field-label">${escHtml(t('profile_referral_label'))}</label>
-      <textarea name="wantReferral" class="field-input" rows="3" placeholder="${escHtml(referralPlaceholder())}"></textarea>
-      <label class="field-label">LINE ID</label>
-      <input name="lineId" class="field-input">
-      <button type="submit" class="btn-ai onboard-btn">${escHtml(t('onboard_submit'))}</button>
+      <p class="field-hint onboard-profile-later">${escHtml(t('onboard_profile_later'))}</p>
     </form>
   `;
 }
@@ -173,22 +109,18 @@ function rosterPickListHTML() {
       <button type="button" class="bind-item roster-pick-item${claimed ? ' bind-item-claimed' : ''}"
         data-id="${escHtml(m.dbId)}" data-name="${escHtml(m.name)}" data-can-bind="${canBind ? '1' : '0'}">
         <div class="bind-name">${escHtml(m.name)}</div>
-        <div class="bind-meta">${escHtml(m.profession || '—')}</div>
-        ${claimed ? `<div class="bind-claimed-tag">${escHtml(t('onboard_bind_claimed_tag'))}</div>` : ''}
+        ${m.profession ? `<div class="bind-meta">${escHtml(m.profession)}</div>` : ''}
       </button>`;
   }).join('');
 }
 
 function setMode(next) {
   mode = next;
-  const panels = ['region', 'branch', 'pick', 'manual', 'register-full'];
-  for (const key of panels) {
-    const el = document.getElementById(`onboard-${key === 'register-full' ? 'register' : key}`);
+  for (const key of ['region', 'branch', 'pick', 'manual']) {
+    const el = document.getElementById(`onboard-${key}`);
     if (!el) continue;
     const show = mode === key;
     el.classList.toggle('hidden', !show);
-    if (show) el.removeAttribute('hidden');
-    else el.setAttribute('hidden', '');
   }
   if (mode === 'pick') {
     const list = document.getElementById('roster-pick-list');
@@ -197,19 +129,19 @@ function setMode(next) {
 }
 
 function rerender(container, onComplete) {
-  const user = getCurrentUser();
-  container.innerHTML = buildHTML(user);
+  container.innerHTML = buildHTML();
   bindEvents(container, onComplete);
   setMode(mode);
   if (mode === 'pick') {
-    const list = document.getElementById('roster-pick-list');
-    if (list) list.innerHTML = rosterPickListHTML();
     bindRosterPick(container, onComplete);
   }
 }
 
 function mapAuthError(err) {
   const msg = err?.message || '';
+  if (/jwt expired|invalid jwt|token expired|unauthorized|invalid token|not authenticated/i.test(msg)) {
+    return t('onboard_err_session');
+  }
   if (msg.includes('ALREADY_BOUND')) return t('onboard_err_bound');
   if (msg.includes('REGISTER_RPC_MISSING') || /could not find the function.*bni_register/i.test(msg)) {
     return t('onboard_err_register_rpc');
@@ -251,8 +183,7 @@ function bindEvents(container, onComplete) {
       searchBox.classList.remove('hidden');
       searchBox.innerHTML = hits.map(h => `
         <button type="button" class="bind-item chapter-search-hit" data-region-id="${escHtml(h.regionId)}" data-branch="${escHtml(h.fullName)}">
-          <div class="bind-name">${escHtml(h.fullName)}${h.isAteamRoster ? ' <span class="ateam-roster-badge">A Team</span>' : ''}</div>
-          <div class="bind-meta">${escHtml(h.regionLabel)} · ${escHtml(h.areaGroup)}</div>
+          <div class="bind-name">${escHtml(h.fullName)}</div>
         </button>`).join('');
       searchBox.querySelectorAll('.chapter-search-hit').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -264,7 +195,7 @@ function bindEvents(container, onComplete) {
     }, 200);
   });
 
-  container.querySelectorAll('[data-region-id]').forEach(btn => {
+  container.querySelectorAll('.onboard-area-groups [data-region-id]').forEach(btn => {
     btn.addEventListener('click', () => {
       selectedRegion = btn.dataset.regionId;
       selectedBranch = '';
@@ -280,8 +211,7 @@ function bindEvents(container, onComplete) {
         selectedRegion = '';
         selectedBranch = '';
       }
-      if (back === 'branch') selectedBranch = selectedBranch;
-      setMode(back === 'register-full' ? 'manual' : back);
+      setMode(back);
       rerender(container, onComplete);
     });
   });
@@ -296,26 +226,12 @@ function bindEvents(container, onComplete) {
   container.querySelector('#branch-picker')?.querySelectorAll('[data-branch]').forEach(chip => {
     chip.addEventListener('click', () => {
       selectedBranch = chip.dataset.branch;
-      container.querySelectorAll('#branch-picker [data-branch]').forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      const label = container.querySelector('#picked-branch-label');
-      if (label) label.textContent = selectedBranch;
-      const next = container.querySelector('#branch-next');
-      if (next) next.disabled = false;
+      goAfterBranchSelected(container, onComplete);
     });
-  });
-
-  container.querySelector('#branch-next')?.addEventListener('click', () => {
-    if (!selectedBranch) {
-      showToast(t('onboard_pick_branch_first'));
-      return;
-    }
-    goAfterBranchSelected(container, onComplete);
   });
 
   bindRosterPick(container, onComplete);
   bindManualForm(container, onComplete);
-  bindRegisterForm(container, onComplete);
 }
 
 function bindRosterPick(container, onComplete) {
@@ -326,16 +242,17 @@ function bindRosterPick(container, onComplete) {
       const name = btn.dataset.name;
       if (canBind && memberId) {
         try {
-          const result = await bindExistingMember(memberId);
-          showToast(result?.duplicate ? t('onboard_bind_dup_ok') : t('onboard_bind_ok'));
+          if (!(await ensureSessionFresh())) {
+            showToast(t('onboard_err_session'));
+            return;
+          }
+          await bindExistingMember(memberId);
           onComplete();
         } catch (err) {
           showToast(mapAuthError(err));
         }
         return;
       }
-      const nameInput = container.querySelector('#manual-name-form [name="name"]');
-      if (nameInput) nameInput.value = name;
       setMode('manual');
       rerender(container, onComplete);
       const input = container.querySelector('#manual-name-form [name="name"]');
@@ -352,6 +269,10 @@ function bindManualForm(container, onComplete) {
     const branch = normalizeRegisterBranch(String(fd.get('branch') || selectedBranch));
     if (!name || !branch) return;
     try {
+      if (!(await ensureSessionFresh())) {
+        showToast(t('onboard_err_session'));
+        return;
+      }
       await registerNewMember({
         name,
         branch,
@@ -362,44 +283,6 @@ function bindManualForm(container, onComplete) {
         wantReferral: '',
         industries: [],
       });
-      showToast(t('onboard_success'));
-      onComplete();
-    } catch (err) {
-      showToast(mapAuthError(err));
-    }
-  });
-}
-
-function bindRegisterForm(container, onComplete) {
-  bindProfileTemplatePanel(container, '#register-form');
-  bindIndustryPicker(container);
-  container.querySelector('#register-form')?.addEventListener('submit', async e => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    const branch = normalizeRegisterBranch(String(fd.get('branch') || selectedBranch));
-    let industries = readIndustryPickerValues(container);
-    const profession = String(fd.get('profession') || '').trim();
-    if (!industries.length && profession) {
-      industries = inferIndustriesFromText(profession, fd.get('have'));
-    }
-    if (!industries.length) {
-      showToast(t('ind_picker_required'));
-      return;
-    }
-    try {
-      await registerNewMember({
-        name: fd.get('name'),
-        branch,
-        region: memberRegionForRegister(branch),
-        profession,
-        have: fd.get('have'),
-        wantMeet: fd.get('wantMeet'),
-        wantReferral: fd.get('wantReferral'),
-        lineId: fd.get('lineId'),
-        lineLink: '',
-        industries,
-      });
-      showToast(t('onboard_success'));
       onComplete();
     } catch (err) {
       showToast(mapAuthError(err));
@@ -414,39 +297,24 @@ const GOOGLE_ICON_SVG = `<svg class="google-logo" viewBox="0 0 24 24" width="20"
   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
 </svg>`;
 
-function loginMemberCountHTML() {
-  const n = window.BNI_PUBLIC_STATS?.total_members;
-  if (n == null) return '';
-  return `<p class="login-member-count">${escHtml(t('login_member_count_prefix'))}<strong>${n}</strong>${escHtml(t('login_member_count_suffix'))}</p>`;
-}
-
 export function renderLoginGate(container, { onGuestTrial } = {}) {
   const inApp = isInAppBrowser();
   container.innerHTML = `
     <div class="onboard-wrap login-gate-wrap">
-      <header class="login-hero">
-        <div class="login-hero-eyebrow">BNI · ANDERSON TEAM · 2026 年會</div>
-        <h1 class="login-hero-title serif hero-title-shimmer">${escHtml(t('login_title'))}</h1>
+      <header class="login-hero login-hero-compact">
+        <h1 class="login-hero-title serif">${escHtml(t('hero_title'))}</h1>
         <p class="login-hero-sub">${escHtml(t('login_sub'))}</p>
       </header>
       <div class="onboard-card login-card">
-        <div class="onboard-steps-hint" aria-label="使用步驟">
-          <span class="onboard-step-pill active">① Google 登入</span>
-          <span class="onboard-step-pill">② 認領身分</span>
-          <span class="onboard-step-pill">③ 新手教學＋填寫資料</span>
-        </div>
-        ${loginMemberCountHTML()}
         ${inApp ? inAppBrowserGateHTML() : ''}
-        ${inApp ? '' : `<p class="onboard-sub login-lead">${escHtml(t('login_lead'))}</p>`}
         ${inApp ? '' : `
         <button type="button" id="google-login-btn" class="btn-google">
           ${GOOGLE_ICON_SVG}
           <span class="btn-google-label">${escHtml(t('login_google_btn'))}</span>
         </button>`}
-        <button type="button" id="guest-trial-btn" class="btn-outline login-guest-trial-btn">
+        <button type="button" id="guest-trial-btn" class="btn-text login-guest-link">
           ${escHtml(t('login_guest_trial_btn'))}
         </button>
-        <p class="login-skip-hint">${escHtml(t('login_skip_hint'))}</p>
       </div>
     </div>
   `;

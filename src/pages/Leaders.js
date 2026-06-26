@@ -96,11 +96,12 @@ function leaderCardSecondary(l) {
     </div>`;
 }
 
-function directorCardHTML(p) {
+function directorCardHTML(p, index) {
   const initial = (p.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
   const dirCard = getCardLink(p.name) || p.cardLink || '';
   const metaParts = [p.branch, p.profession].filter(Boolean);
   const metaLine  = metaParts.length ? `<div class="dir-meta">${escHtml(metaParts.join(' · '))}</div>` : '';
+  const nameLabel = index != null ? `${index}. ${p.name}` : p.name;
 
   const haveSection = p.have
     ? `<div class="dir-section"><span class="dir-section-label">${escHtml(t('card_have'))}</span><span class="dir-section-text">${escHtml(p.have)}</span></div>` : '';
@@ -112,7 +113,7 @@ function directorCardHTML(p) {
   return `<div class="director-card-v2" data-expanded="false">
     <div class="dir-header">
       <div class="dir-name-wrap">
-        <div class="director-name">${escHtml(p.name)}</div>
+        <div class="director-name">${escHtml(nameLabel)}</div>
         ${metaLine}
       </div>
       <div class="dir-right">
@@ -141,7 +142,7 @@ function directorCardHTML(p) {
 }
 
 function accordion(title, people, id) {
-  const cards = people.map(p => directorCardHTML(p)).join('');
+  const cards = people.map((p, i) => directorCardHTML(p, i + 1)).join('');
 
   return `
     <div class="accordion-wrap" style="margin:0 16px 10px;border-radius:var(--r);border:1px solid var(--dark-border);overflow:hidden">
