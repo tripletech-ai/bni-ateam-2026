@@ -2,7 +2,7 @@ import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, selfUnbind, signOut, ensureAuthSession } from '../services/auth.js';
 import { getCardLink } from '../data/cardLinks.js';
-import { fieldPlaceholder, referralPlaceholder } from '../utils/profileHints.js';
+import { fieldPlaceholder, referralPlaceholder, profileBackendEmpty } from '../utils/profileHints.js';
 import {
   profileTemplatePanelHTML,
   profileFieldApplyButtonHTML,
@@ -16,6 +16,7 @@ import { inferIndustriesFromText } from '../data/industries.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
 import { guestHomeReminderHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 import { endGuestTrial } from '../utils/guestTrial.js';
+import { goToPage } from '../utils/nav.js';
 
 function mapProfileError(err) {
   const msg = err?.message || '';
@@ -58,12 +59,20 @@ export function renderProfileEdit(container) {
   }
 
   const f = fieldMember();
+  const emptyProfile = profileBackendEmpty(getMyStatus()?.member);
   container.innerHTML = `
     <div class="profile-edit-wrap">
       <div class="profile-edit-head">
         <button type="button" class="btn-text profile-edit-back" id="profile-back">← ${escHtml(t('profile_back'))}</button>
         <h1 class="profile-edit-title serif">${escHtml(t('profile_title'))}</h1>
       </div>
+
+      ${emptyProfile ? `
+      <div class="profile-empty-alert" role="alert">
+        <div class="profile-empty-alert-title">${escHtml(t('profile_enrich_empty_title'))}</div>
+        <p class="profile-empty-alert-body">${escHtml(t('profile_enrich_empty_body'))}</p>
+        <p class="profile-empty-alert-tip">${escHtml(t('profile_empty_form_tip'))}</p>
+      </div>` : ''}
 
       <section class="account-identity-card" aria-label="${escHtml(t('account_identity'))}">
         <div class="account-identity-label">${escHtml(t('account_identity'))}</div>
@@ -145,7 +154,7 @@ export function renderProfileEdit(container) {
   bindIndustryPicker(container);
 
   container.querySelector('#profile-back')?.addEventListener('click', () => {
-    location.hash = 'home';
+    goToPage('home');
   });
 
   container.querySelector('#profile-reclaim-btn')?.addEventListener('click', async () => {
@@ -222,7 +231,7 @@ export function renderProfileEdit(container) {
         console.warn('reload members:', err);
       }
       showToast(t('profile_saved'));
-      location.hash = 'home';
+      goToPage('home');
     } catch (err) {
       showToast(mapProfileError(err));
     } finally {

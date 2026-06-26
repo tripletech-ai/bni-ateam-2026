@@ -2,6 +2,7 @@ import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { fetchEventPulse, recordEventPulse, getCurrentUser } from '../services/auth.js';
 import { showToast } from '../utils/toast.js';
+import { copyPageUrl } from '../utils/inAppBrowser.js';
 
 export function eventPulseHTML() {
   return `
@@ -27,7 +28,7 @@ export function eventPulseHTML() {
           ${escHtml(t('pulse_btn'))}
         </button>
         <button type="button" class="btn-pulse-nudge" id="pulse-nudge-btn">
-          ${escHtml(t('pulse_nudge_btn'))}
+          ${escHtml(t('search_invite_copy'))}
         </button>
       </div>
     </section>
@@ -109,12 +110,7 @@ export async function bindEventPulse() {
   });
 
   section.querySelector('#pulse-nudge-btn')?.addEventListener('click', async () => {
-    const text = t('pulse_nudge_text');
-    try {
-      await navigator.clipboard.writeText(text);
-      showToast(t('pulse_nudge_copied'));
-    } catch {
-      showToast(text);
-    }
+    const ok = await copyPageUrl();
+    showToast(ok ? t('search_invite_copied') : t('inapp_copy_fail'));
   });
 }

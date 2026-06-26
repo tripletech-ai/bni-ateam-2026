@@ -7,6 +7,7 @@ import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { showMemberList } from '../utils/memberList.js';
 import { industryPieChartHTML } from '../components/IndustryPieChart.js';
+import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 
 export function renderSearch(container) {
   container.classList.add('page-root');
@@ -19,6 +20,7 @@ export function renderSearch(container) {
 
   container.innerHTML = buildSearchUI();
   bindSearchEvents(container);
+  bindProfileEnrichBanner();
   renderQuickFilters(document.getElementById('search-quick-filters'));
   renderBranchBrowse(document.getElementById('branch-browse-area'));
 
@@ -29,6 +31,7 @@ export function renderSearch(container) {
 
 function buildSearchUI() {
   return `
+    ${profileEnrichBannerHTML()}
     <div id="search-ai-box" class="ai-box ai-box-compact">
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
       <textarea id="ai-input" class="ai-textarea"

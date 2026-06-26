@@ -1,5 +1,5 @@
 import { getMarkCount } from '../utils/storage.js';
-import { escHtml }      from '../utils/html.js';
+import { escHtml, escAttr } from '../utils/html.js';
 import { t }            from '../i18n/translations.js';
 import { DEVELOPERS } from '../data/contributors.js';
 import { developerPhotoHTML } from '../utils/avatar.js';
@@ -44,7 +44,7 @@ export function renderHome(container) {
 
   container.innerHTML = `
     <div class="hero hero-compact home-landing">
-      <h1 class="hero-title serif">${escHtml(t('hero_title'))}</h1>
+      <h1 class="hero-title serif hero-title-gold" data-text="${escAttr(t('hero_title'))}">${escHtml(t('hero_title'))}</h1>
       <p class="hero-sub">${escHtml(t('hero_sub'))}</p>
       <a href="#search" class="btn-ai home-primary-cta">${escHtml(t('home_primary_cta'))}</a>
     </div>
@@ -80,7 +80,7 @@ export function renderHome(container) {
 
   bindLeaderEvents(container);
   bindProfileEnrichBanner();
-  bindCollect800Game();
+  bindCollect800Game(container);
   if (isGuestTrial()) {
     bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
   }

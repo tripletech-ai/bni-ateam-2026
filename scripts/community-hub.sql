@@ -118,7 +118,7 @@ BEGIN
     FROM (
       SELECT
         f.id, f.feed_type, f.content, f.meta, f.created_at,
-        m.name AS actor_name, m.branch AS actor_branch
+        m.name AS actor_name, m.branch AS actor_branch, m.region AS actor_region
       FROM bni_feed f
       LEFT JOIN bni_members m ON m.id = f.actor_member_id
       WHERE p_before IS NULL OR f.created_at < p_before

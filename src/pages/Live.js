@@ -207,13 +207,15 @@ async function refreshFeedOnly(container) {
 
 function optimisticFeedItem(text, postResult) {
   const member = getMyStatus()?.member;
+  const branch = member?.branch || '';
   return {
     id: postResult?.id || `opt-${Date.now()}`,
     feed_type: 'message',
     content: text,
     created_at: new Date().toISOString(),
     actor_name: member?.name || '',
-    actor_branch: member?.branch || '',
+    actor_branch: branch,
+    actor_region: member?.region || null,
   };
 }
 

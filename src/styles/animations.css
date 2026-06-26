@@ -35,7 +35,9 @@
   .ai-scan-line,
   .ai-particle,
   .ai-shimmer-fill,
-  .hero-title-shimmer {
+  .hero-title-shimmer,
+  .hero-title-gold,
+  .hero-title-gold::after {
     animation: none !important;
   }
 }
@@ -139,6 +141,67 @@
   -webkit-background-clip: text; background-clip: text;
   -webkit-text-fill-color: transparent;
   animation: goldShimmer 6s ease-in-out infinite; /* slower = more subtle */
+}
+
+@keyframes goldMetalFlow {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+@keyframes goldMetalGlint {
+  0%   { background-position: -180% center; opacity: 0.85; }
+  100% { background-position: 280% center; opacity: 0.85; }
+}
+
+/* 首頁標題 — 鎏金金屬質感 */
+.hero-title-gold {
+  position: relative;
+  display: inline-block;
+  background: linear-gradient(
+    118deg,
+    #4a3a12 0%,
+    #8b6914 12%,
+    #c9a227 22%,
+    #fff4c4 32%,
+    #f5d061 42%,
+    #b8860b 52%,
+    #fffacd 62%,
+    #d4af37 72%,
+    #fac775 82%,
+    #6b5416 92%,
+    #4a3a12 100%
+  );
+  background-size: 220% 220%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldMetalFlow 5s ease-in-out infinite;
+  filter:
+    drop-shadow(0 1px 0 rgba(0, 0, 0, 0.55))
+    drop-shadow(0 0 12px rgba(250, 199, 117, 0.45))
+    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+}
+.hero-title-gold::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 0%,
+    transparent 38%,
+    rgba(255, 255, 255, 0.05) 44%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(255, 248, 220, 0.75) 54%,
+    rgba(255, 255, 255, 0.05) 60%,
+    transparent 66%,
+    transparent 100%
+  );
+  background-size: 280% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: goldMetalGlint 3.2s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .tab-item.active svg {

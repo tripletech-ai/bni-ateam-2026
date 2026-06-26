@@ -2137,6 +2137,17 @@ textarea.field-input {
 .section-sub { font-size: calc(14px * var(--fs-k)); }
 .profile-enrich-minimal .profile-enrich-text,
 .profile-enrich-minimal .profile-enrich-btn { font-size: calc(13px * var(--fs-k)); }
+.profile-enrich-urgent {
+  border-color: rgba(250, 199, 117, 0.4);
+  background: linear-gradient(145deg, rgba(250, 199, 117, 0.12), rgba(250, 199, 117, 0.04));
+}
+.profile-enrich-urgent .profile-enrich-title { color: var(--gold-bright); }
+.profile-empty-alert {
+  border-color: rgba(250, 199, 117, 0.35);
+  background: rgba(250, 199, 117, 0.06);
+}
+.profile-empty-alert-title { color: var(--gold-bright); }
+.tab-warn-dot { border-color: #101629; }
 .collect800-eyebrow { font-size: calc(11px * var(--fs-k)); }
 .collect800-title { font-size: calc(22px * var(--fs-k)); }
 .collect800-sub,

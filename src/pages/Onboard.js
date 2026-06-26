@@ -153,8 +153,11 @@ async function submitClaim(container, { onComplete }) {
       showToast(t('onboard_err_session'));
       return;
     }
-    await claimByNameBranch(payload);
+    const result = await claimByNameBranch(payload);
     clearPendingClaim();
+    if (result?.matched) {
+      showToast(result.from_roster ? t('claim_matched_roster') : t('claim_matched_new'));
+    }
     onComplete?.();
   } catch (err) {
     showToast(mapAuthError(err));

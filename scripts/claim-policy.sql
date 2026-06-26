@@ -34,10 +34,9 @@ BEGIN
   SELECT bni_current_jwt_email() INTO v_email;
   SELECT * INTO v_member FROM bni_members WHERE id = p_member_id AND active = true FOR UPDATE;
   IF NOT FOUND THEN RAISE EXCEPTION 'MEMBER_NOT_FOUND'; END IF;
-  IF v_member.status IS DISTINCT FROM 'roster' THEN RAISE EXCEPTION 'NOT_ROSTER_MEMBER'; END IF;
   IF NOT bni_is_ateam_roster_branch(v_member.branch) THEN RAISE EXCEPTION 'NOT_ATEAM_BRANCH'; END IF;
 
-  IF v_member.auth_user_id IS NOT NULL THEN
+  IF v_member.auth_user_id IS NOT NULL OR v_member.status IS DISTINCT FROM 'roster' THEN
     -- 重複認領：名單已被認領時，複製資料建立新檔案
     INSERT INTO bni_members (
       name, branch, region, profession, have, want_meet, want_referral,

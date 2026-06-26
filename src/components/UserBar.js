@@ -1,7 +1,8 @@
 import { escHtml } from '../utils/html.js';
 import { getMyStatus, signOut, selfUnbind } from '../services/auth.js';
-import { profileNeedsEnrichment } from '../utils/profileHints.js';
+import { profileNeedsEnrichment, profileBackendEmpty } from '../utils/profileHints.js';
 import { t } from '../i18n/translations.js';
+import { goToPage } from '../utils/nav.js';
 import { showToast } from '../utils/toast.js';
 
 async function confirmReclaim() {
@@ -27,6 +28,7 @@ export function renderUserBar(el) {
   }
 
   const initial = (member.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
+  const emptyBackend = profileBackendEmpty(member);
 
   el.classList.remove('hidden');
   el.innerHTML = `
@@ -40,7 +42,7 @@ export function renderUserBar(el) {
       </button>
       <div class="user-bar-actions">
         ${profileNeedsEnrichment(member)
-          ? `<button type="button" class="user-bar-edit user-bar-edit-warn" id="user-profile-btn">${escHtml(t('profile_enrich_btn'))}</button>`
+          ? `<button type="button" class="user-bar-edit user-bar-edit-warn" id="user-profile-btn">${escHtml(t(emptyBackend ? 'profile_enrich_empty_btn' : 'profile_enrich_btn'))}</button>`
           : `<button type="button" class="user-bar-edit" id="user-profile-btn">${escHtml(t('profile_short'))}</button>`}
         <button type="button" class="user-bar-switch" id="user-bar-switch-btn" title="${escAttr(t('user_bar_reclaim'))}">
           ${escHtml(t('user_bar_reclaim_short'))}
@@ -55,7 +57,7 @@ export function renderUserBar(el) {
     </div>
   `;
 
-  const goProfile = () => { location.hash = 'profile'; };
+  const goProfile = () => { goToPage('profile'); };
   el.querySelector('#user-bar-profile-link')?.addEventListener('click', goProfile);
   el.querySelector('#user-profile-btn')?.addEventListener('click', goProfile);
   el.querySelector('#user-bar-switch-btn')?.addEventListener('click', confirmReclaim);

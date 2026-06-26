@@ -24,6 +24,7 @@ import {
   fetchLiveSettings,
   tryAutoBindOnLogin,
   fetchEventChapters,
+  getMyStatus,
 } from './services/auth.js';
 import { showIncomingOneOverlay } from './components/IncomingOneBanner.js';
 import { renderUserBar } from './components/UserBar.js';
@@ -37,6 +38,8 @@ import { showToast } from './utils/toast.js';
 import { notifyProfileMilestone } from './utils/profileMilestone.js';
 import { clearPendingClaim } from './utils/memberClaim.js';
 import { normalizeAppUrl } from './utils/appUrl.js';
+import { profileBackendEmpty } from './utils/profileHints.js';
+import { registerNavigator, goToPage } from './utils/nav.js';
 
 // ── Language ──────────────────────────────────────
 window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
@@ -156,6 +159,8 @@ function navigate() {
   window.scrollTo(0, 0);
 }
 
+registerNavigator(navigate);
+
 let incomingPollTimer = null;
 let incomingMarksUnavailable = false;
 
@@ -239,17 +244,27 @@ async function afterBindComplete() {
   location.hash = '#home';
   navigate();
   maybeShowFirstRunHint();
+  maybeNudgeEmptyProfile();
 }
 
 function maybeShowFirstRunHint() {
   if (sessionStorage.getItem('bni_show_first_run') !== '1') return;
   sessionStorage.removeItem('bni_show_first_run');
+  const member = getMyStatus()?.member;
+  const empty = profileBackendEmpty(member);
   showFirstRunHint({
-    onGoSearch: () => {
-      location.hash = '#search';
-      navigate();
-    },
+    profileEmpty: empty,
+    onGoProfile: () => goToPage('profile'),
+    onGoSearch: () => goToPage('search'),
   });
+}
+
+function maybeNudgeEmptyProfile() {
+  if (!isBound() || sessionStorage.getItem('bni_profile_nudge')) return;
+  const member = getMyStatus()?.member;
+  if (!profileBackendEmpty(member)) return;
+  sessionStorage.setItem('bni_profile_nudge', '1');
+  showToast(t('profile_enrich_empty_toast'));
 }
 
 function showBootError(message, { canRetry = true } = {}) {
@@ -381,6 +396,7 @@ async function boot() {
   preloadLiveData();
   startIncomingPoll();
   navigate();
+  maybeNudgeEmptyProfile();
 }
 
 window.addEventListener('hashchange', navigate);

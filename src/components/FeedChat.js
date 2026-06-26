@@ -2,18 +2,37 @@ import { escHtml, escAttr } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { showToast } from '../utils/toast.js';
 import { guestFeedLoginHTML } from './GuestTrialBanner.js';
+import { REGION_LABELS, getRegionForBranch } from '../data/branches.js';
 
 /** 與後端 bni_post_feed_message 限速一致 */
 export const FEED_COOLDOWN_MS = 10_000;
 
 const SEND_ICON = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>`;
 
+function actorRegionLabel(region, branch) {
+  const key = region || getRegionForBranch(branch || '');
+  if (key === 'guest') return '來賓';
+  return REGION_LABELS[key] || '';
+}
+
+function chatActorMetaHTML(item) {
+  const name = item.actor_name || t('feed_system');
+  const branch = item.actor_branch || '';
+  const regionLabel = actorRegionLabel(item.actor_region, branch);
+  const parts = [];
+  if (regionLabel) parts.push(`<span class="chat-bubble-region">${escHtml(regionLabel)}</span>`);
+  if (branch) parts.push(`<span class="chat-bubble-branch">${escHtml(branch)}</span>`);
+  if (name) parts.push(`<span class="chat-bubble-name">${escHtml(name)}</span>`);
+  if (!parts.length) return '';
+  return parts.join('<span class="chat-bubble-sep" aria-hidden="true">·</span>');
+}
+
 function feedItemHTML(item, { isAdmin = false, myName = '' } = {}) {
   const type = item.feed_type || 'message';
   const name = item.actor_name || t('feed_system');
-  const branch = item.actor_branch || '';
   const time = formatFeedTime(item.created_at);
   const isMine = myName && name === myName && type === 'message';
+  const actorMeta = chatActorMetaHTML(item);
 
   let body = escHtml(item.content || '');
   if (type === 'mutual' && item.meta?.partner_name) {
@@ -35,13 +54,13 @@ function feedItemHTML(item, { isAdmin = false, myName = '' } = {}) {
   }
 
   const initial = (name.match(/[一-鿿㐀-䶿]/g) || ['?']).slice(-1)[0];
-  const meta = branch ? `<span class="chat-bubble-branch">${escHtml(branch)}</span>` : '';
 
   if (isMine) {
     return `
       <article class="chat-bubble chat-bubble-mine" data-id="${escAttr(item.id || '')}">
         <div class="chat-bubble-body">
           <div class="chat-bubble-head chat-bubble-head-mine">
+            ${actorMeta ? `<div class="chat-bubble-meta">${actorMeta}</div>` : ''}
             <time class="chat-bubble-time">${escHtml(time)}</time>
             ${deleteBtn}
           </div>
@@ -55,8 +74,7 @@ function feedItemHTML(item, { isAdmin = false, myName = '' } = {}) {
       <div class="chat-bubble-avatar" aria-hidden="true">${escHtml(initial)}</div>
       <div class="chat-bubble-body">
         <div class="chat-bubble-head">
-          <span class="chat-bubble-name">${escHtml(name)}</span>
-          ${meta}
+          ${actorMeta ? `<div class="chat-bubble-meta">${actorMeta}</div>` : ''}
           <time class="chat-bubble-time">${escHtml(time)}</time>
           ${deleteBtn}
         </div>

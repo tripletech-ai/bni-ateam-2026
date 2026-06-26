@@ -255,6 +255,57 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
   font-family: 'Noto Sans TC', sans-serif;
 }
 .profile-enrich-btn:active { opacity: 0.85; }
+.profile-enrich-urgent {
+  margin: 12px 16px 0;
+  padding: 14px 14px 12px;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(201, 162, 39, 0.45);
+  background: linear-gradient(145deg, rgba(201, 162, 39, 0.14), rgba(201, 162, 39, 0.06));
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.profile-enrich-urgent .profile-enrich-title {
+  font-size: calc(15px * var(--fs-k, 0.78));
+  font-weight: 700;
+  color: var(--gold, #c9a227);
+}
+.profile-enrich-urgent .profile-enrich-text { opacity: 0.92; }
+.profile-enrich-urgent .profile-enrich-btn { width: 100%; text-align: center; }
+
+.profile-empty-alert {
+  margin: 0 16px 14px;
+  padding: 14px 16px;
+  border-radius: var(--r-sm);
+  border: 1px solid rgba(201, 162, 39, 0.45);
+  background: rgba(201, 162, 39, 0.08);
+}
+.profile-empty-alert-title {
+  font-size: calc(15px * var(--fs-k, 0.78));
+  font-weight: 700;
+  margin-bottom: 6px;
+  color: var(--gold, #c9a227);
+}
+.profile-empty-alert-body,
+.profile-empty-alert-tip {
+  font-size: calc(13px * var(--fs-k, 0.78));
+  line-height: 1.55;
+  margin: 0 0 6px;
+}
+.profile-empty-alert-tip { opacity: 0.8; margin-bottom: 0; }
+
+.tab-warn-dot {
+  position: absolute;
+  top: -2px;
+  right: -4px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f59e0b;
+  border: 1.5px solid var(--surface, #fff);
+}
+.tab-item-warn:not(.active) span { color: #f59e0b; }
+.first-run-card-profile .first-run-title { color: var(--gold, #c9a227); }
 
 /* Profile milestone banner (every 50 filled profiles) */
 .profile-milestone-banner {
@@ -906,8 +957,19 @@ html { scroll-behavior: smooth; }
 .chat-bubble-head {
   display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin-bottom: 4px;
 }
+.chat-bubble-meta {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 4px;
+  width: 100%; margin-bottom: 2px;
+}
+.chat-bubble-sep { font-size: 10px; color: rgba(255,255,255,0.28); user-select: none; }
+.chat-bubble-region {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.02em;
+  padding: 1px 6px; border-radius: 4px;
+  background: rgba(250,199,117,0.14); color: rgba(250,199,117,0.92);
+  border: 1px solid rgba(250,199,117,0.28);
+}
 .chat-bubble-name { font-size: 13px; font-weight: 700; color: rgba(255,255,255,0.92); }
-.chat-bubble-branch { font-size: 11px; color: rgba(255,255,255,0.45); }
+.chat-bubble-branch { font-size: 11px; color: rgba(255,255,255,0.55); }
 .chat-bubble-time { font-size: 11px; color: rgba(255,255,255,0.35); margin-left: auto; }
 .chat-bubble-text {
   margin: 0; padding: 10px 12px; border-radius: 0 12px 12px 12px;
@@ -1333,6 +1395,7 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
   justify-content: flex-end;
   margin-bottom: 2px;
 }
+.chat-bubble-mine .chat-bubble-meta { justify-content: flex-end; }
 .feed-delete-btn-icon {
   width: 22px;
   height: 22px;

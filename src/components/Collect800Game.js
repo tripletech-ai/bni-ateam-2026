@@ -1,8 +1,11 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { memberProfileFilled } from '../utils/rosterPick.js';
-import { getCurrentUser } from '../services/auth.js';
+import { getCurrentUser, isBound } from '../services/auth.js';
 import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
+import { copyPageUrl } from '../utils/inAppBrowser.js';
+import { goToPage } from '../utils/nav.js';
+import { showToast } from '../utils/toast.js';
 
 export const COLLECT800_GOAL = 800;
 
@@ -11,6 +14,16 @@ export function getCollect800Stats() {
   const registered = window.BNI_PUBLIC_STATS?.total_members ?? members.length;
   const enriched = members.filter(memberProfileFilled).length;
   return { registered, enriched, goal: COLLECT800_GOAL };
+}
+
+function secondaryActionHTML() {
+  if (!getCurrentUser() || isGuestTrial()) {
+    return `<button type="button" class="btn-ai collect800-secondary" id="collect800-login">${escHtml(t('collect800_login_cta'))}</button>`;
+  }
+  if (!isBound()) {
+    return `<button type="button" class="btn-ai collect800-secondary" id="collect800-claim">${escHtml(t('collect800_claim_cta'))}</button>`;
+  }
+  return `<button type="button" class="btn-ai collect800-secondary" id="collect800-profile">${escHtml(t('collect800_profile_cta'))}</button>`;
 }
 
 export function collect800HTML() {
@@ -54,27 +67,42 @@ export function collect800HTML() {
 
       <p class="collect800-msg">${escHtml(t(msgKey))}</p>
       <div class="collect800-actions">
-        <button type="button" class="btn-outline collect800-nudge" id="collect800-nudge">
-          ${escHtml(t('collect800_nudge'))}
+        <button type="button" class="btn-outline collect800-copy-link" id="collect800-copy-link">
+          ${escHtml(t('search_invite_copy'))}
         </button>
-        ${(!getCurrentUser() || isGuestTrial())
-          ? `<button type="button" class="btn-ai collect800-profile" id="collect800-login">${escHtml(t('collect800_login_cta'))}</button>`
-          : `<a href="#profile" class="btn-ai collect800-profile">${escHtml(t('collect800_profile_cta'))}</a>`}
+        ${secondaryActionHTML()}
       </div>
     </section>`;
 }
 
-export function bindCollect800Game() {
-  document.getElementById('collect800-nudge')?.addEventListener('click', async () => {
-    const text = t('collect800_nudge_text');
-    try {
-      await navigator.clipboard.writeText(text);
-      import('../utils/toast.js').then(({ showToast }) => showToast(t('collect800_nudge_copied')));
-    } catch {
-      import('../utils/toast.js').then(({ showToast }) => showToast(text));
+export function bindCollect800Game(container) {
+  const root = container || document;
+
+  root.querySelector('#collect800-copy-link')?.addEventListener('click', async () => {
+    const ok = await copyPageUrl();
+    showToast(ok ? t('search_invite_copied') : t('inapp_copy_fail'));
+  });
+
+  root.querySelector('#collect800-profile')?.addEventListener('click', () => {
+    if (!isBound()) {
+      showToast(t('collect800_claim_first'));
+      return;
+    }
+    goToPage('profile');
+  });
+
+  root.querySelector('#collect800-claim')?.addEventListener('click', () => {
+    const form = document.getElementById('simple-claim-form')
+      || document.getElementById('claim-name-input');
+    if (form?.scrollIntoView) {
+      form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      document.getElementById('claim-name-input')?.focus?.();
+    } else {
+      showToast(t('collect800_claim_first'));
     }
   });
-  document.getElementById('collect800-login')?.addEventListener('click', () => {
+
+  root.querySelector('#collect800-login')?.addEventListener('click', () => {
     endGuestTrial();
     location.hash = '';
     window.location.reload();

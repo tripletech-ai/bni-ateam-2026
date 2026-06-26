@@ -1,11 +1,45 @@
-/** 判斷是否應顯示「完善個人資料」提示（已有內容則不強迫） */
+import { memberProfileFilled } from './rosterPick.js';
+
+function field(member, ...keys) {
+  for (const k of keys) {
+    const v = member?.[k];
+    if (v != null && String(v).trim()) return String(v).trim();
+  }
+  return '';
+}
+
+/** 正規化 getMyStatus().member 欄位名 */
+export function normalizeMemberFields(member) {
+  if (!member) return null;
+  return {
+    profession: field(member, 'profession'),
+    have: field(member, 'have'),
+    wantMeet: field(member, 'want_meet', 'wantMeet'),
+    wantReferral: field(member, 'want_referral', 'wantReferral'),
+    bio: field(member, 'bio'),
+    industries: Array.isArray(member.industries) ? member.industries : [],
+  };
+}
+
+/** 後台尚無媒合資料（與 bni_member_profile_filled 一致） */
+export function profileBackendEmpty(member) {
+  if (!member) return false;
+  const f = normalizeMemberFields(member);
+  return !memberProfileFilled({
+    profession: f.profession,
+    have: f.have,
+    wantMeet: f.wantMeet,
+    wantReferral: f.wantReferral,
+    bio: f.bio,
+  });
+}
+
+/** 判斷是否應顯示「完善個人資料」提示 */
 export function profileNeedsEnrichment(member) {
   if (!member) return false;
-  const prof = (member.profession || '').trim();
-  const referral = (member.want_referral || member.wantReferral || '').trim();
-  const bio = (member.bio || '').trim();
-  const industries = Array.isArray(member.industries) ? member.industries : [];
-  return !prof || !referral || !bio || industries.length === 0;
+  if (profileBackendEmpty(member)) return true;
+  const f = normalizeMemberFields(member);
+  return !f.wantReferral || !f.bio || f.industries.length === 0;
 }
 
 const PRESETS = {
