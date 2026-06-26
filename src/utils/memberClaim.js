@@ -109,7 +109,8 @@ async function claimViaClientMatch({ name, branch, region }) {
   }
 
   if (withDb.length >= 1) {
-    throw new Error('NAME_BRANCH_TAKEN');
+    const best = withDb.find(m => m.status === 'roster') || withDb[0];
+    return bindExistingMember(best.dbId);
   }
 
   return registerNewMember({

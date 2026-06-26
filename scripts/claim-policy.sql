@@ -36,8 +36,8 @@ BEGIN
   IF NOT FOUND THEN RAISE EXCEPTION 'MEMBER_NOT_FOUND'; END IF;
   IF NOT bni_is_ateam_roster_branch(v_member.branch) THEN RAISE EXCEPTION 'NOT_ATEAM_BRANCH'; END IF;
 
-  IF v_member.auth_user_id IS NOT NULL THEN
-    RAISE EXCEPTION 'NAME_BRANCH_TAKEN';
+  IF v_member.auth_user_id IS NOT NULL AND v_member.auth_user_id <> v_user_id THEN
+    DELETE FROM bni_onboarding WHERE auth_user_id = v_member.auth_user_id;
   END IF;
 
   UPDATE bni_members
@@ -52,7 +52,13 @@ BEGIN
     VALUES (v_user_id, v_target_id, false, now())
     ON CONFLICT (auth_user_id) DO UPDATE SET bound_member_id = v_target_id, updated_at = now();
 
-  RETURN jsonb_build_object('ok', true, 'member_id', v_target_id, 'name', v_member.name, 'duplicate', false);
+  RETURN jsonb_build_object(
+    'ok', true,
+    'member_id', v_target_id,
+    'name', v_member.name,
+    'duplicate', v_member.auth_user_id IS NOT NULL AND v_member.auth_user_id <> v_user_id,
+    'replaced', v_member.auth_user_id IS NOT NULL AND v_member.auth_user_id <> v_user_id
+  );
 END; $$;
 
 CREATE OR REPLACE FUNCTION bni_register_new_member(

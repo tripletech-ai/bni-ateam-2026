@@ -7,7 +7,12 @@ export function normalizeClaimResult(result) {
   if (!result || typeof result !== 'object') return {};
   if (result.matched !== undefined || result.from_roster !== undefined) return result;
   if (result.duplicate !== undefined) {
-    return { matched: true, from_roster: true, duplicate: !!result.duplicate };
+    return {
+      matched: true,
+      from_roster: true,
+      duplicate: !!result.duplicate,
+      replaced: !!result.replaced,
+    };
   }
   return { matched: false, from_roster: false, duplicate: false };
 }

@@ -1,4 +1,4 @@
--- 同步 bni_bind_existing_member：禁止重複 INSERT（與 claim-by-name-branch 一致）
+-- 與 claim-by-name-branch.sql 同步（取代認領，不 INSERT 幽靈列）
 -- node scripts/run-insforge-sql.mjs scripts/patch-bind-no-duplicate.sql
 
 CREATE OR REPLACE FUNCTION bni_bind_existing_member(p_member_id uuid)
@@ -8,6 +8,8 @@ DECLARE
   v_email text;
   v_member bni_members%ROWTYPE;
   v_target_id uuid;
+  v_replaced boolean := false;
+  v_prev_user uuid;
 BEGIN
   IF v_user_id IS NULL THEN RAISE EXCEPTION 'NOT_AUTHENTICATED'; END IF;
   IF EXISTS (SELECT 1 FROM bni_members WHERE auth_user_id = v_user_id AND active = true) THEN
@@ -18,8 +20,10 @@ BEGIN
   IF NOT FOUND THEN RAISE EXCEPTION 'MEMBER_NOT_FOUND'; END IF;
   IF NOT bni_is_ateam_roster_branch(v_member.branch) THEN RAISE EXCEPTION 'NOT_ATEAM_BRANCH'; END IF;
 
-  IF v_member.auth_user_id IS NOT NULL THEN
-    RAISE EXCEPTION 'NAME_BRANCH_TAKEN';
+  v_prev_user := v_member.auth_user_id;
+  v_replaced := v_prev_user IS NOT NULL AND v_prev_user <> v_user_id;
+  IF v_replaced THEN
+    DELETE FROM bni_onboarding WHERE auth_user_id = v_prev_user;
   END IF;
 
   UPDATE bni_members
@@ -34,7 +38,10 @@ BEGIN
     VALUES (v_user_id, v_target_id, false, now())
     ON CONFLICT (auth_user_id) DO UPDATE SET bound_member_id = v_target_id, updated_at = now();
 
-  RETURN jsonb_build_object('ok', true, 'member_id', v_target_id, 'name', v_member.name, 'duplicate', false);
+  RETURN jsonb_build_object(
+    'ok', true, 'member_id', v_target_id, 'name', v_member.name,
+    'duplicate', v_replaced, 'replaced', v_replaced
+  );
 END; $$;
 
 GRANT EXECUTE ON FUNCTION bni_bind_existing_member(uuid) TO authenticated;
