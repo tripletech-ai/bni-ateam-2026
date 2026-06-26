@@ -1,10 +1,12 @@
 /** 快取「想跟我約 1-1」標記，供標記分頁、Tab badge、互相連結估算共用 */
 
-export function cacheIncomingOneKeys(rows) {
-  window.BNI_INCOMING_ONE_KEYS = new Set(
-    (rows || []).map(r => `${r.name}||${r.branch}`),
-  );
-}
+export {
+  cacheIncomingOneKeys,
+  cacheMutualPartners,
+  hasIncomingOneMark,
+  isServerMutual,
+  refreshConnectionCache,
+} from './connectionCache.js';
 
 export function setIncomingUnseenCount(n) {
   const count = Math.max(0, Number(n) || 0);

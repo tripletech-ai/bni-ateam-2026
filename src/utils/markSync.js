@@ -2,6 +2,7 @@ import { recordConnectionMark, removeConnectionMark, withAuthRetry } from '../se
 import { getCurrentUser, isBound } from '../services/auth.js';
 import { getMarks, memberKey } from './storage.js';
 import { refreshLeaderboardCache } from './leaderboardCache.js';
+import { refreshConnectionCache } from './connectionCache.js';
 
 function resolveDbId(member) {
   if (member?.dbId) return member.dbId;
@@ -21,8 +22,9 @@ export async function syncMarkToServer(member, type, active, { refreshLb = true 
       if (active) await recordConnectionMark(dbId, type);
       else await removeConnectionMark(dbId, type);
     });
-    if (type === 'one' && refreshLb) {
-      refreshLeaderboardCache().catch(() => {});
+    if (type === 'one') {
+      refreshConnectionCache().catch(() => {});
+      if (refreshLb) refreshLeaderboardCache().catch(() => {});
     }
     return { ok: true };
   } catch (e) {

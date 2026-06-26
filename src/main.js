@@ -17,7 +17,6 @@ import {
   fetchPublicStats,
   getCurrentUser,
   fetchIncomingMarks,
-  fetchMyMutualStats,
   recordPresence,
   fetchLeaderboard,
   fetchFeed,
@@ -27,7 +26,8 @@ import {
   getMyStatus,
   refreshStatus,
 } from './services/auth.js';
-import { showIncomingOneOverlay } from './components/IncomingOneBanner.js';
+import { showIncomingOneOverlay, dismissIncomingOverlay } from './components/IncomingOneBanner.js';
+import { setIncomingUnseenCount } from './utils/incomingMarks.js';
 import { renderUserBar } from './components/UserBar.js';
 import { bootSkeletonHTML } from './utils/skeleton.js';
 import { showFirstRunHint, finishOnboardingTutorial } from './components/FirstRunHint.js';
@@ -42,6 +42,7 @@ import { clearPendingClaim } from './utils/memberClaim.js';
 import { mergePendingMarks } from './utils/storage.js';
 import { syncAllMarksToServer } from './utils/markSync.js';
 import { refreshLeaderboardCache } from './utils/leaderboardCache.js';
+import { refreshConnectionCache } from './utils/connectionCache.js';
 import { normalizeAppUrl } from './utils/appUrl.js';
 import { profileBackendEmpty } from './utils/profileHints.js';
 import { registerNavigator, goToPage } from './utils/nav.js';
@@ -149,10 +150,7 @@ function isMarksRoute() {
 
 async function syncMutualStats() {
   try {
-    const stats = await fetchMyMutualStats();
-    if (stats && typeof stats.mutual_count === 'number') {
-      window.BNI_MUTUAL_COUNT = stats.mutual_count;
-    }
+    await refreshConnectionCache();
   } catch (e) {
     console.warn('mutual stats:', e.message);
   }
@@ -179,19 +177,15 @@ async function preloadLiveData() {
 async function pollIncomingMarks() {
   if (!isBound() || incomingMarksUnavailable) return;
   try {
-    const [unseen, all] = await Promise.all([
-      fetchIncomingMarks(true),
-      fetchIncomingMarks(false),
-    ]);
-    cacheIncomingOneKeys(all);
-    setIncomingUnseenCount(unseen.length);
-    await syncMutualStats();
+    const { unseenCount } = await refreshConnectionCache();
+    setIncomingUnseenCount(unseenCount);
     refreshLeaderboardCache().catch(() => {});
 
     if (isMarksRoute()) {
       dismissIncomingOverlay();
       refreshIncomingMarksSection(app);
-    } else if (unseen.length) {
+    } else if (unseenCount > 0) {
+      const unseen = await fetchIncomingMarks(true);
       showIncomingOneOverlay(unseen);
     }
 
@@ -214,7 +208,7 @@ async function pollIncomingMarks() {
 function startIncomingPoll() {
   if (incomingPollTimer) clearInterval(incomingPollTimer);
   pollIncomingMarks();
-  incomingPollTimer = setInterval(pollIncomingMarks, 45000);
+  incomingPollTimer = setInterval(pollIncomingMarks, 20000);
 }
 
 async function afterBindComplete() {
@@ -446,6 +440,11 @@ async function boot() {
 }
 
 window.addEventListener('hashchange', navigate);
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && isBound() && appReady) {
+    pollIncomingMarks();
+  }
+});
 window.addEventListener('unhandledrejection', event => {
   console.error('Unhandled promise rejection:', event.reason);
   import('./utils/toast.js').then(({ showToast }) => {

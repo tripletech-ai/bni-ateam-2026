@@ -137,14 +137,23 @@ export function getConnectionCount() {
 
 /** 本地估算：我標記 one + 對方也標記我（來自 incoming cache） */
 export function getMutualConnectionCountLocal() {
-  const incoming = window.BNI_INCOMING_ONE_KEYS;
-  if (!incoming?.size) return 0;
-  return getMarks().filter(m => m.one && incoming.has(m.key)).length;
+  const incomingKeys = window.BNI_INCOMING_ONE_KEYS;
+  const incomingIds = window.BNI_INCOMING_ONE_IDS;
+  if (!incomingKeys?.size && !incomingIds?.size) return 0;
+  return getMarks().filter(m => {
+    if (!m.one) return false;
+    if (incomingKeys?.has(m.key)) return true;
+    const member = (window.BNI_MEMBERS || []).find(x => memberKey(x) === m.key);
+    return !!(member?.dbId && incomingIds?.has(member.dbId));
+  }).length;
 }
 
 export function isMutuallyConnected(member) {
+  if (!member) return false;
+  if (member.dbId && window.BNI_MUTUAL_IDS?.has(member.dbId)) return true;
+  if (window.BNI_MUTUAL_KEYS?.has(memberKey(member))) return true;
   const mark = getMark(member);
   if (!mark.one) return false;
-  const incoming = window.BNI_INCOMING_ONE_KEYS;
-  return incoming?.has(memberKey(member)) ?? false;
+  if (member.dbId && window.BNI_INCOMING_ONE_IDS?.has(member.dbId)) return true;
+  return window.BNI_INCOMING_ONE_KEYS?.has(memberKey(member)) ?? false;
 }

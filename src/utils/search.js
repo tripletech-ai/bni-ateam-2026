@@ -4,6 +4,7 @@ import { getMembersByIndustry as filterMembersByIndustry, INDUSTRY_CATEGORIES, i
 import { normalizeBranchName } from '../data/branches.js';
 import { normalizeIntent } from './searchIntent.js';
 import { getMark, memberKey, isMutuallyConnected } from './storage.js';
+import { hasIncomingOneMark } from './connectionCache.js';
 
 function getMyMemberKey() {
   return (typeof window !== 'undefined' && window.BNI_MY_MEMBER_KEY) || '';
@@ -288,9 +289,8 @@ function scoreMemberByIntent(member, intent) {
   }
 
   let socialBonus = 0;
-  const key = memberKey(member);
-  const incoming = window.BNI_INCOMING_ONE_KEYS;
-  if (incoming?.has(key)) {
+  const incomingMarked = hasIncomingOneMark(member);
+  if (incomingMarked) {
     socialBonus += 8;
     matchReasons.unshift({ type: 'incoming', text: '對方已標記想與你 1-1' });
   }

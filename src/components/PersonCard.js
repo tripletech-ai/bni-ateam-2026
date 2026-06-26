@@ -1,5 +1,6 @@
 import { getMark, setMark, setPendingMark, memberKey, isMutuallyConnected } from '../utils/storage.js';
 import { syncMarkToServer } from '../utils/markSync.js';
+import { hasIncomingOneMark } from '../utils/connectionCache.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
 import { isBound } from '../services/auth.js';
 import { showToast }                   from '../utils/toast.js';
@@ -53,7 +54,7 @@ export function personCardHTML(member, opts = {}) {
         `<div class="match-reason match-reason-${escAttr(r.type || 'seek')}">${escHtml(r.text)}</div>`
       ).join('')}</div>` : '';
 
-  const markedYou = window.BNI_INCOMING_ONE_KEYS?.has(key) && !mutual
+  const markedYou = hasIncomingOneMark(member) && !mutual
     ? `<span class="incoming-badge">${escHtml(t('card_marked_you'))}</span>` : '';
   const markedByMe = mark.one && !mutual
     ? `<span class="marked-badge">${escHtml(t('card_marked'))}</span>` : '';
@@ -88,7 +89,7 @@ export function personCardHTML(member, opts = {}) {
         data-action="line" data-key="${escAttr(key)}"
         data-line-link="${escAttr(member.lineLink || '')}"
         data-line-id="${escAttr(member.lineId || '')}">${t('card_line')}</button>
-      <button class="btn btn-one ${mark.one ? 'active' : ''}${mutual ? ' mutual' : ''}"
+      <button class="btn btn-one ${mark.one || mutual ? 'active' : ''}${mutual ? ' mutual' : ''}"
         data-action="one" data-key="${escAttr(key)}">${mutual ? t('card_mutual') : t('card_one')}</button>
       <button class="btn btn-biz ${mark.biz ? 'active' : ''}"
         data-action="biz" data-key="${escAttr(key)}">${t('card_biz')}</button>
@@ -96,7 +97,51 @@ export function personCardHTML(member, opts = {}) {
   </div>`;
 }
 
+export function refreshCardMutualUI(card, member) {
+  if (!card || !member) return;
+  const mark = getMark(member);
+  const mutual = isMutuallyConnected(member);
+  const header = card.querySelector('.person-card-header > div');
+  if (!header) return;
+
+  header.querySelector('.mutual-badge')?.remove();
+  header.querySelector('.incoming-badge')?.remove();
+  header.querySelector('.marked-badge')?.remove();
+
+  if (mutual) {
+    header.insertAdjacentHTML('beforeend',
+      `<span class="mutual-badge">${escHtml(t('card_mutual'))}</span>`);
+  } else if (hasIncomingOneMark(member)) {
+    header.insertAdjacentHTML('beforeend',
+      `<span class="incoming-badge">${escHtml(t('card_marked_you'))}</span>`);
+  } else if (mark.one) {
+    header.insertAdjacentHTML('beforeend',
+      `<span class="marked-badge">${escHtml(t('card_marked'))}</span>`);
+  }
+
+  const oneBtn = card.querySelector('[data-action="one"]');
+  if (oneBtn) {
+    oneBtn.textContent = mutual ? t('card_mutual') : t('card_one');
+    oneBtn.classList.toggle('active', mark.one || mutual);
+    oneBtn.classList.toggle('mutual', mutual);
+  }
+}
+
+let connectionsListenerBound = false;
+
+function bindConnectionsRefresh() {
+  if (connectionsListenerBound) return;
+  connectionsListenerBound = true;
+  window.addEventListener('bni-connections-updated', () => {
+    document.querySelectorAll('.person-card[data-key]').forEach(card => {
+      const member = (window.BNI_MEMBERS || []).find(m => memberKey(m) === card.dataset.key);
+      if (member) refreshCardMutualUI(card, member);
+    });
+  });
+}
+
 export function bindCardEvents(container, members) {
+  bindConnectionsRefresh();
   if (!container) return;
   container.addEventListener('click', e => {
     // Card expand/collapse — click anywhere except action buttons
@@ -141,20 +186,8 @@ export function bindCardEvents(container, members) {
       }
       const card = container.querySelector(`.person-card[data-key="${CSS.escape(key)}"]`);
       if (card) {
-        const oneBtn = card.querySelector('[data-action="one"]');
-        oneBtn?.classList.toggle('active', updated.one);
         card.querySelector('[data-action="biz"]')?.classList.toggle('active', updated.biz);
-        const header = card.querySelector('.person-card-header > div');
-        const mutual = isMutuallyConnected(member);
-        header?.querySelector('.marked-badge')?.remove();
-        if (updated.one && !mutual) {
-          header?.insertAdjacentHTML('beforeend',
-            `<span class="marked-badge">${escHtml(t('card_marked'))}</span>`);
-        }
-        if (oneBtn) {
-          oneBtn.textContent = mutual ? t('card_mutual') : t('card_one');
-          oneBtn.classList.toggle('mutual', mutual);
-        }
+        if (action === 'one') refreshCardMutualUI(card, member);
       }
       import('../components/TabBar.js').then(({ renderTabBar }) => {
         renderTabBar(document.getElementById('tab-bar'), window.location.hash || '#search');
