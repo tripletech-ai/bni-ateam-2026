@@ -2205,19 +2205,29 @@ textarea.field-input {
 .home-donggu-body .leader-card-secondary { margin: 0; }
 .leader-card-secondary.has-card-link { cursor: pointer; }
 #first-run-overlay .first-run-card {
-  background: var(--dark-surface, #1a1f2e);
-  border-color: var(--dark-border);
-  color: var(--dark-text, #fff);
+  background: #101629;
+  border-color: rgba(250, 199, 117, 0.35);
+  color: #fff;
 }
 #first-run-overlay .first-run-card-clear {
-  border-color: rgba(250, 199, 117, 0.45);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+  border-color: rgba(250, 199, 117, 0.5);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6);
 }
-#first-run-overlay .first-run-subtitle { color: rgba(255, 255, 255, 0.92); }
-#first-run-overlay .first-run-steps { color: rgba(255, 255, 255, 0.88); }
-#first-run-overlay .first-run-body { color: var(--dark-muted); }
-#first-run-overlay .first-run-game-welcome { color: var(--dark-text); }
+#first-run-overlay .first-run-subtitle { color: rgba(255, 255, 255, 0.78); }
+#first-run-overlay .first-run-game {
+  background: rgba(8, 14, 32, 0.98);
+  border-color: rgba(250, 199, 117, 0.22);
+}
+#first-run-overlay .first-run-game-welcome { color: #fff; }
+#first-run-overlay .first-run-game-stats { color: rgba(255, 255, 255, 0.72); }
+#first-run-overlay .first-run-game-quests li { color: rgba(255, 255, 255, 0.55); }
 #first-run-overlay .first-run-game-quests li.active { color: var(--gold-bright); }
+#first-run-overlay .first-run-game-quests li.done { color: rgba(255, 255, 255, 0.72); }
+#first-run-overlay .first-run-invite-btn {
+  color: #fac775;
+  border-color: rgba(250, 199, 117, 0.65);
+  background: rgba(250, 199, 117, 0.12);
+}
 .home-mark-link { color: var(--gold-bright); }
 .profile-enrich-minimal {
   background: rgba(255,255,255,0.04);
