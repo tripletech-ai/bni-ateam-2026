@@ -10,6 +10,7 @@ import {
 } from '../components/ProfileTemplatePanel.js';
 import { showToast } from '../utils/toast.js';
 import { loadMembersFromDb } from '../services/membersApi.js';
+import { notifyProfileMilestone } from '../utils/profileMilestone.js';
 import { industryPickerHTML, bindIndustryPicker, readIndustryPickerValues } from '../components/IndustryPicker.js';
 import { inferIndustriesFromText } from '../data/industries.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
@@ -156,6 +157,8 @@ export function renderProfileEdit(container) {
       });
       try {
         await loadMembersFromDb(fetchAllMembers);
+        const hit = notifyProfileMilestone(window.BNI_MEMBERS);
+        if (hit) window.BNI_PROFILE_MILESTONE = hit;
       } catch (err) {
         console.warn('reload members:', err);
       }

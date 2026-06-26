@@ -32,6 +32,7 @@ import { withRetry } from './utils/retry.js';
 import { isGuestTrial, endGuestTrial } from './utils/guestTrial.js';
 import { guestTrialBannerHTML, bindGuestTrialLogin } from './components/GuestTrialBanner.js';
 import { showToast } from './utils/toast.js';
+import { notifyProfileMilestone } from './utils/profileMilestone.js';
 
 // ── Language ──────────────────────────────────────
 window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
@@ -258,10 +259,17 @@ function showBootError(message, { canRetry = true } = {}) {
 }
 
 async function loadMembersWithRetry() {
-  return withRetry(
+  const result = await withRetry(
     () => loadMembersFromDb(fetchAllMembers),
     { retries: 3, delayMs: 800, label: 'loadMembers' },
   );
+  syncProfileMilestone();
+  return result;
+}
+
+function syncProfileMilestone() {
+  const hit = notifyProfileMilestone(window.BNI_MEMBERS);
+  if (hit) window.BNI_PROFILE_MILESTONE = hit;
 }
 
 async function loadPublicStatsWithRetry() {

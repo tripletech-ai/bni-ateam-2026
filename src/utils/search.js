@@ -1,7 +1,8 @@
 // Members data is loaded via classic <script> tag as window.BNI_MEMBERS
-// This avoids ES module cache issues across Netlify deployments
 
-import { getMembersByIndustry as filterMembersByIndustry } from '../data/industries.js';
+import { getMembersByIndustry as filterMembersByIndustry, INDUSTRY_CATEGORIES, inferIndustriesFromText } from '../data/industries.js';
+import { normalizeIntent } from './searchIntent.js';
+import { getMark, memberKey, isMutuallyConnected } from './storage.js';
 
 function getMembers() {
   return window.BNI_MEMBERS || [];
@@ -9,36 +10,31 @@ function getMembers() {
 
 const memberId = m => m.id || m.name;
 
-// ── Synonym groups — TIGHT clusters that bridge vocabulary gaps ──
-// Only true near-synonyms where the user's word differs from the data's
-// word (e.g. 法律→律師, 老闆→企業主). Broad substring cases (設計→室內設計)
-// are already handled by substring matching, so they are NOT grouped here —
-// over-broad groups hurt precision.
 const SYNONYM_GROUPS = [
   ['律師', '法律', '訴訟', '法務'],
   ['會計', '會計師', '記帳', '記帳士', '稅務', '報稅'],
   ['保險', '壽險', '產險', '保經', '保代'],
   ['不動產', '房地產', '房仲', '仲介', '房屋'],
-  ['室內設計', '裝修', '裝潢', '室內裝修'],
+  ['室內設計', '裝修', '裝潢', '室內裝修', '統包'],
   ['建設', '建商', '營造'],
   ['行銷', '廣告', '數位行銷'],
   ['品牌', '品牌設計', '品牌策略'],
-  ['老闆', '企業主', '負責人', '總經理', '董事長', '創辦人', '中小企業'],
+  ['老闆', '企業主', '負責人', '總經理', '董事長', '創辦人', '中小企業', '創業者', '經營者'],
   ['家族企業', '二代', '接班', '傳承'],
   ['人資', '人力資源', '招募', '獵頭'],
   ['物理治療', '復健'],
   ['醫美', '醫學美容', '微整'],
   ['美業', '美髮', '美甲', '美睫', '沙龍'],
-  ['芳療', '精油'],
   ['理財', '財務規劃', '資產配置', '財富傳承'],
   ['投資', '融資', '貸款'],
   ['攝影', '攝影師', '拍攝', '錄影'],
   ['教育', '培訓', '課程', '講師'],
   ['餐飲', '餐廳', '美食'],
   ['電商', '網路購物', '網購'],
-  ['禮品', '禮贈品', '贈品'],
   ['高資產', '高淨值'],
 ];
+
+const DECISION_MAKER_RE = /企業主|老闆|創辦人|董事長|總經理|負責人|經營者|創業者|二代|接班人|家族企業主/;
 
 const SYN_INDEX = (() => {
   const m = new Map();
@@ -52,12 +48,6 @@ const SYN_INDEX = (() => {
   return m;
 })();
 
-// Expand a query keyword into itself + tight synonym terms.
-//  • exact group membership:        法律 → {律師, 訴訟, 法務}
-//  • query CONTAINS a group term:   法律服務 → 法律 → {律師, …}
-// We deliberately do NOT expand when a group term merely contains the
-// query (e.g. 設計 ⊂ 室內設計) — substring matching already covers that,
-// and expanding it would over-broaden the results.
 function expandKeyword(k) {
   const lk = k.toLowerCase().trim();
   const terms = new Set([lk]);
@@ -70,145 +60,245 @@ function expandKeyword(k) {
   return [...terms];
 }
 
-// Field weighting. profession = the strongest "this person IS X" signal,
-// so it must outrank tags / wants. tags & wantMeet are noisier (they often
-// hold *desired-client* keywords — a mover tagging "裝潢" because he wants
-// renovation clients), so they sit lower; wantReferral is lowest.
-const FIELD_WEIGHTS = [
-  ['profession', 5],
-  ['bio', 3],
-  ['have', 3],
-  ['tags', 2], ['wantMeet', 2],
-  ['name', 1], ['branch', 1], ['wantReferral', 1],
-];
+function expandTerms(list) {
+  return (list || []).map(kw => ({ kw, terms: expandKeyword(kw) }));
+}
 
-function memberIndustriesText(member) {
-  return (member.industries || []).join(' ').toLowerCase();
+function cleanTags(tags) {
+  return (tags || []).filter(t => {
+    const s = String(t || '').trim();
+    return s.length > 2 && s !== '▪︎' && !/^[（(▪]/.test(s);
+  });
+}
+
+function memberIndustryBlob(member) {
+  let ids = member.industries?.length ? member.industries : inferIndustriesFromText(member.profession, member.have);
+  const kws = [];
+  for (const id of ids) {
+    const cat = INDUSTRY_CATEGORIES.find(c => c.id === id);
+    if (cat) kws.push(...cat.keywords);
+  }
+  return kws.join(' ').toLowerCase();
 }
 
 function memberFields(member) {
   return {
-    profession:   (member.profession || '').toLowerCase(),
-    bio:          (member.bio || '').toLowerCase(),
-    tags:         (member.tags || []).join(' ').toLowerCase(),
-    have:         (member.have || '').toLowerCase(),
-    wantMeet:     (member.wantMeet || '').toLowerCase(),
-    name:         (member.name || '').toLowerCase(),
-    branch:       (member.branch || '').toLowerCase(),
+    profession: (member.profession || '').toLowerCase(),
+    bio: (member.bio || '').toLowerCase(),
+    tags: cleanTags(member.tags).join(' ').toLowerCase(),
+    have: (member.have || '').toLowerCase(),
+    wantMeet: (member.wantMeet || '').toLowerCase(),
     wantReferral: (member.wantReferral || '').toLowerCase(),
+    industries: memberIndustryBlob(member),
   };
 }
 
-const STRONG_FIELDS = new Set(['profession', 'bio', 'have']);
+function fieldHit(text, terms) {
+  return terms.some(t => t.length >= 2 && text.includes(t));
+}
 
-function scoreMember(member, expanded) {
-  const f = memberFields(member);
-  let score = 0;
-  const matchedKeywords = [];
-  let strongMatchCount = 0;
-  let professionHit = false;
+function isDecisionMaker(member) {
+  const blob = [member.profession, member.have, member.bio].filter(Boolean).join(' ');
+  return DECISION_MAKER_RE.test(blob);
+}
 
-  for (const { kw, terms } of expanded) {
-    let best = 0;
-    let bestField = null;
-    for (const [field, w] of FIELD_WEIGHTS) {
-      if (w > best && terms.some(t => f[field].includes(t))) {
-        best = w;
-        bestField = field;
-      }
+function isExcluded(f, expandedExclude) {
+  for (const { terms } of expandedExclude) {
+    if (fieldHit(f.profession, terms) || fieldHit(f.have, terms) || fieldHit(f.tags, terms)) {
+      return true;
     }
-    if (best > 0) {
-      score += best;
-      matchedKeywords.push(kw);
-      if (STRONG_FIELDS.has(bestField)) {
-        strongMatchCount++;
-        if (bestField === 'profession') professionHit = true;
+  }
+  return false;
+}
+
+function getMyBranch() {
+  return (typeof window !== 'undefined' && window.BNI_MY_BRANCH) || '';
+}
+
+function scoreMemberByIntent(member, intent) {
+  const f = memberFields(member);
+  const iAm = expandTerms(intent.iAm);
+  const iOffer = expandTerms(intent.iOffer);
+  const iSeek = expandTerms(intent.iSeek);
+  const iRefer = expandTerms(intent.iRefer);
+  const ex = expandTerms(intent.exclude);
+
+  if (ex.length && isExcluded(f, ex)) return null;
+
+  let seekScore = 0;
+  let seekSupplyHits = 0;
+  let referralScore = 0;
+  let complementScore = 0;
+  let peerPenalty = 0;
+  let demandPenalty = 0;
+  /** @type {{ type: string, text: string }[]} */
+  const matchReasons = [];
+  const matchedKeywords = [];
+
+  const allSeek = [...iSeek, ...iRefer];
+  if (!allSeek.length && !iAm.length && !iOffer.length) return null;
+
+  for (const { kw, terms } of allSeek) {
+    let hit = false;
+    if (fieldHit(f.profession, terms)) {
+      seekScore += 12;
+      seekSupplyHits++;
+      hit = true;
+      matchReasons.push({ type: 'seek', text: `${kw} ↔ 產業「${member.profession}」` });
+    } else if (fieldHit(f.have, terms)) {
+      seekScore += 8;
+      seekSupplyHits++;
+      hit = true;
+      matchReasons.push({ type: 'seek', text: `${kw} ↔ 提供的資源` });
+    } else if (fieldHit(f.industries, terms)) {
+      seekScore += 7;
+      seekSupplyHits++;
+      hit = true;
+      matchReasons.push({ type: 'seek', text: `${kw} ↔ 大產業分類` });
+    } else if (fieldHit(f.bio, terms)) {
+      seekScore += 5;
+      seekSupplyHits++;
+      hit = true;
+      matchReasons.push({ type: 'seek', text: `${kw} ↔ 自我介紹` });
+    } else if (fieldHit(f.tags, terms)) {
+      seekScore += 2;
+      hit = true;
+      matchReasons.push({ type: 'seek', text: `${kw} ↔ 標籤` });
+    }
+
+    if (fieldHit(f.wantReferral, terms)) {
+      referralScore += 6;
+      hit = true;
+      matchReasons.push({ type: 'referral', text: `${kw} ↔ 可引薦對象（引薦路徑）` });
+    }
+
+    if (!hit && fieldHit(f.wantMeet, terms)) {
+      demandPenalty += 6;
+      matchReasons.push({ type: 'weak', text: `${kw} — 對方「想認識」此類（可能在找客戶）` });
+    }
+
+    if (hit) matchedKeywords.push(kw);
+
+    if (terms.some(t => DECISION_MAKER_RE.test(t)) && isDecisionMaker(member)) {
+      seekScore += 4;
+      if (!matchReasons.some(r => r.type === 'decision')) {
+        matchReasons.push({ type: 'decision', text: '決策者／企業經營者' });
       }
     }
   }
 
-  if (matchedKeywords.length === 0) return null;
+  for (const { kw, terms } of iAm) {
+    if (fieldHit(f.wantMeet, terms)) {
+      complementScore += 7;
+      matchReasons.push({ type: 'complement', text: `對方想認識「${kw}」類夥伴 — 互補媒合` });
+    }
+    if (fieldHit(f.profession, terms)) {
+      peerPenalty += 14;
+      matchReasons.push({ type: 'peer', text: `同業（${member.profession}）— 已降低排序` });
+    }
+  }
 
-  const isPrecise =
-    professionHit ||
-    (strongMatchCount >= 1 && matchedKeywords.length >= 2) ||
-    strongMatchCount >= 2 ||
-    (score >= 8 && strongMatchCount >= 1);
+  for (const { kw, terms } of iOffer) {
+    if (fieldHit(f.wantMeet, terms)) {
+      complementScore += 5;
+      matchReasons.push({ type: 'complement', text: `你的「${kw}」↔ 對方想認識的對象` });
+    }
+  }
+
+  let socialBonus = 0;
+  const key = memberKey(member);
+  const incoming = window.BNI_INCOMING_ONE_KEYS;
+  if (incoming?.has(key)) {
+    socialBonus += 8;
+    matchReasons.unshift({ type: 'incoming', text: '對方已標記想與你 1-1' });
+  }
+  if (getMark(member).one) {
+    socialBonus += 2;
+  }
+  if (isMutuallyConnected(member)) {
+    socialBonus += 4;
+    matchReasons.unshift({ type: 'mutual', text: '已互相連結' });
+  }
+
+  const myBranch = getMyBranch();
+  if (myBranch && member.branch === myBranch) {
+    socialBonus += 3;
+    matchReasons.push({ type: 'branch', text: `同分會（${myBranch}）` });
+  }
+
+  const total = seekScore + referralScore + complementScore + socialBonus - peerPenalty - demandPenalty;
+  if (total < 3 && !referralScore && !complementScore) return null;
+
+  const isPeer = peerPenalty >= 14 && seekSupplyHits === 0;
+  const isDemandOnly = demandPenalty >= 6 && seekSupplyHits === 0 && referralScore === 0;
+
+  let tier = 'possible';
+  if (referralScore >= 6 && seekSupplyHits === 0) {
+    tier = 'referral';
+  } else if (
+    seekSupplyHits >= 1 &&
+    seekScore >= 8 &&
+    !isPeer &&
+    !isDemandOnly
+  ) {
+    tier = 'precise';
+  } else if (complementScore >= 7 && !isPeer) {
+    tier = 'precise';
+  } else if (referralScore >= 4) {
+    tier = 'referral';
+  }
 
   return {
     ...member,
-    matchedKeywords,
-    _score: score,
-    _tier: isPrecise ? 'precise' : 'possible',
+    matchedKeywords: [...new Set(matchedKeywords)],
+    matchReasons: matchReasons.slice(0, 4),
+    _score: total,
+    _tier: tier,
+    _seekSupplyHits: seekSupplyHits,
   };
 }
 
-export function searchMembersTiered(keywords) {
-  if (!keywords || keywords.length === 0) return { precise: [], possible: [] };
-  const kws = keywords.map(k => String(k).trim()).filter(k => k.length >= 2);
-  if (kws.length === 0) return { precise: [], possible: [] };
-  const expanded = kws.map(k => ({ kw: k, terms: expandKeyword(k) }));
+/**
+ * @param {import('./searchIntent.js').SearchIntent | string[]} keywordsOrIntent
+ */
+export function searchMembersByIntent(keywordsOrIntent) {
+  const intent = normalizeIntent(keywordsOrIntent);
+  const buckets = { precise: [], possible: [], referral: [] };
 
-  const precise = [];
-  const possible = [];
   for (const member of getMembers()) {
-    const hit = scoreMember(member, expanded);
+    const hit = scoreMemberByIntent(member, intent);
     if (!hit) continue;
-    if (hit._tier === 'precise') precise.push(hit);
-    else possible.push(hit);
+    if (hit._tier === 'precise') buckets.precise.push(hit);
+    else if (hit._tier === 'referral') buckets.referral.push(hit);
+    else buckets.possible.push(hit);
   }
 
   const sortHits = (a, b) =>
     b._score - a._score ||
-    b.matchedKeywords.length - a.matchedKeywords.length ||
+    b._seekSupplyHits - a._seekSupplyHits ||
+    (b.matchReasons?.length || 0) - (a.matchReasons?.length || 0) ||
     a.name.localeCompare(b.name, 'zh-TW');
 
-  precise.sort(sortHits);
-  possible.sort(sortHits);
-  return { precise, possible };
+  buckets.precise.sort(sortHits);
+  buckets.referral.sort(sortHits);
+  buckets.possible.sort(sortHits);
+
+  return buckets;
 }
 
-export function searchMembers(keywords) {
-  return searchMembersTiered(keywords).precise;
+/** @param {import('./searchIntent.js').SearchIntent | string[]} keywordsOrIntent */
+export function searchMembersTiered(keywordsOrIntent) {
+  const { precise, possible, referral } = searchMembersByIntent(keywordsOrIntent);
+  return { precise, possible, referral };
 }
 
-// Soft fallback — thematic suggestions for「可能有的機會」tier.
-export function getSuggestions(keywords = [], excludeIds = new Set(), need = 3) {
-  const avail = getMembers().filter(m => !excludeIds.has(memberId(m)));
+export function searchMembers(keywordsOrIntent) {
+  return searchMembersByIntent(keywordsOrIntent).precise;
+}
 
-  const softScore = m => {
-    const text = [m.profession, m.bio, m.have, (m.tags || []).join(' '), m.wantMeet]
-      .join(' ').toLowerCase();
-    let s = 0;
-    for (const k of keywords) {
-      const lk = String(k).trim().toLowerCase();
-      if (lk.length >= 2 && text.includes(lk)) s += 4;
-      else if (lk.length >= 2) {
-        for (const c of lk) {
-          if (/[㐀-鿿]/.test(c) && text.includes(c)) s++;
-        }
-      }
-    }
-    return s;
-  };
-
-  const ranked = avail
-    .map(m => ({ m, s: softScore(m) }))
-    .filter(({ s }) => s >= 2)
-    .sort((a, b) => b.s - a.s || a.m.name.localeCompare(b.m.name, 'zh-TW'));
-
-  const picked = [];
-  const profs = new Set();
-  for (const { m } of ranked) {                 // first pass: diverse professions
-    if (picked.length >= need) break;
-    if (profs.has(m.profession)) continue;
-    picked.push(m); profs.add(m.profession);
-  }
-  for (const { m } of ranked) {                 // top up if dedupe left us short
-    if (picked.length >= need) break;
-    if (!picked.includes(m)) picked.push(m);
-  }
-  return picked.slice(0, need).map(m => ({ ...m, matchedKeywords: [] }));
+/** @deprecated No longer pads with weak suggestions — kept for API compat */
+export function getSuggestions() {
+  return [];
 }
 
 export function getMembersByBranch(branchName) {

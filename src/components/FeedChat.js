@@ -55,9 +55,13 @@ function formatFeedTime(iso) {
   return d.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
 }
 
-export function feedListHTML(items = [], { isAdmin = false } = {}) {
+export function feedListHTML(items = [], { isAdmin = false, isGuest = false } = {}) {
   if (!items.length) {
-    return `<div class="chat-empty">${escHtml(t('feed_empty'))}</div>`;
+    return `
+      <div class="chat-empty">
+        <p class="chat-empty-title">${escHtml(t('feed_empty'))}</p>
+        <p class="chat-empty-hint">${escHtml(isGuest ? t('guest_feed_login') : t('feed_empty_how'))}</p>
+      </div>`;
   }
   const sorted = [...items].sort((a, b) =>
     new Date(a.created_at || 0) - new Date(b.created_at || 0),
@@ -72,7 +76,7 @@ export function chatRoomHTML(feed = [], { isAdmin = false, isGuest = false } = {
         <div class="chat-room-title">${escHtml(t('feed_title'))}</div>
         <p class="chat-room-sub">${escHtml(t('feed_sub'))}</p>
       </div>
-      ${feedListHTML(feed, { isAdmin })}
+      ${feedListHTML(feed, { isAdmin, isGuest })}
       <div class="chat-composer-wrap">
         ${isGuest ? guestFeedLoginHTML() : feedComposerHTML()}
       </div>
@@ -128,16 +132,17 @@ export function bindFeedComposer(onPost) {
   });
 }
 
-export function updateFeedList(container, items, { isAdmin = false } = {}) {
+export function updateFeedList(container, items, { isAdmin = false, isGuest = false } = {}) {
+  const html = feedListHTML(items, { isAdmin, isGuest });
   const el = container?.querySelector('#feed-list') || container?.querySelector('.chat-messages');
   if (el) {
-    el.outerHTML = feedListHTML(items, { isAdmin }).trim();
+    el.outerHTML = html.trim();
     scrollChatToBottom(container?.closest('.live-page') || container);
     return;
   }
   const empty = container?.querySelector('.chat-empty');
-  if (empty && items.length) {
-    empty.outerHTML = feedListHTML(items, { isAdmin });
+  if (empty) {
+    empty.outerHTML = html.trim();
     scrollChatToBottom(container?.closest('.live-page') || container);
   }
 }

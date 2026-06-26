@@ -8,8 +8,22 @@ const PKCE_KEY = 'bni_oauth_code_verifier';
 
 let client = null;
 let clientTokenKey = null;
+let anonClient = null;
 let currentUser = null;
 let myStatus = null;
+
+function isJwtError(error) {
+  const msg = String(error?.message || error || '').toLowerCase();
+  const status = error?.status || error?.statusCode;
+  return status === 401
+    || /jwt expired|invalid jwt|token expired|unauthorized|invalid token|not authenticated/i.test(msg);
+}
+
+/** Public RPCs — use anon key only (avoid 401 when access token expired). */
+export function getAnonClient() {
+  if (!anonClient) anonClient = buildClient(null);
+  return anonClient;
+}
 
 function buildClient(accessToken = null) {
   return createClient({
@@ -74,6 +88,9 @@ async function loadStatus() {
     const { data, error } = await getClient().database.rpc('bni_get_my_status');
     if (error) throw error;
     myStatus = data;
+    if (typeof window !== 'undefined') {
+      window.BNI_MY_BRANCH = myStatus?.member?.branch || '';
+    }
     return myStatus;
   }, { label: 'bni_get_my_status' });
 }
@@ -131,6 +148,51 @@ async function refreshStoredSession(insforge, refreshToken) {
   const { data, error } = await insforge.auth.refreshSession({ refreshToken });
   if (error) throw error;
   return persistAuthResponse(insforge, data);
+}
+
+async function tryRefreshSession() {
+  const stored = loadSession();
+  if (!stored?.refreshToken) return false;
+  try {
+    const insforge = buildClient(null);
+    await refreshStoredSession(insforge, stored.refreshToken);
+    const { data } = await getClient().auth.getCurrentUser();
+    if (data?.user) currentUser = data.user;
+    try { await loadStatus(); } catch { /* keep stale status */ }
+    return true;
+  } catch (e) {
+    console.warn('tryRefreshSession:', e.message);
+    return false;
+  }
+}
+
+/** Retry once after refreshing access token (post / mark / profile). */
+export async function withAuthRetry(fn) {
+  try {
+    return await fn();
+  } catch (e) {
+    if (!isJwtError(e)) throw e;
+    if (await tryRefreshSession()) return await fn();
+    throw e;
+  }
+}
+
+export async function ensureSessionFresh() {
+  const stored = loadSession();
+  if (!stored?.accessToken) return false;
+  try {
+    const { data, error } = await getClient().auth.getCurrentUser();
+    if (data?.user) {
+      currentUser = data.user;
+      return true;
+    }
+    if (isJwtError(error) || error) {
+      return tryRefreshSession();
+    }
+  } catch (e) {
+    if (isJwtError(e)) return tryRefreshSession();
+  }
+  return !!currentUser;
 }
 
 async function resolveCurrentUser() {
@@ -213,6 +275,7 @@ export async function signOut() {
   resetClient();
   currentUser = null;
   myStatus = { authenticated: false };
+  if (typeof window !== 'undefined') window.BNI_MY_BRANCH = '';
 }
 
 export async function refreshStatus() {
@@ -276,7 +339,7 @@ export function checkIsAdminSync() {
 
 export async function fetchPublicStats() {
   return withRetry(async () => {
-    const { data, error } = await getClient().database.rpc('bni_get_public_stats');
+    const { data, error } = await getAnonClient().database.rpc('bni_get_public_stats');
     if (error) throw error;
     return data;
   }, { label: 'fetchPublicStats' });
@@ -470,7 +533,7 @@ function isRpcMissing(error) {
 }
 
 export async function fetchLeaderboard(limit = 30, mode = 'mutual') {
-  const { data, error } = await getClient().database.rpc('bni_get_leaderboard', {
+  const { data, error } = await getAnonClient().database.rpc('bni_get_leaderboard', {
     p_limit: limit,
     p_mode: mode,
   });
@@ -482,7 +545,7 @@ export async function fetchLeaderboard(limit = 30, mode = 'mutual') {
 }
 
 export async function fetchLiveSettings() {
-  const { data, error } = await getClient().database.rpc('bni_get_live_settings');
+  const { data, error } = await getAnonClient().database.rpc('bni_get_live_settings');
   if (error) {
     if (isRpcMissing(error)) {
       return { leaderboard_modes: ['mutual', 'received_one'] };
@@ -510,7 +573,7 @@ export async function fetchMyMutualStats() {
 }
 
 export async function fetchFeed(limit = 50, before = null) {
-  const { data, error } = await getClient().database.rpc('bni_get_feed', {
+  const { data, error } = await getAnonClient().database.rpc('bni_get_feed', {
     p_limit: limit,
     p_before: before,
   });
@@ -522,11 +585,13 @@ export async function fetchFeed(limit = 50, before = null) {
 }
 
 export async function postFeedMessage(content) {
-  const { data, error } = await getClient().database.rpc('bni_post_feed_message', {
-    p_content: content,
+  return withAuthRetry(async () => {
+    const { data, error } = await getClient().database.rpc('bni_post_feed_message', {
+      p_content: content,
+    });
+    if (error) throw error;
+    return data;
   });
-  if (error) throw error;
-  return data;
 }
 
 export async function adminDeleteFeedMessage(feedId) {

@@ -9,7 +9,7 @@ import { industryBadgesHTML }            from '../components/IndustryPicker.js';
 import { t }                           from '../i18n/translations.js';
 
 export function personCardHTML(member, opts = {}) {
-  const { matchedKeywords = [], staggerIndex = 0 } = opts;
+  const { matchedKeywords = [], matchReasons = [], staggerIndex = 0 } = opts;
   const mark         = getMark(member);
   const key          = memberKey(member);
   const initial      = (member.name || '').match(/[一-鿿㐀-䶿]/g)?.slice(-1)[0] || '?';
@@ -50,6 +50,16 @@ export function personCardHTML(member, opts = {}) {
   const mutualBadge = mutual
     ? `<span class="mutual-badge">${escHtml(t('card_mutual'))}</span>` : '';
 
+  const reasonSection = matchReasons.length > 0
+    ? `<div class="match-reasons">${matchReasons.map(r =>
+        `<div class="match-reason match-reason-${escAttr(r.type || 'seek')}">${escHtml(r.text)}</div>`
+      ).join('')}</div>` : '';
+
+  const markedYou = window.BNI_INCOMING_ONE_KEYS?.has(key) && !mutual
+    ? `<span class="incoming-badge">${escHtml(t('card_marked_you'))}</span>` : '';
+  const markedByMe = mark.one && !mutual
+    ? `<span class="marked-badge">${escHtml(t('card_marked'))}</span>` : '';
+
   const cardLink = member.cardLink || getCardLink(member.name);
   const rowCardBtn = cardLink
     ? `<button class="row-card-btn" data-action="about" data-link="${escAttr(cardLink)}">${escHtml(t('card_about'))}</button>` : '';
@@ -61,7 +71,7 @@ export function personCardHTML(member, opts = {}) {
         <div class="person-meta">${escHtml(member.branch)}</div>
         <div class="person-meta person-profession">${escHtml(member.profession)}</div>
         ${industryBadgesHTML(member.industries, { compact: true })}
-        ${mutualBadge}
+        ${mutualBadge}${markedYou}${markedByMe}
       </div>
       <div class="person-card-right">
         ${badge}
@@ -73,7 +83,7 @@ export function personCardHTML(member, opts = {}) {
       </div>
     </div>
     <div class="person-card-body">
-      ${haveSection}${bioSection}${wantSection}${referralSection}${kwSection}
+      ${reasonSection}${haveSection}${bioSection}${wantSection}${referralSection}${kwSection}
     </div>
     <div class="person-actions">
       <button class="btn btn-line"

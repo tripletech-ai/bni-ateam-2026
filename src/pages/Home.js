@@ -14,6 +14,7 @@ import { industryLabel } from '../data/industries.js';
 import { showMemberList } from '../utils/memberList.js';
 import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { guestHomeReminderHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
+import { profileMilestoneBannerHTML, bindProfileMilestoneBanner } from '../utils/profileMilestone.js';
 
 const VIDEO_URL = '';
 
@@ -80,6 +81,9 @@ export function renderHome(container) {
   const { zhongshan, sanlu, guest } = resolveBranchListsLocal();
   const totalMembers = window.BNI_PUBLIC_STATS?.total_members ?? (window.BNI_MEMBERS || []).length;
   const branchCount = window.BNI_PUBLIC_STATS?.branch_count ?? 20;
+  const milestoneBanner = window.BNI_PROFILE_MILESTONE
+    ? profileMilestoneBannerHTML(window.BNI_PROFILE_MILESTONE)
+    : '';
 
   container.innerHTML = `
     <div class="hero">
@@ -95,6 +99,8 @@ export function renderHome(container) {
     ${communityLiveHTML()}
 
     ${profileEnrichBannerHTML()}
+
+    ${milestoneBanner}
 
     <div class="ai-box">
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
@@ -239,6 +245,7 @@ export function renderHome(container) {
   });
 
   bindProfileEnrichBanner();
+  bindProfileMilestoneBanner(container);
   bindIndustryStats(container, { onSelect: showHomeIndustry });
   if (isGuestTrial()) {
     bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });

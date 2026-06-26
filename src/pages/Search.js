@@ -1,20 +1,20 @@
-import { getKeywordsFromAI }                from '../utils/aiSearch.js';
-import { searchMembersTiered, getSuggestions, getMembersByBranch, getMembersByIndustry } from '../utils/search.js';
-import { personCardHTML, bindCardEvents }    from '../components/PersonCard.js';
+import { getSearchIntentFromAI } from '../utils/aiSearch.js';
+import { searchMembersByIntent, getMembersByBranch, getMembersByIndustry } from '../utils/search.js';
+import { personCardHTML, bindCardEvents } from '../components/PersonCard.js';
 import { resolveBranchLists, normalizeBranchName } from '../data/branches.js';
 import { industryLabel, mergeIndustryStatsFromPublic } from '../data/industries.js';
-import { escHtml }                           from '../utils/html.js';
-import { t }                                 from '../i18n/translations.js';
-import { showMemberList }                    from '../utils/memberList.js';
+import { escHtml } from '../utils/html.js';
+import { t } from '../i18n/translations.js';
+import { showMemberList } from '../utils/memberList.js';
 import { industryPieChartHTML } from '../components/IndustryPieChart.js';
 import { searchInviteBannerHTML, bindSearchInviteBanner } from '../components/SearchInviteBanner.js';
 
 export function renderSearch(container) {
   container.classList.add('page-root');
-  const pending       = sessionStorage.getItem('bni_pending_search');
+  const pending = sessionStorage.getItem('bni_pending_search');
   const pendingBranch = sessionStorage.getItem('bni_pending_branch');
   const pendingIndustry = sessionStorage.getItem('bni_pending_industry');
-  if (pending)       sessionStorage.removeItem('bni_pending_search');
+  if (pending) sessionStorage.removeItem('bni_pending_search');
   if (pendingBranch) sessionStorage.removeItem('bni_pending_branch');
   if (pendingIndustry) sessionStorage.removeItem('bni_pending_industry');
 
@@ -24,7 +24,7 @@ export function renderSearch(container) {
   renderQuickFilters(document.getElementById('search-quick-filters'));
   renderBranchBrowse(document.getElementById('branch-browse-area'));
 
-  if (pending)       setTimeout(() => triggerSearch(pending), 50);
+  if (pending) setTimeout(() => triggerSearch(pending), 50);
   else if (pendingBranch) setTimeout(() => showBranchMembers(pendingBranch), 50);
   else if (pendingIndustry) setTimeout(() => showIndustryMembers(pendingIndustry), 50);
 }
@@ -33,9 +33,10 @@ function buildSearchUI() {
   return `
     <div id="search-ai-box" class="ai-box">
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
+      <p class="search-format-hint">${escHtml(t('search_format_hint'))}</p>
       <textarea id="ai-input" class="ai-textarea"
         placeholder="${escHtml(t('search_placeholder'))}"
-        rows="3" aria-label="${escHtml(t('search_label'))}" maxlength="200"></textarea>
+        rows="5" aria-label="${escHtml(t('search_label'))}" maxlength="400"></textarea>
       <button id="ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
       <div class="ai-examples" aria-label="搜尋範例">
         <div class="ai-example-chip" role="button" tabindex="0">${escHtml(t('search_example1'))}</div>
@@ -44,7 +45,7 @@ function buildSearchUI() {
       </div>
     </div>
     <div id="search-loading" style="display:none" role="status" aria-live="polite"></div>
-    <div id="ai-result-area"      style="display:none"></div>
+    <div id="ai-result-area" style="display:none"></div>
     <div id="search-results-area" style="display:none"></div>
     ${searchInviteBannerHTML()}
     ${industryPieChartHTML({ stats: window.BNI_PUBLIC_STATS, members: window.BNI_MEMBERS })}
@@ -79,24 +80,40 @@ function bindSearchEvents(container) {
   });
 }
 
+function intentTagsHTML(intent) {
+  const row = (label, items, cls) => {
+    if (!items?.length) return '';
+    return `
+      <div class="intent-row">
+        <span class="intent-row-label">${escHtml(label)}</span>
+        <div class="intent-tags">${items.map(k => `<span class="intent-tag ${cls}">${escHtml(k)}</span>`).join('')}</div>
+      </div>`;
+  };
+  return [
+    row(t('search_intent_iam'), intent.iAm, 'intent-iam'),
+    row(t('search_intent_offer'), intent.iOffer, 'intent-offer'),
+    row(t('search_intent_seek'), intent.iSeek, 'intent-seek'),
+    row(t('search_intent_refer'), intent.iRefer, 'intent-refer'),
+    row(t('search_intent_exclude'), intent.exclude, 'intent-exclude'),
+  ].filter(Boolean).join('');
+}
+
 async function triggerSearch(input) {
-  const aiBox      = document.getElementById('search-ai-box');
-  const loading    = document.getElementById('search-loading');
+  const aiBox = document.getElementById('search-ai-box');
+  const loading = document.getElementById('search-loading');
   const resultArea = document.getElementById('ai-result-area');
   const searchArea = document.getElementById('search-results-area');
-  const branchArea = document.getElementById('branch-browse-area');
-  const submitBtn  = document.getElementById('ai-submit');
+  const submitBtn = document.getElementById('ai-submit');
 
   if (!aiBox || !loading) return;
   if (submitBtn) submitBtn.disabled = true;
 
-  aiBox.style.display      = 'none';
+  aiBox.style.display = 'none';
   resultArea.style.display = 'none';
   searchArea.style.display = 'none';
   hideBrowseChrome();
-  loading.style.display    = 'block';
+  loading.style.display = 'block';
 
-  // Premium AI loading animation
   loading.innerHTML = `
     <div class="ai-loading-container">
       <div class="ai-scan-line"></div>
@@ -115,31 +132,25 @@ async function triggerSearch(input) {
       </div>
     </div>`;
 
-  const keywords = await getKeywordsFromAI(input);
+  const intent = await getSearchIntentFromAI(input);
 
-  // Guard: user may have navigated away
   if (!document.getElementById('search-loading')) return;
 
   loading.style.display = 'none';
   if (submitBtn) submitBtn.disabled = false;
 
-  // Show AI keyword result card (no manual search button — auto-searches immediately)
   resultArea.style.display = 'block';
   resultArea.innerHTML = `
     <div class="ai-result-card" style="margin:16px">
       <div class="ai-result-query" style="font-size:12px;margin-bottom:8px;opacity:0.7">
-        ${escHtml(input.length > 45 ? input.substring(0, 45) + '…' : input)}
+        ${escHtml(input.length > 60 ? input.substring(0, 60) + '…' : input)}
       </div>
-      <div class="keyword-tags">
-        ${keywords.map(k => `<span class="keyword-tag">${escHtml(k)}</span>`).join('')}
-      </div>
+      <div class="intent-parse">${intentTagsHTML(intent)}</div>
       <button id="btn-reset-search" class="btn-reset">${escHtml(t('search_reset'))}</button>
     </div>`;
 
   document.getElementById('btn-reset-search').addEventListener('click', resetSearch);
-
-  // Auto-search immediately (no manual button)
-  showResults(keywords, searchArea);
+  showResults(intent, searchArea);
 }
 
 const REFINE_HINT = () => `
@@ -153,44 +164,50 @@ const REFINE_HINT = () => `
 const cardsHTML = (list, opts = {}) =>
   list.map((m, i) => personCardHTML(m, {
     matchedKeywords: opts.showMatch ? (m.matchedKeywords || []) : [],
+    matchReasons: opts.showMatch ? (m.matchReasons || []) : [],
     staggerIndex: i,
   })).join('');
 
-function showResults(keywords, container) {
-  container.style.display = 'block';
-  const { precise, possible } = searchMembersTiered(keywords);
-  const MIN_POSSIBLE = 3;
+function sectionHTML(id, count, titleKey, subtitleKey, list, showMatch) {
+  if (!list.length) return '';
+  return `
+    <div class="results-section results-section-${id}">
+      <div class="results-header ${id}">
+        <span class="results-count" aria-hidden="true">${count}</span>
+        <div class="results-header-body">
+          <div class="results-header-title">${escHtml(t(titleKey))}</div>
+          <div class="results-header-sub">${escHtml(t(subtitleKey))}</div>
+        </div>
+      </div>
+      <div id="cards-list-${id}">${cardsHTML(list, { showMatch })}</div>
+    </div>`;
+}
 
-  const excludeIds = new Set([...precise, ...possible].map(r => r.id || r.name));
-  let possibleList = [...possible];
-  if (possibleList.length < MIN_POSSIBLE) {
-    const extra = getSuggestions(keywords, excludeIds, MIN_POSSIBLE - possibleList.length);
-    possibleList = [...possibleList, ...extra];
-  }
+function showResults(intent, container) {
+  container.style.display = 'block';
+  const { precise, possible, referral } = searchMembersByIntent(intent);
 
   const preciseSection = precise.length
-    ? `<div class="results-header precise">
-        <span>${precise.length}</span> ${escHtml(t('search_precise_title'))}
-      </div>
-      <div id="cards-list-precise">${cardsHTML(precise, { showMatch: true })}</div>`
+    ? sectionHTML('precise', precise.length, 'search_precise_title', 'search_precise_sub', precise, true)
     : `<div class="search-noexact">${escHtml(t('search_no_exact'))}</div>`;
 
-  const possibleSection = possibleList.length
-    ? `<div class="results-header possible">
-        <span>${possibleList.length}</span> ${escHtml(t('search_possible_title'))}
-      </div>
-      <div id="cards-list-possible">${cardsHTML(possibleList, { showMatch: true })}</div>`
+  const referralSection = sectionHTML('referral', referral.length, 'search_referral_title', 'search_referral_sub', referral, true);
+  const possibleSection = sectionHTML('possible', possible.length, 'search_possible_title', 'search_possible_sub', possible, true);
+
+  const emptyHint = !precise.length && !possible.length && !referral.length
+    ? `<div class="search-noexact">${escHtml(t('search_no_result'))}<br><span style="font-size:12px;opacity:0.8">${escHtml(t('search_no_result_sub'))}</span></div>`
     : '';
 
   container.innerHTML = `
-    ${preciseSection}
+    ${emptyHint || preciseSection}
+    ${referralSection}
     ${possibleSection}
     ${REFINE_HINT()}`;
 
-  const preciseEl = document.getElementById('cards-list-precise');
-  if (preciseEl) bindCardEvents(preciseEl, precise);
-  const possibleEl = document.getElementById('cards-list-possible');
-  if (possibleEl) bindCardEvents(possibleEl, possibleList);
+  for (const [id, list] of [['precise', precise], ['referral', referral], ['possible', possible]]) {
+    const el = document.getElementById(`cards-list-${id}`);
+    if (el && list.length) bindCardEvents(el, list);
+  }
 }
 
 function hideBrowseChrome() {
@@ -220,10 +237,10 @@ function showBrowseChrome() {
 }
 
 function resetSearch() {
-  const result   = document.getElementById('ai-result-area');
-  const search   = document.getElementById('search-results-area');
-  if (result)   result.style.display   = 'none';
-  if (search)   search.style.display   = 'none';
+  const result = document.getElementById('ai-result-area');
+  const search = document.getElementById('search-results-area');
+  if (result) result.style.display = 'none';
+  if (search) search.style.display = 'none';
   showBrowseChrome();
   document.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
   const input = document.getElementById('ai-input');
@@ -267,20 +284,18 @@ function renderQuickFilters(container) {
     </div>`;
 
   container.querySelectorAll('[data-industry]').forEach(el => {
-    const go = () => {
+    el.addEventListener('click', () => {
       container.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
       el.classList.add('active');
       showIndustryMembers(el.dataset.industry);
-    };
-    el.addEventListener('click', go);
+    });
   });
   container.querySelectorAll('[data-branch]').forEach(el => {
-    const go = () => {
+    el.addEventListener('click', () => {
       container.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
       el.classList.add('active');
       showBranchMembers(el.dataset.branch);
-    };
-    el.addEventListener('click', go);
+    });
   });
 }
 
@@ -327,21 +342,21 @@ function renderBranchBrowse(container) {
     </details>`;
 
   container.addEventListener('click', e => {
-    const chip = e.target.closest('[data-branch]');
-    if (!chip) return;
-    showBranchMembers(chip.dataset.branch);
+    const chipEl = e.target.closest('[data-branch]');
+    if (!chipEl) return;
+    showBranchMembers(chipEl.dataset.branch);
   });
   container.addEventListener('keydown', e => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
-    const chip = e.target.closest('[data-branch]');
-    if (!chip) return;
+    const chipEl = e.target.closest('[data-branch]');
+    if (!chipEl) return;
     e.preventDefault();
-    showBranchMembers(chip.dataset.branch);
+    showBranchMembers(chipEl.dataset.branch);
   });
 }
 
 function showBranchMembers(branchName) {
-  const members   = getMembersByBranch(branchName);
+  const members = getMembersByBranch(branchName);
   const container = document.getElementById('search-results-area');
   if (!container) return;
   hideBrowseChrome();
