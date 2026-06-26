@@ -27,6 +27,8 @@ import { t } from '../i18n/translations.js';
 import { startGuestTrial } from '../utils/guestTrial.js';
 import { industryPickerHTML, bindIndustryPicker, readIndustryPickerValues } from '../components/IndustryPicker.js';
 import { inferIndustriesFromText } from '../data/industries.js';
+import { isInAppBrowser } from '../utils/inAppBrowser.js';
+import { inAppBrowserGateHTML, bindInAppBrowserGate } from '../components/InAppBrowserGate.js';
 
 /** choose | ateam | bind | guest-branch | register */
 let mode = 'choose';
@@ -404,6 +406,7 @@ function loginMemberCountHTML() {
 }
 
 export function renderLoginGate(container, { onGuestTrial } = {}) {
+  const inApp = isInAppBrowser();
   container.innerHTML = `
     <div class="onboard-wrap login-gate-wrap">
       <header class="login-hero">
@@ -418,11 +421,13 @@ export function renderLoginGate(container, { onGuestTrial } = {}) {
           <span class="onboard-step-pill">③ 新手教學＋填寫資料</span>
         </div>
         ${loginMemberCountHTML()}
-        <p class="onboard-sub login-lead">${escHtml(t('login_lead'))}</p>
+        ${inApp ? inAppBrowserGateHTML() : ''}
+        ${inApp ? '' : `<p class="onboard-sub login-lead">${escHtml(t('login_lead'))}</p>`}
+        ${inApp ? '' : `
         <button type="button" id="google-login-btn" class="btn-google">
           ${GOOGLE_ICON_SVG}
           <span class="btn-google-label">${escHtml(t('login_google_btn'))}</span>
-        </button>
+        </button>`}
         <button type="button" id="guest-trial-btn" class="btn-outline login-guest-trial-btn">
           ${escHtml(t('login_guest_trial_btn'))}
         </button>
@@ -431,13 +436,17 @@ export function renderLoginGate(container, { onGuestTrial } = {}) {
       </div>
     </div>
   `;
-  document.getElementById('google-login-btn').addEventListener('click', async () => {
-    try {
-      await signInWithGoogle();
-    } catch (err) {
-      showToast(err.message || '登入失敗');
-    }
-  });
+  if (inApp) {
+    bindInAppBrowserGate(container);
+  } else {
+    document.getElementById('google-login-btn').addEventListener('click', async () => {
+      try {
+        await signInWithGoogle();
+      } catch (err) {
+        showToast(err.message || '登入失敗');
+      }
+    });
+  }
   document.getElementById('guest-trial-btn')?.addEventListener('click', () => {
     startGuestTrial();
     onGuestTrial?.();

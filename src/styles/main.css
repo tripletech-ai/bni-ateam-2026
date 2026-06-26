@@ -988,3 +988,31 @@ html { scroll-behavior: smooth; }
 .guest-marks-page { padding-bottom: 24px; }
 .guest-marks-actions { padding: 0 16px; }
 body.guest-trial-mode #user-bar { display: none !important; }
+
+/* In-app browser gate (LINE / FB / WeChat) */
+.inapp-browser-gate {
+  margin: 0 0 16px; padding: 16px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid rgba(248,113,113,0.45);
+  background: linear-gradient(165deg, rgba(248,113,113,0.10), rgba(250,199,117,0.08));
+}
+.inapp-browser-icon { font-size: 28px; text-align: center; margin-bottom: 8px; }
+.inapp-browser-title {
+  font-size: 16px; font-weight: 700; color: var(--red);
+  text-align: center; margin-bottom: 8px;
+}
+.inapp-browser-lead {
+  font-size: 13px; line-height: 1.6; color: var(--text);
+  margin: 0 0 12px; text-align: center;
+}
+.inapp-browser-steps {
+  margin: 0 0 14px; padding-left: 20px;
+  font-size: 13px; line-height: 1.65; color: var(--muted);
+}
+.inapp-browser-steps li { margin-bottom: 6px; }
+.inapp-browser-actions { display: flex; flex-direction: column; gap: 10px; }
+.inapp-open-btn, .inapp-copy-btn { width: 100%; margin: 0; }
+.inapp-browser-note {
+  font-size: 11px; line-height: 1.5; color: var(--muted);
+  margin: 12px 0 0; text-align: center;
+}

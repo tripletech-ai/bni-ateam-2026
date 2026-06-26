@@ -3,6 +3,7 @@ import { INSFORGE_BASE_URL, INSFORGE_ANON_KEY } from '../config/insforge.js';
 import { withRetry } from '../utils/retry.js';
 import { loadSession, saveSession, clearSession } from './sessionStore.js';
 import { isAdminEmail, normalizeAdminEmail } from '../config/admins.js';
+import { isInAppBrowser } from '../utils/inAppBrowser.js';
 
 const PKCE_KEY = 'bni_oauth_code_verifier';
 
@@ -69,6 +70,13 @@ export function getAuthEmail() {
   return normalizeAdminEmail(
     u.email || u.user_metadata?.email || u.userMetadata?.email || ''
   );
+}
+
+export function getOAuthDisplayName() {
+  const u = currentUser || loadSession()?.user;
+  if (!u) return '';
+  const meta = u.user_metadata || u.userMetadata || {};
+  return String(meta.full_name || meta.name || u.name || '').trim();
 }
 
 export function getMyStatus() {
@@ -251,6 +259,11 @@ export async function initAuth() {
 }
 
 export async function signInWithGoogle() {
+  if (isInAppBrowser()) {
+    const err = new Error('INAPP_BROWSER');
+    err.code = 'INAPP_BROWSER';
+    throw err;
+  }
   const redirectTo = `${window.location.origin}${window.location.pathname}`;
   const { data, error } = await getClient().auth.signInWithOAuth('google', {
     redirectTo,
@@ -281,6 +294,25 @@ export async function signOut() {
 export async function refreshStatus() {
   if (!currentUser) return myStatus;
   return loadStatus();
+}
+
+/** 後台名單已有完整資料時，登入後自動綁定（email 或唯一姓名比對） */
+export async function tryAutoBindOnLogin() {
+  if (!currentUser) return { ok: false, bound: false };
+  try {
+    const { data, error } = await getClient().database.rpc('bni_auto_bind_on_login', {
+      p_display_name: getOAuthDisplayName(),
+    });
+    if (error) {
+      if (isRpcMissing(error)) return { ok: false, bound: false, rpcMissing: true };
+      throw error;
+    }
+    if (data?.bound) await refreshStatus();
+    return data || { ok: false, bound: false };
+  } catch (e) {
+    console.warn('tryAutoBindOnLogin:', e.message);
+    return { ok: false, bound: false };
+  }
 }
 
 export async function bindExistingMember(memberId) {

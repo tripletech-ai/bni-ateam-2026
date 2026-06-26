@@ -1944,3 +1944,12 @@ textarea.field-input {
   color: var(--gold-bright);
   border: 1px solid rgba(250,199,117,0.3);
 }
+
+.inapp-browser-gate {
+  border-color: rgba(248,113,113,0.45);
+  background: linear-gradient(165deg, rgba(248,113,113,0.12), rgba(250,199,117,0.06));
+}
+.inapp-browser-title { color: var(--red-accent); }
+.inapp-browser-lead { color: var(--dark-text); }
+.inapp-browser-steps { color: var(--dark-muted); }
+.inapp-browser-note { color: var(--dark-subtle); }

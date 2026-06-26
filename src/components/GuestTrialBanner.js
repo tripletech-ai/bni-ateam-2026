@@ -2,6 +2,7 @@ import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import { signInWithGoogle } from '../services/auth.js';
 import { showToast } from '../utils/toast.js';
+import { isInAppBrowser, tryOpenExternalBrowser } from '../utils/inAppBrowser.js';
 
 export function guestTrialBannerHTML() {
   return `
@@ -52,10 +53,20 @@ export function guestFeedLoginHTML() {
 
 export function bindGuestTrialLogin(container, { onBeforeLogin } = {}) {
   const go = async () => {
+    if (isInAppBrowser()) {
+      showToast(t('inapp_toast'));
+      tryOpenExternalBrowser();
+      return;
+    }
     onBeforeLogin?.();
     try {
       await signInWithGoogle();
     } catch (e) {
+      if (e.code === 'INAPP_BROWSER') {
+        showToast(t('inapp_toast'));
+        tryOpenExternalBrowser();
+        return;
+      }
       showToast(e.message || t('guest_login_fail'));
     }
   };

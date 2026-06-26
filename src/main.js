@@ -22,6 +22,7 @@ import {
   fetchLeaderboard,
   fetchFeed,
   fetchLiveSettings,
+  tryAutoBindOnLogin,
 } from './services/auth.js';
 import { showIncomingOneOverlay } from './components/IncomingOneBanner.js';
 import { renderUserBar } from './components/UserBar.js';
@@ -33,6 +34,7 @@ import { isGuestTrial, endGuestTrial } from './utils/guestTrial.js';
 import { guestTrialBannerHTML, bindGuestTrialLogin } from './components/GuestTrialBanner.js';
 import { showToast } from './utils/toast.js';
 import { notifyProfileMilestone } from './utils/profileMilestone.js';
+import { stripLineExternalBrowserParam } from './utils/inAppBrowser.js';
 
 // ── Language ──────────────────────────────────────
 window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
@@ -342,6 +344,12 @@ async function boot() {
   }
 
   if (!isBound()) {
+    const auto = await tryAutoBindOnLogin();
+    if (auto?.bound) {
+      showToast(t('auto_bind_toast'));
+      await afterBindComplete();
+      return;
+    }
     renderOnboard(app, { onComplete: afterBindComplete });
     return;
   }
@@ -365,4 +373,5 @@ window.addEventListener('unhandledrejection', event => {
 
 initLangToggle();
 initFontToggle();
+stripLineExternalBrowserParam();
 boot();
