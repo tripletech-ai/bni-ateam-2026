@@ -2250,7 +2250,17 @@ textarea.field-input {
 .guest-trial-intro-title { color: #fca5a5; }
 .guest-trial-intro-lead,
 .guest-trial-intro-list li { color: var(--dark-text); border-bottom-color: var(--dark-border); }
-.guest-trial-intro-foot { color: var(--dark-muted); }
+.guest-trial-intro-foot {
+  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.14);
+}
+.guest-trial-intro-ok {
+  color: #fff;
+  border-color: rgba(250, 199, 117, 0.65);
+  background: rgba(250, 199, 117, 0.12);
+}
+.guest-trial-intro-ok:active { background: rgba(250, 199, 117, 0.2); }
 
 .guest-home-reminder-list { color: var(--dark-muted); }
 .guest-home-reminder-title { color: #fca5a5; font-size: 17px; font-weight: 700; margin: 0 0 8px; }

@@ -33,7 +33,7 @@ export function showGuestTrialIntro({ onGoLogin } = {}) {
       <button type="button" class="welcome-btn-primary" id="guest-trial-intro-login">
         ${escHtml(t('guest_trial_modal_login'))}
       </button>
-      <button type="button" class="btn-outline guest-trial-intro-ok" id="guest-trial-intro-ok">
+      <button type="button" class="guest-trial-intro-ok" id="guest-trial-intro-ok">
         ${escHtml(t('guest_trial_modal_ok'))}
       </button>
     </div>`;
