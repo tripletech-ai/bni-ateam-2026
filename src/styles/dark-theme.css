@@ -231,20 +231,6 @@ body {
 .empty-state-title { color: var(--dark-text); }
 .empty-state-sub   { color: var(--dark-muted); }
 
-#lang-toggle {
-  position: fixed; top: 12px; right: 12px;
-  z-index: 300;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.80);
-  font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
-  padding: 5px 10px; border-radius: 20px;
-  cursor: pointer; font-family: 'Noto Sans TC', sans-serif;
-  backdrop-filter: blur(8px);
-  transition: background 0.15s, color 0.15s;
-}
-#lang-toggle:active { background: rgba(255,255,255,0.14); }
-
 .leaders-hero {
   background: linear-gradient(168deg, #102145 0%, #0b1428 58%, #080e1d 100%);
   color: #fff; padding: 48px 20px 36px; text-align: center;
@@ -595,9 +581,6 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .director-btn-card    { font-size: calc(16px * var(--fs-k)); padding: 5px 12px; }
 .accordion-header     { font-size: calc(21px * var(--fs-k)); }
 .video-caption        { font-size: calc(20px * var(--fs-k)); }
-
-/* Lang toggle: decorative, keep small */
-#lang-toggle { font-size: 13px; }
 
 /* ============================================
    Welcome Screen — Event Onboarding
@@ -988,21 +971,6 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .welcome-fs-btn:nth-child(1) { font-size: 15px; }
 .welcome-fs-btn:nth-child(2) { font-size: 18px; }
 .welcome-fs-btn:nth-child(3) { font-size: 21px; }
-
-#font-toggle {
-  position: fixed; top: 12px; right: 58px; z-index: 300;
-  display: flex; align-items: baseline; gap: 1px;
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.80);
-  padding: 4px 11px; border-radius: 20px; cursor: pointer;
-  font-family: 'Noto Sans TC', sans-serif; font-weight: 700;
-  backdrop-filter: blur(8px);
-  transition: background 0.15s;
-}
-#font-toggle:active { background: rgba(255,255,255,0.14); }
-#font-toggle .fs-a-small { font-size: 11px; }
-#font-toggle .fs-a-big   { font-size: 15px; }
 
 /* Welcome card body text scales with chosen size (live preview).
    Placed last so it wins over the fixed sizes in the Welcome block. */
@@ -2206,3 +2174,65 @@ textarea.field-input {
 }
 .login-google-divider::before, .login-google-divider::after { background: var(--dark-border); }
 .user-bar { position: relative; }
+
+/* Login screen — language & font prefs (above sign-in button) */
+.login-prefs-panel {
+  margin: 20px 0 4px;
+  padding: 16px 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(250,199,117,0.38);
+  background: linear-gradient(165deg, rgba(250,199,117,0.12) 0%, rgba(16,22,41,0.92) 100%);
+  box-shadow: inset 0 1px 0 rgba(250,199,117,0.12), 0 8px 24px -12px rgba(0,0,0,0.55);
+}
+.login-prefs-heading {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: var(--gold-bright);
+  margin-bottom: 14px;
+  text-align: center;
+}
+.login-prefs-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.login-prefs-row:last-child { margin-bottom: 0; }
+.login-prefs-label {
+  flex: 0 0 auto;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--dark-text);
+  min-width: 56px;
+}
+.login-prefs-seg {
+  flex: 1;
+  display: flex;
+  gap: 6px;
+}
+.login-prefs-font-seg .login-prefs-btn { flex: 1; min-width: 0; padding-inline: 6px; }
+.login-prefs-btn {
+  flex: 1;
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.72);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: 'Noto Sans TC', sans-serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.1s;
+}
+.login-prefs-btn:active { transform: scale(0.97); }
+.login-prefs-btn.active {
+  background: rgba(250,199,117,0.18);
+  border-color: rgba(250,199,117,0.55);
+  color: var(--gold-bright);
+  box-shadow: 0 0 0 1px rgba(250,199,117,0.15);
+}
+.login-prefs-fs-btn:nth-child(1) { font-size: 12px; }
+.login-prefs-fs-btn:nth-child(2) { font-size: 14px; }
+.login-prefs-fs-btn:nth-child(3) { font-size: 16px; }

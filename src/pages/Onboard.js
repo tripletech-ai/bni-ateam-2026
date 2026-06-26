@@ -20,6 +20,7 @@ import { claimByNameBranch,
 } from '../utils/memberClaim.js';
 import { describeClaimOutcome } from '../utils/claimFeedback.js';
 import { collect800HTML, bindCollect800Game, getCollect800Stats } from '../components/Collect800Game.js';
+import { loginPrefsHTML, bindLoginPrefs } from '../components/LoginPrefsPanel.js';
 
 function memberCountLine() {
   const { registered, goal } = getCollect800Stats();
@@ -188,8 +189,10 @@ function renderClaimScreen(container, {
   showGuestTrial = false,
   onComplete,
   onGuestTrial,
+  preserveForm,
 } = {}) {
-  const pending = loadPendingClaim();
+  const pending = preserveForm || loadPendingClaim();
+  const screenOpts = { titleKey, subKey, showGuestTrial, onComplete, onGuestTrial };
   container.innerHTML = `
     <div class="onboard-wrap onboard-flow-wrap">
       <header class="login-hero login-hero-compact">
@@ -199,6 +202,7 @@ function renderClaimScreen(container, {
       <div class="onboard-card">
         ${memberCountLine()}
         ${collect800HTML({ context: 'login' })}
+        ${loginPrefsHTML()}
         ${isInAppBrowser() ? inAppBrowserGateHTML() : simpleClaimFormHTML({
           branch: pending?.branch || '',
           name: pending?.name || '',
@@ -209,6 +213,14 @@ function renderClaimScreen(container, {
         </button>` : ''}
       </div>
     </div>`;
+
+  bindLoginPrefs(container, {
+    onChange: ({ type }) => {
+      if (type === 'lang') {
+        renderClaimScreen(container, { ...screenOpts, preserveForm: readClaimForm(container) });
+      }
+    },
+  });
 
   if (isInAppBrowser()) {
     bindInAppBrowserGate(container);

@@ -1,7 +1,8 @@
 import { getMarkCount } from '../utils/storage.js';
 import { goToPage } from '../utils/nav.js';
+import { escHtml } from '../utils/html.js';
 import { profileBackendEmpty } from '../utils/profileHints.js';
-import { goToPage } from '../utils/nav.js';
+import { getMyStatus } from '../services/auth.js';
 import { t } from '../i18n/translations.js';
 
 export function renderTabBar(el, currentHash, opts = {}) {
@@ -31,14 +32,14 @@ export function renderTabBar(el, currentHash, opts = {}) {
       (currentHash === '#result' && tab.hash === '#marks') ||
       (currentHash === '' && tab.hash === '#home');
     const badge = isMarks && markCount > 0
-      ? `<span class="tab-badge" aria-label="${markCount} 個標記">${markCount}</span>` : '';
+      ? `<span class="tab-badge" aria-label="${escHtml(t('tab_badge_marks', { n: markCount }))}">${markCount}</span>` : '';
     const warnDot = tab.warn
       ? `<span class="tab-warn-dot" aria-hidden="true"></span>` : '';
     return `<button
       type="button"
       class="tab-item${isActive ? ' active' : ''}${tab.warn ? ' tab-item-warn' : ''}"
       data-tab-hash="${tab.hash.slice(1)}"
-      aria-label="${tab.label}${tab.warn ? '（待填資料）' : ''}"
+      aria-label="${escHtml(tab.label)}${tab.warn ? escHtml(t('tab_warn_profile')) : ''}"
       aria-selected="${isActive}"
       role="tab">
       <span style="position:relative;display:inline-flex">${tab.icon}${badge}${warnDot}</span>

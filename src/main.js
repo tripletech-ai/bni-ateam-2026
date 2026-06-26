@@ -40,54 +40,10 @@ import { clearPendingClaim } from './utils/memberClaim.js';
 import { normalizeAppUrl } from './utils/appUrl.js';
 import { profileBackendEmpty } from './utils/profileHints.js';
 import { registerNavigator, goToPage } from './utils/nav.js';
+import { initPreferences } from './utils/preferences.js';
 
-// ── Language ──────────────────────────────────────
-window.BNI_LANG = localStorage.getItem('bni_lang') || 'zh';
-
-function initLangToggle() {
-  const btn = document.getElementById('lang-toggle');
-  if (!btn) return;
-  btn.textContent = t('lang_toggle');
-  btn.addEventListener('click', () => {
-    window.BNI_LANG = window.BNI_LANG === 'zh' ? 'en' : 'zh';
-    localStorage.setItem('bni_lang', window.BNI_LANG);
-    btn.textContent = t('lang_toggle');
-    if (appReady) {
-      const hash = window.location.hash || '';
-      navigate();
-      renderTabBar(tabBar, hash, { isAdmin, isBound: isBound() });
-      renderUserBar(userBar);
-    } else {
-      boot();
-    }
-  });
-}
-
-// ── Font size ─────────────────────────────────────
-const FONT_SIZES = ['fs-s', 'fs-m', 'fs-l'];
-const FONT_LABEL_KEYS = { 'fs-s': 'font_s', 'fs-m': 'font_m', 'fs-l': 'font_l' };
-window.BNI_FONT = localStorage.getItem('bni_font') || 'fs-s';
-
-function applyFontSize(cls) {
-  if (!FONT_SIZES.includes(cls)) cls = 'fs-s';
-  document.documentElement.classList.remove(...FONT_SIZES);
-  document.documentElement.classList.add(cls);
-  window.BNI_FONT = cls;
-  localStorage.setItem('bni_font', cls);
-}
-
-function initFontToggle() {
-  const btn = document.getElementById('font-toggle');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    const next = FONT_SIZES[(FONT_SIZES.indexOf(window.BNI_FONT) + 1) % FONT_SIZES.length];
-    applyFontSize(next);
-    import('./utils/toast.js').then(({ showToast }) => showToast(`${t('font_label')}${t(FONT_LABEL_KEYS[next])}`));
-    if (appReady) navigate();
-  });
-}
-
-applyFontSize(window.BNI_FONT);
+// ── Language & font (set on login screen; persisted in localStorage) ──
+initPreferences();
 
 // ── App state ─────────────────────────────────────
 const app = document.getElementById('app');
@@ -109,16 +65,14 @@ const routes = {
 };
 
 function setChromeVisible(showTabs) {
-  tabBar.style.display = showTabs ? 'flex' : 'none';
-  document.getElementById('font-toggle').style.display = showTabs ? '' : 'none';
-  document.getElementById('lang-toggle').style.display = showTabs ? '' : 'none';
+  if (tabBar) tabBar.style.display = showTabs ? 'flex' : 'none';
   if (showTabs && isBound()) renderUserBar(userBar);
   else if (userBar) userBar.classList.add('hidden');
   document.body.classList.toggle('guest-trial-mode', showTabs && isGuestTrial());
 }
 
 function navigate() {
-  if (!appReady) return;
+  if (!appReady || !app) return;
   let hash = window.location.hash || '';
   if (hash === '#admin' && !isAdmin) {
     hash = '#home';
@@ -336,6 +290,7 @@ async function enterGuestMode() {
 
 async function boot() {
   appReady = false;
+  if (!app) return;
   app.innerHTML = bootSkeletonHTML();
   setChromeVisible(false);
 
@@ -407,7 +362,5 @@ window.addEventListener('unhandledrejection', event => {
   }).catch(() => {});
 });
 
-initLangToggle();
-initFontToggle();
 normalizeAppUrl();
 boot();

@@ -98,7 +98,7 @@ export async function showWelcomeTutorial({ onDone, applyFontSize, onGoProfile }
             <button type="button" class="welcome-fs-btn" data-fs="fs-l">特大</button>
           </div>
         </div>
-        <div class="welcome-lang-hint">${window.BNI_LANG === 'en' ? 'Language: top-right EN' : '右上角可切換 EN'}</div>
+        <div class="welcome-lang-hint">${window.BNI_LANG === 'en' ? 'Language was set on the sign-in screen' : '語言已在登入畫面設定'}</div>
       ` : ''}
       <div class="welcome-nav">
         ${stepIndex > 0 ? `<button type="button" class="welcome-btn-ghost" id="welcome-prev">${window.BNI_LANG === 'en' ? 'Back' : '上一步'}</button>` : '<span></span>'}

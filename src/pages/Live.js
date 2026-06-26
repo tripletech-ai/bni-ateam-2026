@@ -23,9 +23,8 @@ import {
   getMyStatus,
 } from '../services/auth.js';
 import { showToast } from '../utils/toast.js';
-import { isGuestTrial } from '../utils/guestTrial.js';
+import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { guestFeedLoginHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
-import { endGuestTrial } from '../utils/guestTrial.js';
 
 let livePollTimer = null;
 let liveIsAdmin = false;
