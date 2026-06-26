@@ -316,10 +316,7 @@ function renderClaimScreen(container, {
         <button type="button" id="guest-trial-btn" class="btn-outline login-guest-trial-btn">
           <span class="login-guest-trial-label">${escHtml(t('login_guest_trial_btn'))}</span>
           <span class="login-guest-trial-sub">${escHtml(t('login_guest_trial_hint'))}</span>
-        </button>
-        <p class="login-admin-entry">
-          <a href="/admin" class="admin-entry-link">${escHtml(t('admin_entry_link'))}</a>
-        </p>` : ''}
+        </button>` : ''}
       </div>
     </div>`;
 

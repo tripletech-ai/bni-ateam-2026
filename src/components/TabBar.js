@@ -23,9 +23,6 @@ export function renderTabBar(el, currentHash, opts = {}) {
       warn: profileNeedsFill,
     });
   }
-  if (opts.isAdmin) {
-    TABS.push({ hash: '#admin', label: t('tab_admin'), icon: adminIcon() });
-  }
   el.innerHTML = TABS.map(tab => {
     const isMarks  = tab.hash === '#marks';
     const isActive = currentHash === tab.hash ||
@@ -68,7 +65,4 @@ function liveIcon() {
 }
 function profileIcon() {
   return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-}
-function adminIcon() {
-  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6v6H9z"/></svg>`;
 }

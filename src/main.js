@@ -74,11 +74,12 @@ const routes = {
 };
 
 function setChromeVisible(showTabs) {
-  if (tabBar) tabBar.style.display = showTabs ? 'flex' : 'none';
-  if (showTabs && isBound()) renderUserBar(userBar);
+  const onAdmin = isAdminRoute();
+  if (tabBar) tabBar.style.display = (showTabs && !onAdmin) ? 'flex' : 'none';
+  if (showTabs && isBound() && !onAdmin) renderUserBar(userBar);
   else if (userBar) userBar.classList.add('hidden');
   document.body.classList.toggle('guest-trial-mode', showTabs && isGuestTrial());
-  document.body.classList.toggle('admin-mode', showTabs && isAdmin && !isBound());
+  document.body.classList.toggle('admin-mode', onAdmin && isAdmin);
 }
 
 function navigate() {
@@ -86,10 +87,15 @@ function navigate() {
   syncAdminPathToHash();
   let hash = window.location.hash || '';
   if (isAdminRoute() && !hash) hash = '#admin';
+  // #admin 僅在直接開啟 /admin 時有效，一般 App 不暴露後台入口
+  if (hash === '#admin' && !isAdminRoute()) {
+    hash = '#home';
+    history.replaceState(null, '', `#home`);
+  }
   if (hash === '#admin' && !isAdmin) {
     hash = '#home';
     if (window.location.hash === '#admin') {
-      history.replaceState(null, '', '#home');
+      history.replaceState(null, '', isAdminRoute() ? '/admin#home' : '#home');
     }
   }
   if (hash === '#result') {
@@ -122,7 +128,7 @@ function navigate() {
     console.error('Page render error:', err);
     app.innerHTML = '<div style="padding:40px 20px;text-align:center;color:#f87171">頁面載入失敗，請重新整理</div>';
   }
-  renderTabBar(tabBar, hash, { isAdmin, isBound: isBound() });
+  renderTabBar(tabBar, hash, { isBound: isBound() });
   renderUserBar(userBar);
   window.scrollTo(0, 0);
 }
@@ -394,7 +400,7 @@ async function boot() {
     return;
   }
 
-  if (wantsAdmin && isAdmin) {
+  if (wantsAdmin && isAdmin && isAdminRoute()) {
     location.hash = '#admin';
   }
   appReady = true;
