@@ -2120,4 +2120,6 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 .profile-switch-lead { font-size: calc(13px * var(--fs-k, 0.78)); line-height: 1.55; opacity: 0.85; margin: 0 0 10px; }
 .profile-switch-steps {
   margin: 0 0 14px 18px; padding: 0;
-  font-size: calc(13px
+  font-size: calc(13px * var(--fs-k, 0.78)); line-height: 1.6; opacity: 0.88;
+}
+.profile-reclaim-btn-prominent { width: 100%; font-weight: 600; }
