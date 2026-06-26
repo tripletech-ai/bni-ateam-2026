@@ -293,7 +293,7 @@ export async function bindExistingMember(memberId) {
 }
 
 export async function registerNewMember(payload) {
-  const { data, error } = await getClient().database.rpc('bni_register_new_member', {
+  const base = {
     p_name: payload.name,
     p_branch: payload.branch,
     p_region: payload.region || 'zhongshan',
@@ -304,9 +304,44 @@ export async function registerNewMember(payload) {
     p_line_id: payload.lineId || '',
     p_line_link: payload.lineLink || '',
     p_tags: payload.tags || [],
-    p_industries: payload.industries || [],
+  };
+  const industries = payload.industries || [];
+
+  let { data, error } = await getClient().database.rpc('bni_register_new_member', {
+    ...base,
+    p_industries: industries,
   });
-  if (error) throw error;
+
+  // 後端若尚未部署含 p_industries 的新版 RPC，改用舊簽名再補寫產業
+  if (error && isRpcMissing(error)) {
+    ({ data, error } = await getClient().database.rpc('bni_register_new_member', base));
+    if (!error && industries.length) {
+      try {
+        await getClient().database.rpc('bni_update_my_profile', {
+          p_profession: base.p_profession,
+          p_have: base.p_have,
+          p_want_meet: base.p_want_meet,
+          p_want_referral: base.p_want_referral,
+          p_line_id: base.p_line_id,
+          p_line_link: base.p_line_link,
+          p_bio: '',
+          p_card_link: '',
+          p_industries: industries,
+        });
+      } catch (e) {
+        console.warn('post-register industries update:', e.message);
+      }
+    }
+  }
+
+  if (error) {
+    if (isRpcMissing(error)) {
+      const e = new Error('REGISTER_RPC_MISSING');
+      e.cause = error;
+      throw e;
+    }
+    throw error;
+  }
   await refreshStatus();
   return data;
 }

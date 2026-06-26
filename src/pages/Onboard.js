@@ -194,6 +194,9 @@ function setMode(next) {
 function mapAuthError(err) {
   const msg = err?.message || '';
   if (msg.includes('ALREADY_BOUND')) return t('onboard_err_bound');
+  if (msg.includes('REGISTER_RPC_MISSING') || /could not find the function.*bni_register/i.test(msg)) {
+    return t('onboard_err_register_rpc');
+  }
   return msg || '操作失敗';
 }
 
