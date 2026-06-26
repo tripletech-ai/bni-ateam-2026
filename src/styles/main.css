@@ -1798,11 +1798,6 @@ body.first-run-open #tab-bar { visibility: hidden; }
 .home-quest-btn { flex: 1; min-width: 120px; font-size: calc(13px * var(--fs-k, 0.78)); padding: 10px 8px; }
 .home-quest-actions .btn-gold-outline { margin-top: 0; padding: 10px 8px; font-size: calc(13px * var(--fs-k, 0.78)); }
 
-/* Home leaderboard */
-.home-leaderboard-section { margin: 0 0 8px; }
-.home-lb-sub { font-size: calc(13px * var(--fs-k, 0.78)); color: rgba(255,255,255,0.55); margin: 4px 16px 0; line-height: 1.45; }
-.home-leaderboard-section .lb-mode-tabs { margin: 0 16px 10px; }
-.home-lb-more { margin: 12px 16px 0; width: calc(100% - 32px); display: block; }
 .collect800-actions-single .collect800-copy-link { flex: 1; width: 100%; }
 
 /* Chat room v2 — full height + inline composer */
