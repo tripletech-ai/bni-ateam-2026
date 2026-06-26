@@ -1,6 +1,6 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
-import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, selfUnbind, signOut } from '../services/auth.js';
+import { getMyStatus, updateMyProfile, fetchAllMembers, fetchCardBio, selfUnbind, signOut, ensureSessionFresh } from '../services/auth.js';
 import { getCardLink } from '../data/cardLinks.js';
 import { fieldPlaceholder, referralPlaceholder } from '../utils/profileHints.js';
 import {
@@ -16,6 +16,15 @@ import { inferIndustriesFromText } from '../data/industries.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
 import { guestHomeReminderHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 import { endGuestTrial } from '../utils/guestTrial.js';
+
+function mapProfileError(err) {
+  const msg = err?.message || '';
+  if (/jwt expired|invalid jwt|token expired|unauthorized|invalid token|not authenticated/i.test(msg)) {
+    return t('onboard_err_session');
+  }
+  if (msg.includes('NOT_BOUND')) return t('profile_err_not_bound');
+  return msg || t('profile_save_fail');
+}
 
 function fieldMember() {
   const m = getMyStatus()?.member || {};
@@ -172,6 +181,10 @@ export function renderProfileEdit(container) {
     }
     if (btn) btn.disabled = true;
     try {
+      if (!(await ensureSessionFresh())) {
+        showToast(t('onboard_err_session'));
+        return;
+      }
       await updateMyProfile({
         profession: fd.get('profession'),
         have: fd.get('have'),
@@ -193,7 +206,7 @@ export function renderProfileEdit(container) {
       showToast(t('profile_saved'));
       location.hash = 'home';
     } catch (err) {
-      showToast(err.message || t('profile_save_fail'));
+      showToast(mapProfileError(err));
     } finally {
       if (btn) btn.disabled = false;
     }

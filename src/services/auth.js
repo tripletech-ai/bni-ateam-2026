@@ -398,9 +398,11 @@ async function registerNewMemberOnce(payload) {
 }
 
 export async function completeTutorial() {
-  const { error } = await getClient().database.rpc('bni_complete_tutorial');
-  if (error) throw error;
-  await refreshStatus();
+  return withAuthRetry(async () => {
+    const { error } = await getClient().database.rpc('bni_complete_tutorial');
+    if (error) throw error;
+    await refreshStatus();
+  });
 }
 
 export async function checkIsAdmin() {
@@ -455,17 +457,31 @@ export async function recordEventPulse() {
 }
 
 export async function updateMyProfile(payload) {
-  const { data, error } = await getClient().database.rpc('bni_update_my_profile', {
+  return withAuthRetry(async () => updateMyProfileOnce(payload));
+}
+
+async function updateMyProfileOnce(payload) {
+  const base = {
     p_profession: payload.profession || '',
     p_have: payload.have || '',
     p_want_meet: payload.wantMeet || '',
     p_want_referral: payload.wantReferral || '',
     p_line_id: payload.lineId || '',
     p_line_link: payload.lineLink || '',
+  };
+  const full = {
+    ...base,
     p_bio: payload.bio || '',
     p_card_link: payload.cardLink || '',
     p_industries: payload.industries || [],
-  });
+  };
+
+  let { data, error } = await getClient().database.rpc('bni_update_my_profile', full);
+
+  if (error && isRpcMissing(error)) {
+    ({ data, error } = await getClient().database.rpc('bni_update_my_profile', base));
+  }
+
   if (error) throw error;
   myStatus = data;
   return myStatus;

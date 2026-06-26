@@ -88,6 +88,7 @@ export const translations = {
     profile_save: '儲存資料',
     profile_saved: '資料已更新',
     profile_save_fail: '儲存失敗，請稍後再試',
+    profile_err_not_bound: '尚未認領身分，請先完成認領',
     profile_bio_label: '自我介紹',
     profile_bio_hint: '用 2–4 句話介紹你是誰、專長與個人特色。若你有電子名片，可一鍵從名片帶入。',
     profile_bio_ph: '例如：我專注在…，服務對象是…，最引以為傲的是…',
@@ -507,6 +508,7 @@ export const translations = {
     profile_save: 'Save profile',
     profile_saved: 'Profile updated',
     profile_save_fail: 'Save failed — try again',
+    profile_err_not_bound: 'Not registered yet — complete onboarding first',
 
     profile_template_title: 'Not sure what to write? Start from a template',
     profile_template_sub: 'Apply a template and tweak a few words. Split referrals into Good / Ideal / Dream tiers.',
