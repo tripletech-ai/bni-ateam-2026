@@ -55,6 +55,10 @@ import {
   hasAdminLoginIntent,
 } from './utils/routing.js';
 import { renderAdminLogin } from './pages/AdminLogin.js';
+import { isAppFullyClosed, isRegistrationClosed } from './config/appMode.js';
+import { renderEventClosed } from './pages/EventClosed.js';
+import { renderRegistrationClosed } from './pages/RegistrationClosed.js';
+import { mountSunsetBanner } from './components/SunsetBanner.js';
 
 // ── Language & font (set on login screen; persisted in localStorage) ──
 initPreferences();
@@ -78,6 +82,22 @@ const routes = {
   '#admin'   : (c) => renderAdmin(c),
 };
 
+function shouldShowEventClosed() {
+  return isAppFullyClosed() && !isAdminRoute();
+}
+
+function shouldShowRegistrationClosed() {
+  return isRegistrationClosed() && !isAdminRoute();
+}
+
+function bootEventClosed() {
+  appReady = true;
+  setChromeVisible(false);
+  if (tabBar) tabBar.style.display = 'none';
+  document.body.classList.add('event-closed-mode');
+  renderEventClosed(app);
+}
+
 function setChromeVisible(showTabs) {
   const onAdmin = isAdminRoute();
   if (tabBar) tabBar.style.display = (showTabs && !onAdmin) ? 'flex' : 'none';
@@ -89,6 +109,15 @@ function setChromeVisible(showTabs) {
 
 function navigate() {
   if (!appReady || !app) return;
+  if (shouldShowEventClosed()) {
+    renderEventClosed(app);
+    return;
+  }
+  if (shouldShowRegistrationClosed() && !isAdminRoute() && (isGuestTrial() || !isBound())) {
+    setChromeVisible(false);
+    renderRegistrationClosed(app);
+    return;
+  }
   syncAdminPathToHash();
   let hash = window.location.hash || '';
   if (isAdminRoute() && !hash) hash = '#admin';
@@ -135,6 +164,9 @@ function navigate() {
   }
   renderTabBar(tabBar, hash, { isBound: isBound() });
   renderUserBar(userBar);
+  if (isBound() && !shouldShowEventClosed()) {
+    mountSunsetBanner(app);
+  }
   if (hash === '#marks' || hash === '#result') dismissIncomingOverlay();
   window.scrollTo(0, 0);
 }
@@ -308,6 +340,12 @@ async function loadPublicStatsWithRetry() {
 }
 
 async function enterGuestMode() {
+  if (shouldShowRegistrationClosed()) {
+    appReady = true;
+    setChromeVisible(false);
+    renderRegistrationClosed(app);
+    return;
+  }
   try {
     await loadMembersWithRetry();
   } catch (e) {
@@ -349,6 +387,12 @@ async function enterAdminApp() {
 async function boot() {
   appReady = false;
   if (!app) return;
+
+  if (shouldShowEventClosed()) {
+    bootEventClosed();
+    return;
+  }
+
   app.innerHTML = bootSkeletonHTML();
   setChromeVisible(false);
 
@@ -384,6 +428,12 @@ async function boot() {
       renderAdminLogin(app, { onSuccess: () => boot() });
       return;
     }
+    if (shouldShowRegistrationClosed()) {
+      appReady = true;
+      setChromeVisible(false);
+      renderRegistrationClosed(app);
+      return;
+    }
     if (isGuestTrial()) {
       await enterGuestMode();
       return;
@@ -406,6 +456,12 @@ async function boot() {
         onSuccess: () => boot(),
         denied: true,
       });
+      return;
+    }
+    if (shouldShowRegistrationClosed()) {
+      appReady = true;
+      setChromeVisible(false);
+      renderRegistrationClosed(app);
       return;
     }
     const auto = await tryAutoBindOnLogin();

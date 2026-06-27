@@ -2590,3 +2590,222 @@ textarea.field-input {
 .login-prefs-fs-btn:nth-child(1) { font-size: 12px; }
 .login-prefs-fs-btn:nth-child(2) { font-size: 14px; }
 .login-prefs-fs-btn:nth-child(3) { font-size: 16px; }
+
+/* ── Event closed landing (蓋樓) ── */
+body.event-closed-mode {
+  padding-bottom: calc(20px + env(safe-area-inset-bottom));
+}
+body.event-closed-mode #tab-bar { display: none !important; }
+body.event-closed-mode #user-bar { display: none !important; }
+
+.event-closed-page { min-height: 100vh; }
+.event-closed-wrap {
+  padding: 0 0 32px;
+  max-width: var(--mobile-max);
+  margin: 0 auto;
+}
+
+.event-closed-hero {
+  text-align: center;
+  padding: 36px 20px 28px;
+}
+.event-closed-title {
+  font-size: calc(28px * var(--fs-k, 0.78));
+  line-height: 1.25;
+  margin-bottom: 12px;
+}
+.event-closed-tagline {
+  display: inline-block;
+  position: relative;
+  font-size: calc(18px * var(--fs-k, 0.78));
+  font-weight: 700;
+  line-height: 1.45;
+  margin: 0;
+  opacity: 1;
+  white-space: normal;
+}
+
+.event-closed-section {
+  padding: 0 20px;
+  margin-bottom: 24px;
+}
+.event-closed-lead {
+  font-size: calc(18px * var(--fs-k, 0.78));
+  font-weight: 700;
+  color: var(--gold-bright);
+  line-height: 1.55;
+  margin-bottom: 10px;
+}
+.event-closed-body {
+  font-size: calc(15px * var(--fs-k, 0.78));
+  line-height: 1.65;
+  color: var(--dark-text);
+  margin-bottom: 6px;
+}
+.event-closed-body strong {
+  color: var(--gold-bright);
+  font-weight: 700;
+}
+.event-closed-muted {
+  margin-top: 12px;
+  font-size: calc(14px * var(--fs-k, 0.78));
+  line-height: 1.6;
+  color: var(--dark-muted);
+}
+
+.event-closed-heading {
+  font-size: calc(17px * var(--fs-k, 0.78));
+  font-weight: 700;
+  margin-bottom: 14px;
+  color: var(--gold-bright);
+  letter-spacing: 0.04em;
+}
+
+.event-closed-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.event-closed-stat {
+  background: #101629;
+  border: 1px solid rgba(250, 199, 117, 0.18);
+  border-radius: var(--r-sm);
+  padding: 16px 12px;
+  text-align: center;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.event-closed-stat-wide { grid-column: 1 / -1; }
+.event-closed-stat-num {
+  font-family: 'Noto Serif TC', serif;
+  font-size: calc(26px * var(--fs-k, 0.78));
+  font-weight: 900;
+  color: var(--gold-bright);
+  line-height: 1.2;
+}
+.event-closed-stat-label {
+  margin-top: 6px;
+  font-size: calc(13px * var(--fs-k, 0.78));
+  color: var(--dark-muted);
+  line-height: 1.4;
+}
+
+.event-closed-notice {
+  padding-top: 4px;
+  border-top: 1px solid var(--dark-border);
+  margin-top: 4px;
+}
+
+.event-closed-dev-eyebrow {
+  font-size: calc(14px * var(--fs-k, 0.78));
+  color: var(--dark-muted);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+.event-closed-dev-card {
+  margin: 0;
+}
+
+/* ── Sunset grace-period banner ── */
+.sunset-banner {
+  margin: 0 0 12px;
+  padding: 0 12px;
+}
+.sunset-banner-inner {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 14px 14px 16px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(135deg, rgba(185, 28, 28, 0.22) 0%, rgba(120, 53, 15, 0.35) 100%);
+  border: 1px solid rgba(250, 199, 117, 0.45);
+  box-shadow: 0 0 20px rgba(250, 199, 117, 0.12);
+}
+.sunset-banner-text { flex: 1; min-width: 0; }
+.sunset-banner-title {
+  font-size: calc(14px * var(--fs-k, 0.78));
+  font-weight: 800;
+  color: #fde4a8;
+  margin: 0 0 6px;
+  letter-spacing: 0.04em;
+}
+.sunset-banner-body,
+.sunset-banner-urgent {
+  font-size: calc(13px * var(--fs-k, 0.78));
+  line-height: 1.55;
+  margin: 0 0 6px;
+  color: rgba(255, 255, 255, 0.88);
+}
+.sunset-banner-urgent {
+  margin-bottom: 0;
+  color: var(--gold-bright);
+  font-weight: 600;
+}
+.sunset-banner-dismiss {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 22px;
+  line-height: 1;
+  padding: 0 2px;
+  cursor: pointer;
+}
+
+/* ── Registration closed (新會員停止加入) ── */
+.registration-closed-page { min-height: 100vh; }
+.registration-closed-wrap { padding-bottom: 32px; }
+.registration-closed-hero {
+  text-align: center;
+  padding: 32px 20px 20px;
+}
+.registration-closed-title {
+  font-size: calc(26px * var(--fs-k, 0.78));
+  line-height: 1.25;
+  margin-bottom: 10px;
+}
+.registration-closed-tagline {
+  display: inline-block;
+  position: relative;
+  font-size: calc(17px * var(--fs-k, 0.78));
+  font-weight: 700;
+  line-height: 1.45;
+  margin: 0;
+  opacity: 1;
+}
+.registration-closed-card {
+  margin: 0 16px 16px;
+  padding: 16px;
+  border-radius: var(--r-sm);
+  background: #101629;
+  border: 1px solid var(--dark-border);
+}
+.registration-closed-sunset {
+  border-color: rgba(250, 199, 117, 0.35);
+  background: linear-gradient(145deg, rgba(250, 199, 117, 0.08), rgba(13, 26, 58, 0.9));
+}
+.registration-closed-lead {
+  font-size: calc(16px * var(--fs-k, 0.78));
+  font-weight: 700;
+  color: #fca5a5;
+  line-height: 1.55;
+  margin: 0 0 10px;
+}
+.registration-closed-sunset-title {
+  font-size: calc(15px * var(--fs-k, 0.78));
+  font-weight: 800;
+  color: var(--gold-bright);
+  margin: 0 0 8px;
+}
+.registration-closed-body {
+  font-size: calc(14px * var(--fs-k, 0.78));
+  line-height: 1.65;
+  color: var(--dark-text);
+  margin: 0 0 8px;
+}
+.registration-closed-body:last-child { margin-bottom: 0; }
+.registration-closed-muted {
+  font-size: calc(13px * var(--fs-k, 0.78));
+  line-height: 1.6;
+  color: var(--dark-muted);
+  margin: 0;
+}

@@ -17,6 +17,18 @@ export const translations = {
     hero_eyebrow: 'BNI · 20 YEARS TAIWAN',
     hero_title:   'A Team 商務連結行動',
     hero_sub:     '說你想找誰，AI 幫你媒合',
+
+    sunset_banner_title: '重要公告',
+    sunset_banner_body: '平台資料將保留三天，預計 {when}（台北時間）關閉系統。',
+    sunset_banner_urgent: '請趁這段時間趕快互換聯繫方式：查看「想約 1-1」、加 LINE、保存名片！',
+    sunset_banner_dismiss: '關閉公告',
+
+    reg_closed_sorry: '很抱歉，年會現場登入時間已結束。',
+    reg_closed_only_bound: '本 App 目前僅保留給活動當天已完成登入的夥伴使用。',
+    reg_closed_no_new: '現已停止新會員加入與認領，無法再建立新帳號。',
+    reg_closed_already_hint: '若你已在活動當天完成登入，請關閉後重新開啟 App，或清除瀏覽器快取後再試。',
+    reg_closed_toast: '年會登入時間已結束，無法新加入',
+
     home_primary_cta: '開始找人',
     home_mark_summary_prefix: '已標記 ',
     home_mark_summary_suffix: ' 位 · ',
@@ -696,6 +708,18 @@ export const translations = {
     hero_eyebrow: 'BNI · 20 YEARS TAIWAN',
     hero_title:   'A Team Business Connect',
     hero_sub:     "Tell us who you need — AI finds matches",
+
+    sunset_banner_title: 'Important notice',
+    sunset_banner_body: 'Data stays available for 3 days. The app closes on {when} (Taipei time).',
+    sunset_banner_urgent: 'Exchange contact info now: check 1-on-1 marks, add LINE, save cards!',
+    sunset_banner_dismiss: 'Dismiss',
+
+    reg_closed_sorry: 'Sorry — on-site sign-in has ended.',
+    reg_closed_only_bound: 'Only partners who signed in during the event can use the app.',
+    reg_closed_no_new: 'New sign-ups and claims are closed.',
+    reg_closed_already_hint: 'If you signed in during the event, close and reopen the app, or clear browser cache.',
+    reg_closed_toast: 'On-site sign-in has ended — no new accounts',
+
     home_primary_cta: 'Find people',
     home_mark_summary_prefix: 'Marked ',
     home_mark_summary_suffix: ' · ',

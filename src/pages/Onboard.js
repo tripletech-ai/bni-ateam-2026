@@ -28,6 +28,8 @@ import { loginStepsGuideHTML } from '../components/LoginStepsGuide.js';
 import { showConfirmDialog } from '../utils/confirmDialog.js';
 import { resolveClaimCredentials } from '../config/yangBoss.js';
 import { onboardRegionPickerHTML, bindOnboardRegionPicker } from '../components/EventChapterBrowse.js';
+import { isRegistrationClosed } from '../config/appMode.js';
+import { renderRegistrationClosed } from './RegistrationClosed.js';
 
 function memberCountLine() {
   const { registered, goal } = getCollect800Stats();
@@ -90,6 +92,7 @@ export function mapAuthError(err) {
     return t('onboard_err_register_rpc');
   }
   if (msg === 'AUTH_NETWORK') return t('onboard_err_network');
+  if (msg.includes('REGISTRATION_CLOSED')) return t('reg_closed_toast');
   return msg || '操作失敗';
 }
 
@@ -217,6 +220,10 @@ function bindBranchSearch(container) {
 }
 
 async function submitClaim(container, { onComplete }) {
+  if (isRegistrationClosed()) {
+    showToast(t('reg_closed_toast'));
+    return;
+  }
   const payload = readClaimForm(container);
   if (!validateClaimForm(payload)) return;
 
@@ -279,6 +286,10 @@ function renderClaimScreen(container, {
   onGuestTrial,
   preserveForm,
 } = {}) {
+  if (isRegistrationClosed()) {
+    renderRegistrationClosed(container);
+    return;
+  }
   const pending = preserveForm || loadPendingClaim();
   const screenOpts = { titleKey, subKey, showGuestTrial, showLoginSteps, onComplete, onGuestTrial };
   container.innerHTML = `
@@ -350,6 +361,7 @@ function renderClaimScreen(container, {
 }
 
 export async function tryPendingClaim() {
+  if (isRegistrationClosed()) return false;
   const pending = loadPendingClaim();
   if (!pending || !getCurrentUser()) return false;
   try {

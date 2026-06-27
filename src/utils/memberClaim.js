@@ -1,6 +1,7 @@
 import { normalizeBranchName, getRegionForBranch } from '../data/branches.js';
 import { bindExistingMember, registerNewMember, getClient, refreshStatus, getMyStatus, isBound } from '../services/auth.js';
 import { resolveClaimCredentials } from '../config/yangBoss.js';
+import { isRegistrationClosed } from '../config/appMode.js';
 
 const PENDING_CLAIM_KEY = 'bni_pending_claim';
 
@@ -127,6 +128,9 @@ async function claimViaClientMatch({ name, branch, region }) {
 
 /** 依分會 + 姓名認領：優先後端 DB 匹配既有名單 */
 export async function claimByNameBranch({ name, branch, region = '' }) {
+  if (isRegistrationClosed()) {
+    throw new Error('REGISTRATION_CLOSED');
+  }
   const resolved = resolveClaimCredentials({ name, branch, region });
   const trimmedName = normalizeChineseName(resolved.name);
   const normBranch = normalizeRegisterBranch(resolved.branch);
