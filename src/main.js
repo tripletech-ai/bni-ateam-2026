@@ -43,6 +43,7 @@ import { mergePendingMarks } from './utils/storage.js';
 import { syncAllMarksToServer } from './utils/markSync.js';
 import { refreshLeaderboardCache } from './utils/leaderboardCache.js';
 import { refreshConnectionCache } from './utils/connectionCache.js';
+import { restoreMarksFromServer } from './utils/marksRestore.js';
 import { normalizeAppUrl } from './utils/appUrl.js';
 import { profileBackendEmpty } from './utils/profileHints.js';
 import { registerNavigator, goToPage } from './utils/nav.js';
@@ -220,9 +221,12 @@ async function afterBindComplete() {
     console.warn('Reload members failed:', e);
   }
   const mergedCount = mergePendingMarks();
-  syncAllMarksToServer(window.BNI_MEMBERS || []).catch(e => {
-    console.warn('syncAllMarksToServer:', e.message);
-  });
+  try {
+    await syncAllMarksToServer(window.BNI_MEMBERS || []);
+    await restoreMarksFromServer();
+  } catch (e) {
+    console.warn('mark sync/restore:', e.message);
+  }
   if (mergedCount > 0) showToast(t('marks_pending_merged', { n: mergedCount }));
   isAdmin = await checkIsAdmin();
   await finishOnboardingTutorial();
@@ -422,10 +426,13 @@ async function boot() {
   }
   const mergedPending = mergePendingMarks();
   if (mergedPending > 0) {
-    syncAllMarksToServer(window.BNI_MEMBERS || []).catch(e => {
-      console.warn('syncAllMarksToServer:', e.message);
-    });
     showToast(t('marks_pending_merged', { n: mergedPending }));
+  }
+  try {
+    await syncAllMarksToServer(window.BNI_MEMBERS || []);
+    await restoreMarksFromServer();
+  } catch (e) {
+    console.warn('mark sync/restore:', e.message);
   }
   appReady = true;
   setChromeVisible(true);

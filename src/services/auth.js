@@ -678,6 +678,20 @@ export async function ackIncomingMarks(markIds = null) {
   return data;
 }
 
+export async function fetchMyOutgoingMarks() {
+  const { data, error } = await getClient().database.rpc('bni_get_my_outgoing_marks');
+  if (error) {
+    const msg = error.message || '';
+    if (/could not find the function|PGRST202|404/i.test(msg)) {
+      const e = new Error(msg);
+      e.code = 'RPC_NOT_DEPLOYED';
+      throw e;
+    }
+    throw error;
+  }
+  return Array.isArray(data) ? data : [];
+}
+
 export async function fetchCardBio(cardUrl) {
   const res = await fetch('/api/fetch-card-bio', {
     method: 'POST',

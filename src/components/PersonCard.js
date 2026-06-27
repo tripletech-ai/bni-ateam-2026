@@ -1,6 +1,7 @@
 import { getMark, setMark, setPendingMark, memberKey, isMutuallyConnected } from '../utils/storage.js';
 import { syncMarkToServer } from '../utils/markSync.js';
 import { hasIncomingOneMark } from '../utils/connectionCache.js';
+import { showConfirmDialog } from '../utils/confirmDialog.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
 import { isBound } from '../services/auth.js';
 import { showToast }                   from '../utils/toast.js';
@@ -143,7 +144,7 @@ function bindConnectionsRefresh() {
 export function bindCardEvents(container, members) {
   bindConnectionsRefresh();
   if (!container) return;
-  container.addEventListener('click', e => {
+  container.addEventListener('click', async e => {
     // Card expand/collapse — click anywhere except action buttons
     const card = e.target.closest('.person-card');
     if (card && !e.target.closest('.person-actions') && !e.target.closest('[data-action]')) {
@@ -170,6 +171,19 @@ export function bindCardEvents(container, members) {
       const lineId   = btn.dataset.lineId   || member?.lineId   || '';
       handleLine({ lineLink, lineId });
     } else if (action === 'one' || action === 'biz') {
+      const before = getMark(member);
+      if (!isGuestTrial() && before[action]) {
+        const mutual = isMutuallyConnected(member);
+        const ok = await showConfirmDialog({
+          title: t('mark_unmark_confirm_title'),
+          message: action === 'one' && mutual
+            ? t('mark_unmark_mutual_warn')
+            : t('mark_unmark_confirm_body'),
+          confirmLabel: t('mark_unmark_confirm_ok'),
+          cancelLabel: t('confirm_cancel'),
+        });
+        if (!ok) return;
+      }
       if (isGuestTrial()) {
         setPendingMark(member, action);
         showToast(t('guest_mark_pending'));

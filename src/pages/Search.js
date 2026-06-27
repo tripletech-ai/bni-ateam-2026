@@ -11,7 +11,7 @@ import { industryPieChartHTML } from '../components/IndustryPieChart.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 import { showToast } from '../utils/toast.js';
 import { saveSearchSession, loadSearchSession, clearSearchSession } from '../utils/searchSession.js';
-import { fetchAllMembers } from '../services/auth.js';
+import { fetchAllMembers, fetchPublicStats } from '../services/auth.js';
 import { refreshMembersCache } from '../services/membersApi.js';
 
 export function renderSearch(container) {
@@ -119,16 +119,21 @@ function bindSearchEvents(container) {
   });
 }
 
-function thinkingFallbackSteps() {
-  return [t('search_thinking_1'), t('search_thinking_2'), t('search_thinking_3')];
+function thinkingFallbackSteps(refreshLabel) {
+  return [
+    refreshLabel || t('search_thinking_0'),
+    t('search_thinking_1'),
+    t('search_thinking_2'),
+    t('search_thinking_3'),
+  ];
 }
 
 function searchThinkingLoadingHTML() {
   return `
     <div class="search-thinking-panel" role="status" aria-live="polite">
       <div class="search-thinking-heading">${escHtml(t('search_thinking_title'))}</div>
-      <ol class="search-thinking-steps" id="search-thinking-steps">
-        ${[0, 1, 2].map(i => `
+      <ol class="search-thinking-steps search-thinking-steps-4" id="search-thinking-steps">
+        ${[0, 1, 2, 3].map(i => `
           <li class="thinking-step" data-step="${i}">
             <span class="thinking-step-label">${i + 1}</span>
             <span class="thinking-step-text"></span>
@@ -227,10 +232,20 @@ function displaySearchResults(input, intent, steps) {
 function restoreSearchSession() {
   const saved = loadSearchSession();
   if (!saved?.input || !saved?.intent) return;
-  const steps = saved.steps?.length >= 3
+  const steps = saved.steps?.length >= 4
     ? saved.steps
-    : thinkingFallbackSteps();
+    : saved.steps?.length >= 3
+      ? [t('search_thinking_0_done', { n: window.BNI_MEMBERS?.length || 0 }), ...saved.steps]
+      : thinkingFallbackSteps(t('search_thinking_0_done', { n: window.BNI_MEMBERS?.length || 0 }));
   displaySearchResults(saved.input, saved.intent, steps);
+}
+
+async function refreshSearchRoster() {
+  const [members] = await Promise.all([
+    refreshMembersCache(fetchAllMembers, { force: true }),
+    fetchPublicStats().then(s => { window.BNI_PUBLIC_STATS = s; }).catch(() => {}),
+  ]);
+  return members?.length ?? window.BNI_MEMBERS?.length ?? 0;
 }
 
 async function triggerSearch(input) {
@@ -250,16 +265,27 @@ async function triggerSearch(input) {
   loading.style.display = 'block';
   loading.innerHTML = searchThinkingLoadingHTML();
 
-  const fallbacks = thinkingFallbackSteps();
+  revealThinkingStep(0, t('search_thinking_0'), { active: true });
+  let rosterCount = window.BNI_MEMBERS?.length || 0;
+  try {
+    rosterCount = await refreshSearchRoster();
+  } catch (e) {
+    console.warn('refreshSearchRoster:', e.message);
+  }
+  if (!document.getElementById('search-loading')) return;
+
+  const refreshDoneLabel = t('search_thinking_0_done', { n: rosterCount });
+  revealThinkingStep(0, refreshDoneLabel, { done: true });
+
+  const fallbacks = thinkingFallbackSteps(refreshDoneLabel);
   const stepTimers = [
-    setTimeout(() => revealThinkingStep(0, fallbacks[0], { active: true }), 0),
-    setTimeout(() => revealThinkingStep(1, fallbacks[1], { active: true }), 1400),
-    setTimeout(() => revealThinkingStep(2, fallbacks[2], { active: true }), 2800),
+    setTimeout(() => revealThinkingStep(1, fallbacks[1], { active: true }), 400),
+    setTimeout(() => revealThinkingStep(2, fallbacks[2], { active: true }), 1800),
+    setTimeout(() => revealThinkingStep(3, fallbacks[3], { active: true }), 3200),
   ];
 
   const [intent] = await Promise.all([
     getSearchIntentFromAI(input),
-    refreshMembersCache(fetchAllMembers, { force: true }),
     new Promise(resolve => setTimeout(resolve, MIN_THINKING_MS)),
   ]);
 
@@ -267,7 +293,9 @@ async function triggerSearch(input) {
 
   if (!document.getElementById('search-loading')) return;
 
-  const steps = intent.thinking_steps?.length >= 3 ? intent.thinking_steps : fallbacks;
+  const steps = intent.thinking_steps?.length >= 3
+    ? [refreshDoneLabel, ...intent.thinking_steps.slice(0, 3)]
+    : fallbacks;
   finalizeThinkingSteps(steps);
 
   await new Promise(resolve => setTimeout(resolve, 600));
@@ -425,7 +453,7 @@ function renderQuickFilters(container) {
 }
 
 function showIndustryMembers(industryId) {
-  refreshMembersCache(fetchAllMembers, { force: true }).then(() => {
+  refreshSearchRoster().then(() => {
     const members = getMembersByIndustry(industryId);
     const container = document.getElementById('search-results-area');
     const label = industryLabel(industryId, t);
@@ -492,7 +520,7 @@ function renderBranchBrowse(container) {
 }
 
 function showBranchMembers(branchName) {
-  refreshMembersCache(fetchAllMembers, { force: true }).then(() => {
+  refreshSearchRoster().then(() => {
     const members = getMembersByBranch(branchName);
     const container = document.getElementById('search-results-area');
     if (!container) return;

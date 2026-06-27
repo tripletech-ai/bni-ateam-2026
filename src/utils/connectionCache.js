@@ -1,4 +1,5 @@
 import { fetchIncomingMarks, fetchMyMutualStats } from '../services/auth.js';
+import { restoreMarksFromServer } from './marksRestore.js';
 import { memberKey } from './storage.js';
 
 export function cacheIncomingOneKeys(rows) {
@@ -38,6 +39,7 @@ export function hasIncomingOneMark(member) {
 
 /** 重新抓取 incoming + 伺服器互相連結，更新快取並通知 UI */
 export async function refreshConnectionCache() {
+  await restoreMarksFromServer().catch(() => {});
   const [incoming, stats] = await Promise.all([
     fetchIncomingMarks(false).catch(() => []),
     fetchMyMutualStats().catch(() => null),
