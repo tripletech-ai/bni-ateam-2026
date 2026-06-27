@@ -1158,6 +1158,27 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
   border-color: rgba(250,199,117,0.45);
   background: rgba(250,199,117,0.12);
 }
+.onboard-region-picker {
+  background: rgba(255,255,255,0.04);
+  border-color: var(--dark-border);
+}
+.onboard-region-picker-summary { color: var(--gold-bright); }
+.onboard-region-chip.active {
+  border-color: rgba(250,199,117,0.55);
+  background: rgba(250,199,117,0.12);
+}
+.onboard-chapter-panel { border-top-color: var(--dark-border); }
+.onboard-chapter-panel-label { color: var(--gold-bright); }
+.event-registry-card {
+  border-color: rgba(250, 199, 117, 0.25);
+  background: linear-gradient(145deg, rgba(4, 44, 83, 0.35), rgba(250, 199, 117, 0.06));
+}
+.event-registry-area-summary { color: var(--gold-bright); }
+.branch-chip-reserved { opacity: 0.65; }
+.branch-chip.event-chapter.ateam-roster {
+  border-color: rgba(250,199,117,0.45);
+  background: rgba(250,199,117,0.1);
+}
 .ateam-roster-badge {
   background: rgba(250,199,117,0.15);
   color: var(--gold-bright);

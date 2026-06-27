@@ -13,6 +13,7 @@ import { showToast } from '../utils/toast.js';
 import { saveSearchSession, loadSearchSession, clearSearchSession } from '../utils/searchSession.js';
 import { fetchAllMembers, fetchPublicStats } from '../services/auth.js';
 import { refreshMembersCache } from '../services/membersApi.js';
+import { eventRegistryBrowseHTML, bindEventChapterClicks } from '../components/EventChapterBrowse.js';
 
 export function renderSearch(container) {
   container.classList.add('page-root');
@@ -471,52 +472,9 @@ function showIndustryMembers(industryId) {
 
 function renderBranchBrowse(container) {
   if (!container) return;
-  const { zhongshan, sanlu, guest } = resolveBranchLists(window.BNI_PUBLIC_STATS);
-
-  const chip = (b, region) => {
-    const full = b.fullName || normalizeBranchName(b.name);
-    const label = b.fullName || full;
-    return `<div class="branch-chip ${region}" data-branch="${escHtml(full)}" role="button" tabindex="0">
-      ${escHtml(label)}<span class="chip-count">${b.count}</span>
-    </div>`;
-  };
-
-  container.innerHTML = `
-    <section class="branch-browse-card" aria-label="${escAttr(t('search_browse_all_branches'))}">
-      <div class="branch-browse-header">
-        <span class="branch-browse-icon" aria-hidden="true">📋</span>
-        <div class="branch-browse-head-text">
-          <div class="branch-browse-title">${escHtml(t('search_browse_all_branches'))}</div>
-          <div class="branch-browse-sub">${escHtml(t('search_browse_all_branches_sub'))}</div>
-        </div>
-      </div>
-      <div class="branch-browse-body">
-        <div class="branch-section">
-          <div class="branch-region-title">${escHtml(t('search_zhongshan'))}</div>
-          <div class="branch-chips">${zhongshan.map(b => chip(b, 'zhongshan')).join('')}</div>
-          <div class="branch-region-title">${escHtml(t('search_sanlu'))}</div>
-          <div class="branch-chips">${sanlu.map(b => chip(b, 'sanlu')).join('')}</div>
-          <div class="branch-region-title">${escHtml(t('search_guest'))}</div>
-          <div class="branch-chips">${guest.length
-            ? guest.map(b => chip(b, 'guest')).join('')
-            : `<p class="branch-empty-hint">${escHtml(t('search_guest_empty'))}</p>`}
-          </div>
-        </div>
-      </div>
-    </section>`;
-
-  container.addEventListener('click', e => {
-    const chipEl = e.target.closest('[data-branch]');
-    if (!chipEl) return;
-    showBranchMembers(chipEl.dataset.branch);
-  });
-  container.addEventListener('keydown', e => {
-    if (e.key !== 'Enter' && e.key !== ' ') return;
-    const chipEl = e.target.closest('[data-branch]');
-    if (!chipEl) return;
-    e.preventDefault();
-    showBranchMembers(chipEl.dataset.branch);
-  });
+  const { guest } = resolveBranchLists(window.BNI_PUBLIC_STATS);
+  container.innerHTML = eventRegistryBrowseHTML({ guestBranches: guest });
+  bindEventChapterClicks(container, showBranchMembers);
 }
 
 function showBranchMembers(branchName) {

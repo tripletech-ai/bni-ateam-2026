@@ -12,7 +12,6 @@ import {
   appendFeedItem,
 } from '../components/FeedChat.js';
 import {
-  fetchLeaderboard,
   fetchFeed,
   fetchLiveSettings,
   postFeedMessage,
@@ -22,6 +21,7 @@ import {
   getCurrentUser,
   getMyStatus,
 } from '../services/auth.js';
+import { refreshLeaderboardCache } from '../utils/leaderboardCache.js';
 import { showToast } from '../utils/toast.js';
 import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { guestFeedLoginHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
@@ -110,6 +110,9 @@ function switchLiveTab(container, tab) {
   });
   setLivePanelVisible(container.querySelector('.live-panel-leaderboard'), tab === 'leaderboard');
   setLivePanelVisible(container.querySelector('.live-panel-chat'), tab === 'chat');
+  if (tab === 'leaderboard') {
+    refreshLeaderboardPanel(container).catch(e => console.warn('lb tab refresh:', e.message));
+  }
   if (tab === 'chat') scrollChatToBottom(container);
 }
 
@@ -143,10 +146,18 @@ async function refreshLeaderboardPanel(container) {
   const lbWrap = container.querySelector('#live-leaderboard-list');
   if (!lbWrap) return;
   try {
-    const rows = await fetchLeaderboard(30, liveLbMode);
-    if (!window.BNI_LEADERBOARDS) window.BNI_LEADERBOARDS = {};
-    window.BNI_LEADERBOARDS[liveLbMode] = rows;
-    lbWrap.innerHTML = leaderboardHTML(rows, { mode: liveLbMode });
+    await refreshLeaderboardCache();
+    liveLbModes = resolveLbModes(window.BNI_LIVE_SETTINGS);
+    ensureLbMode();
+    const modeTabs = container.querySelector('.lb-mode-tabs');
+    if (modeTabs) {
+      modeTabs.outerHTML = leaderboardModeTabsHTML(liveLbModes, liveLbMode);
+      bindLbModeTabs(container);
+    }
+    lbWrap.innerHTML = leaderboardHTML(
+      window.BNI_LEADERBOARDS?.[liveLbMode] || [],
+      { mode: liveLbMode },
+    );
   } catch (e) {
     console.warn('leaderboard refresh:', e.message);
   }
@@ -281,21 +292,20 @@ export async function refreshLiveData(container) {
     ]);
     liveLbModes = resolveLbModes(settings);
     ensureLbMode();
+    window.BNI_LIVE_SETTINGS = settings;
 
     // 先更新聊天室，不等排行榜
     pushFeedToUI(container, feed);
     ensureChatComposer(container);
     if (isGuestTrial()) bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
 
-    const boards = await Promise.all(
-      liveLbModes.map(mode => fetchLeaderboard(30, mode).then(rows => ({ mode, rows }))),
-    );
-    window.BNI_LEADERBOARDS = {};
-    boards.forEach(({ mode, rows }) => { window.BNI_LEADERBOARDS[mode] = rows; });
+    await refreshLeaderboardCache();
+    liveLbModes = resolveLbModes(window.BNI_LIVE_SETTINGS);
+    ensureLbMode();
 
     const lbWrap = container.querySelector('#live-leaderboard-list');
     if (lbWrap) {
-      lbWrap.innerHTML = leaderboardHTML(window.BNI_LEADERBOARDS[liveLbMode] || [], { mode: liveLbMode });
+      lbWrap.innerHTML = leaderboardHTML(window.BNI_LEADERBOARDS?.[liveLbMode] || [], { mode: liveLbMode });
     }
 
     const modeTabs = container.querySelector('.lb-mode-tabs');
@@ -360,6 +370,7 @@ export async function renderLive(container) {
   livePollTimer = setInterval(() => {
     if (liveMainTab === 'chat') {
       refreshFeedOnly(container).catch(e => console.warn('feed poll:', e.message));
+      refreshLeaderboardCache().catch(e => console.warn('lb cache poll:', e.message));
     } else {
       refreshLiveData(container);
     }

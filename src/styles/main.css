@@ -566,6 +566,57 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .branch-browse-body .branch-chip {
   font-size: calc(14px * var(--fs-k, 0.78)); padding: 10px 14px;
 }
+.branch-browse-ateam { margin-bottom: 0; }
+.event-registry-card {
+  margin-top: 0;
+  border-color: rgba(4, 44, 83, 0.22);
+  background: linear-gradient(145deg, rgba(4, 44, 83, 0.04), rgba(250, 199, 117, 0.08));
+}
+.event-registry-body { padding-top: 4px; }
+.branch-guest-block { margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(186, 117, 23, 0.25); }
+.branch-guest-empty { margin: 12px 4px 4px; }
+.event-registry-area { margin-bottom: 8px; }
+.event-registry-area-summary {
+  cursor: pointer; font-size: calc(14px * var(--fs-k, 0.78)); font-weight: 700;
+  color: var(--navy); padding: 10px 4px; list-style: none;
+}
+.event-registry-area-summary::-webkit-details-marker { display: none; }
+.event-registry-area-body { padding: 0 4px 8px; }
+.branch-region-block { margin-bottom: 4px; }
+.branch-chip-reserved {
+  opacity: 0.72;
+  border-style: dashed;
+}
+.branch-chip.event-chapter.ateam-roster {
+  border-color: var(--gold);
+  background: var(--gold-light);
+}
+.onboard-region-picker {
+  margin: 12px 0 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 10px 12px;
+  background: rgba(4, 44, 83, 0.03);
+}
+.onboard-region-picker-summary {
+  cursor: pointer; font-size: calc(14px * var(--fs-k, 0.78)); font-weight: 700;
+  color: var(--navy); list-style: none;
+}
+.onboard-region-picker-summary::-webkit-details-marker { display: none; }
+.onboard-region-hint { margin: 8px 0 10px; }
+.onboard-region-grid-wrap { margin-bottom: 8px; }
+.onboard-region-chip.active {
+  border-color: var(--gold);
+  background: var(--gold-light);
+}
+.onboard-chapter-panel { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.onboard-chapter-panel.hidden { display: none; }
+.onboard-chapter-panel-label {
+  font-size: calc(13px * var(--fs-k, 0.78)); font-weight: 700;
+  color: var(--navy); margin-bottom: 8px;
+}
+.onboard-chapter-panel-hint { margin: 0 0 6px; }
+.onboard-chapter-grid { max-height: 200px; overflow-y: auto; }
 .login-guest-divider {
   text-align: center; font-size: 13px; color: var(--muted);
   margin: 20px 0 14px; letter-spacing: 1px;

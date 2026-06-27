@@ -27,6 +27,7 @@ import { loginPrefsHTML, bindLoginPrefs } from '../components/LoginPrefsPanel.js
 import { loginStepsGuideHTML } from '../components/LoginStepsGuide.js';
 import { showConfirmDialog } from '../utils/confirmDialog.js';
 import { resolveClaimCredentials } from '../config/yangBoss.js';
+import { onboardRegionPickerHTML, bindOnboardRegionPicker } from '../components/EventChapterBrowse.js';
 
 function memberCountLine() {
   const { registered, goal } = getCollect800Stats();
@@ -48,6 +49,7 @@ function simpleClaimFormHTML({ branch = '', name = '' } = {}) {
       <input id="claim-branch-input" class="field-input" value="${escHtml(branch)}"
         placeholder="${escHtml(t('onboard_chapter_search_ph'))}" autocomplete="off">
       <div id="claim-branch-results" class="chapter-search-results hidden"></div>
+      ${onboardRegionPickerHTML()}
       <div class="simple-claim-ateam">
         <div class="simple-claim-ateam-label">${escHtml(t('onboard_ateam_quick'))}</div>
         <div class="quick-filter-scroll simple-claim-chips" role="list">${ateamQuickChipsHTML(branch)}</div>
@@ -204,6 +206,11 @@ function bindBranchSearch(container) {
 
   container.querySelectorAll('.simple-claim-chips [data-branch]').forEach(chip => {
     chip.addEventListener('click', () => selectBranch(chip.dataset.branch));
+  });
+
+  bindOnboardRegionPicker(container, {
+    onSelectBranch: selectBranch,
+    getSelectedBranch: () => hidden?.value?.trim() || input?.value?.trim() || '',
   });
 
   return { selectBranch };
