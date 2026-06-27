@@ -473,8 +473,7 @@ function showIndustryMembers(industryId) {
 
 function renderBranchBrowse(container) {
   if (!container) return;
-  const { guest } = resolveBranchLists(window.BNI_PUBLIC_STATS);
-  container.innerHTML = eventRegistryBrowseHTML({ guestBranches: guest });
+  container.innerHTML = eventRegistryBrowseHTML({ stats: window.BNI_PUBLIC_STATS });
   bindEventChapterClicks(container, showBranchMembers);
 }
 

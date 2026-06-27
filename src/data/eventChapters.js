@@ -1,5 +1,7 @@
 /** 2026 年會出席分會名錄 — 區域 → 分會（與 DB bni_event_regions / bni_event_chapters 同步） */
 
+import { normalizeBranchName, findSimilarBranch } from './branches.js';
+
 /** 楊董 A Team 20 分會（可綁定名單 roster） */
 export const ATEAM_ROSTER_NAMES = Object.freeze([
   '長悅', '長佑', '長翔', '長城', '長輝', '長翼', '長利', '長和',
@@ -270,4 +272,169 @@ export function regionPickerHTML() {
         <div class="onboard-region-grid">${btns}</div>
       </div>`;
   }).join('');
+}
+
+const FALLBACK_REGION_ID = 'taichung-south';
+
+function chapterKey(name) {
+  return String(name || '').replace(/分會+$/, '').trim().toLowerCase();
+}
+
+function collectAllRegistryFullNames() {
+  const out = [];
+  for (const region of getEventRegistry()) {
+    for (const ch of region.chapters) {
+      if (String(ch).startsWith('~')) continue;
+      out.push(chapterFullName(ch));
+    }
+  }
+  return out;
+}
+
+/**
+ * 將任意分會名稱對應到名錄區域（僅 UI 分類，不修改 DB）
+ * @returns {{ regionId: string, regionLabel: string, areaGroup: string, shortName: string, fullName: string, inRegistry: boolean } | null}
+ */
+export function resolveChapterPlacement(branchInput) {
+  const norm = normalizeBranchName(branchInput);
+  if (!norm) return null;
+  const base = norm.replace(/分會$/, '');
+
+  for (const region of getEventRegistry()) {
+    for (const ch of region.chapters) {
+      if (String(ch).startsWith('~')) continue;
+      const full = chapterFullName(ch);
+      if (full === norm || chapterKey(ch) === chapterKey(base)) {
+        return {
+          regionId: region.regionId,
+          regionLabel: region.regionLabel,
+          areaGroup: region.areaGroup,
+          shortName: ch,
+          fullName: full,
+          inRegistry: true,
+        };
+      }
+    }
+  }
+
+  const similar = findSimilarBranch(norm, collectAllRegistryFullNames());
+  if (similar && similar !== norm) {
+    return resolveChapterPlacement(similar);
+  }
+
+  const hits = searchEventChapters(base, 5);
+  if (hits.length) {
+    const exact = hits.find(h => chapterKey(h.shortName) === chapterKey(base))
+      || hits.find(h => chapterKey(h.fullName) === chapterKey(base))
+      || hits[0];
+    return {
+      regionId: exact.regionId,
+      regionLabel: exact.regionLabel,
+      areaGroup: exact.areaGroup,
+      shortName: exact.shortName,
+      fullName: exact.fullName,
+      inRegistry: true,
+    };
+  }
+
+  const fallback = getRegionById(FALLBACK_REGION_ID);
+  return {
+    regionId: FALLBACK_REGION_ID,
+    regionLabel: fallback?.regionLabel || '大台中南區',
+    areaGroup: fallback?.areaGroup || '台中 / 彰化 / 南投',
+    shortName: base,
+    fullName: norm,
+    inRegistry: false,
+  };
+}
+
+/**
+ * 合併公開統計中的活躍分會到名錄各區（含原 guest 區，不再另開「其他區」）
+ */
+export function buildRegistryBrowseGroups(stats) {
+  const countByNorm = new Map();
+  for (const row of stats?.branches || []) {
+    const norm = normalizeBranchName(row.branch);
+    if (!norm || !(row.count > 0)) continue;
+    countByNorm.set(norm, Math.max(countByNorm.get(norm) || 0, row.count ?? 0));
+  }
+
+  /** @type {Map<string, Map<string, { shortName: string, fullName: string, count: number, inRegistry: boolean, dbAlias?: string }>>} */
+  const regionChapterMaps = new Map();
+
+  for (const region of getEventRegistry()) {
+    const chMap = new Map();
+    for (const ch of region.chapters) {
+      if (String(ch).startsWith('~')) continue;
+      const full = chapterFullName(ch);
+      chMap.set(chapterKey(ch), {
+        shortName: ch,
+        fullName: full,
+        count: countByNorm.get(full) || 0,
+        inRegistry: true,
+      });
+    }
+    regionChapterMaps.set(region.regionId, chMap);
+  }
+
+  for (const [dbFull, count] of countByNorm) {
+    const placement = resolveChapterPlacement(dbFull);
+    if (!placement) continue;
+
+    let chMap = regionChapterMaps.get(placement.regionId);
+    if (!chMap) {
+      chMap = new Map();
+      regionChapterMaps.set(placement.regionId, chMap);
+    }
+
+    const key = chapterKey(placement.shortName);
+    const existing = chMap.get(key);
+    if (existing) {
+      existing.count = Math.max(existing.count, count);
+      if (dbFull !== existing.fullName && !existing.dbAlias) {
+        existing.dbAlias = dbFull;
+      }
+    } else {
+      chMap.set(key, {
+        shortName: placement.shortName,
+        fullName: placement.inRegistry ? placement.fullName : dbFull,
+        count,
+        inRegistry: placement.inRegistry,
+        dbAlias: placement.inRegistry && dbFull !== placement.fullName ? dbFull : undefined,
+      });
+    }
+  }
+
+  return getAreaGroups().map(areaGroup => ({
+    areaGroup,
+    regions: getRegionsInArea(areaGroup).map(region => {
+      const chMap = regionChapterMaps.get(region.regionId) || new Map();
+      const ordered = [];
+      const seen = new Set();
+
+      for (const ch of region.chapters) {
+        if (String(ch).startsWith('~')) continue;
+        const key = chapterKey(ch);
+        const item = chMap.get(key);
+        ordered.push(item || {
+          shortName: ch,
+          fullName: chapterFullName(ch),
+          count: 0,
+          inRegistry: true,
+        });
+        seen.add(key);
+      }
+
+      const extras = [...chMap.entries()]
+        .filter(([key]) => !seen.has(key))
+        .map(([, item]) => item)
+        .sort((a, b) => a.shortName.localeCompare(b.shortName, 'zh-TW'));
+
+      return {
+        regionId: region.regionId,
+        regionLabel: region.regionLabel,
+        chapters: [...ordered, ...extras],
+      };
+    }),
+  }));
 }

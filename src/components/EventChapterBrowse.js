@@ -1,59 +1,49 @@
 import { escHtml, escAttr } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
 import {
-  getAreaGroups,
-  getRegionsInArea,
   getRegionById,
   chapterFullName,
   isAteamRosterChapterName,
   eventBranchPickerHTML,
   regionPickerHTML,
+  buildRegistryBrowseGroups,
 } from '../data/eventChapters.js';
-import { normalizeBranchName } from '../data/branches.js';
 import { getMembersByBranch } from '../utils/search.js';
 
-function eventChapterChipHTML(name, { showCount = true } = {}) {
-  const full = chapterFullName(name);
-  const roster = isAteamRosterChapterName(name) ? ' ateam-roster' : '';
-  const count = showCount ? getMembersByBranch(full).length : 0;
-  const countHtml = showCount && count > 0
-    ? `<span class="chip-count">${count}</span>`
-    : '';
-  const reserved = showCount && count === 0 ? ' branch-chip-reserved' : '';
-  return `<div class="branch-chip event-chapter${roster}${reserved}" data-branch="${escHtml(full)}" role="button" tabindex="0">
-    ${escHtml(name)}${countHtml}
+function liveChapterCount(item) {
+  const primary = Math.max(item.count || 0, getMembersByBranch(item.fullName).length);
+  if (!item.dbAlias) return primary;
+  return Math.max(primary, getMembersByBranch(item.dbAlias).length);
+}
+
+function eventChapterChipHTML(item) {
+  const { shortName, fullName, inRegistry } = item;
+  const count = liveChapterCount(item);
+  const roster = isAteamRosterChapterName(shortName) ? ' ateam-roster' : '';
+  const countHtml = count > 0 ? `<span class="chip-count">${count}</span>` : '';
+  const reserved = count === 0 ? ' branch-chip-reserved' : '';
+  const alias = !inRegistry ? ' branch-chip-alias' : '';
+  const branchAttr = escHtml(fullName);
+  return `<div class="branch-chip event-chapter${roster}${reserved}${alias}" data-branch="${branchAttr}" role="button" tabindex="0">
+    ${escHtml(shortName)}${countHtml}
   </div>`;
 }
 
-/** 找人脈：全台分會名錄（含楊董 A Team 分會，不重複另開中山／三蘆區塊） */
-export function eventRegistryBrowseHTML({ guestBranches = [] } = {}) {
-  const groups = getAreaGroups();
-  const sections = groups.map(area => {
-    const regions = getRegionsInArea(area);
+/** 找人脈：全台分會名錄（活躍分會依名錄歸類，不另開「其他區」） */
+export function eventRegistryBrowseHTML({ stats } = {}) {
+  const groups = buildRegistryBrowseGroups(stats);
+  const sections = groups.map(({ areaGroup, regions }) => {
     const regionBlocks = regions.map(region => `
       <div class="branch-region-block">
         <div class="branch-region-title">${escHtml(region.regionLabel)}</div>
-        <div class="branch-chips">${region.chapters.map(name => eventChapterChipHTML(name)).join('')}</div>
+        <div class="branch-chips">${region.chapters.map(ch => eventChapterChipHTML(ch)).join('')}</div>
       </div>`).join('');
     return `
       <details class="event-registry-area">
-        <summary class="event-registry-area-summary">${escHtml(area)}</summary>
+        <summary class="event-registry-area-summary">${escHtml(areaGroup)}</summary>
         <div class="event-registry-area-body">${regionBlocks}</div>
       </details>`;
   }).join('');
-
-  const guestSection = guestBranches.length
-    ? `<div class="branch-region-block branch-guest-block">
-        <div class="branch-region-title">${escHtml(t('search_guest'))}</div>
-        <div class="branch-chips">${guestBranches.map(b => {
-          const full = b.fullName || normalizeBranchName(b.name);
-          const label = b.fullName || full;
-          return `<div class="branch-chip guest" data-branch="${escHtml(full)}" role="button" tabindex="0">
-            ${escHtml(label)}<span class="chip-count">${b.count}</span>
-          </div>`;
-        }).join('')}</div>
-      </div>`
-    : `<p class="branch-empty-hint branch-guest-empty">${escHtml(t('search_guest_empty'))}</p>`;
 
   return `
     <section class="branch-browse-card event-registry-card" aria-label="${escAttr(t('search_event_registry_title'))}">
@@ -64,10 +54,7 @@ export function eventRegistryBrowseHTML({ guestBranches = [] } = {}) {
           <div class="branch-browse-sub">${escHtml(t('search_event_registry_sub'))}</div>
         </div>
       </div>
-      <div class="branch-browse-body event-registry-body">
-        ${sections}
-        ${guestSection}
-      </div>
+      <div class="branch-browse-body event-registry-body">${sections}</div>
     </section>`;
 }
 

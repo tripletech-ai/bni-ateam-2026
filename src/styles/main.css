@@ -577,8 +577,6 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
   background: linear-gradient(145deg, rgba(4, 44, 83, 0.04), rgba(250, 199, 117, 0.08));
 }
 .event-registry-body { padding-top: 4px; }
-.branch-guest-block { margin-top: 12px; padding-top: 12px; border-top: 1px dashed rgba(186, 117, 23, 0.25); }
-.branch-guest-empty { margin: 12px 4px 4px; }
 .event-registry-area { margin-bottom: 8px; }
 .event-registry-area-summary {
   cursor: pointer; font-size: calc(14px * var(--fs-k, 0.78)); font-weight: 700;
@@ -590,6 +588,9 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .branch-chip-reserved {
   opacity: 0.72;
   border-style: dashed;
+}
+.branch-chip-alias {
+  border-style: dotted;
 }
 .branch-chip.event-chapter.ateam-roster {
   border-color: var(--gold);
