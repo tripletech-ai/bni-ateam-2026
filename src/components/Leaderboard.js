@@ -1,5 +1,7 @@
-import { escHtml } from '../utils/html.js';
+import { escHtml, escAttr } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
+import { openMemberProfile } from '../utils/feedMemberNav.js';
+import { showToast } from '../utils/toast.js';
 
 const RANK_STYLES = {
   1: 'lb-rank-gold',
@@ -41,24 +43,47 @@ export function leaderboardHTML(rows = [], { compact = false, limit = 30, mode =
     const rank = row.rank ?? 0;
     const rankClass = RANK_STYLES[rank] || '';
     return `
-      <div class="lb-row${rank <= 3 ? ` lb-row-top lb-row-${rank}` : ''}" data-rank="${rank}">
-        <span class="lb-rank serif ${rankClass}" aria-label="第 ${rank} 名">${rank}</span>
+      <button type="button" class="lb-row lb-row-btn${rank <= 3 ? ` lb-row-top lb-row-${rank}` : ''}"
+        data-rank="${rank}"
+        data-member-name="${escAttr(row.name || '')}"
+        data-member-branch="${escAttr(row.branch || '')}"
+        aria-label="${escAttr(t('lb_row_aria', { name: row.name || '', branch: row.branch || '' }))}">
+        <span class="lb-rank serif ${rankClass}" aria-hidden="true">${rank}</span>
         <div class="lb-info">
           <div class="lb-name">${escHtml(row.name || '')}</div>
           <div class="lb-meta">${escHtml(row.branch || '')}${row.profession ? ` · ${escHtml(row.profession)}` : ''}</div>
         </div>
-        <div class="lb-score-wrap" aria-label="${escHtml(String(row.score ?? 0))} ${escHtml(t(keys.scoreUnit))}">
+        <div class="lb-score-wrap" aria-hidden="true">
           <span class="lb-score serif">${row.score ?? 0}</span>
           <span class="lb-score-unit">${escHtml(t(keys.scoreUnit))}</span>
         </div>
-      </div>`;
+      </button>`;
   }).join('');
 
   return `
     <div class="leaderboard-panel${compact ? ' leaderboard-panel-compact' : ''}" data-lb-mode="${escHtml(mode)}">
-      ${compact ? '' : `<p class="leaderboard-hint">${escHtml(t(keys.hint))}</p>`}
+      ${compact ? '' : `<p class="leaderboard-hint">${escHtml(t(keys.hint))} <span class="leaderboard-hint-tap">${escHtml(t('lb_tap_profile'))}</span></p>`}
       <div class="leaderboard-list" role="list">${items}</div>
     </div>`;
+}
+
+/** 排行榜列 → 找人脈頁夥伴名片（事件委派，刷新列表後仍有效） */
+export function bindLeaderboardMemberLinks(container) {
+  if (!container || container.dataset.lbMemberBound === '1') return;
+  container.dataset.lbMemberBound = '1';
+  container.addEventListener('click', e => {
+    const btn = e.target.closest('.lb-row-btn[data-member-name]');
+    if (!btn) return;
+    const name = btn.dataset.memberName;
+    const branch = btn.dataset.memberBranch;
+    if (!name?.trim() || !branch?.trim()) {
+      showToast(t('feed_member_not_found'));
+      return;
+    }
+    if (!openMemberProfile(name, branch)) {
+      showToast(t('feed_member_not_found'));
+    }
+  });
 }
 
 export function leaderboardModeTabsHTML(modes = ['mutual', 'received_one'], active = 'mutual') {

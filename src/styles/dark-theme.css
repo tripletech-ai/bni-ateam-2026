@@ -1988,6 +1988,10 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 .pie-legend-label { color: var(--dark-text); }
 .pie-legend-count { color: var(--gold-bright); }
 .lb-row { background: #101629; border-color: var(--dark-border); }
+.lb-row-btn:hover, .lb-row-btn:focus-visible {
+  border-color: rgba(250, 199, 117, 0.42);
+}
+.leaderboard-hint-tap { color: var(--gold-bright); }
 .lb-name { color: var(--dark-text); }
 .lb-meta, .leaderboard-hint, .leaderboard-empty { color: var(--dark-muted); }
 .lb-score { color: var(--gold-bright); }

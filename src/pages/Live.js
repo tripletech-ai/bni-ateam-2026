@@ -1,6 +1,6 @@
 import { escHtml } from '../utils/html.js';
 import { t } from '../i18n/translations.js';
-import { leaderboardHTML, leaderboardModeTabsHTML } from '../components/Leaderboard.js';
+import { leaderboardHTML, leaderboardModeTabsHTML, bindLeaderboardMemberLinks } from '../components/Leaderboard.js';
 import {
   chatRoomHTML,
   feedComposerHTML,
@@ -356,6 +356,7 @@ export async function renderLive(container) {
 
   bindLiveMainTabs(container);
   bindLbModeTabs(container);
+  bindLeaderboardMemberLinks(container);
   bindLeaderboardUpdateListener(container);
 
   if (isGuestTrial()) {

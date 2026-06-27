@@ -326,6 +326,8 @@ export const translations = {
     lb_empty_received_sub: '請夥伴在找人脈頁對你按「想約 1-1」',
     lb_score_mutual: '互相連結',
     lb_score_received: '被標記',
+    lb_tap_profile: '點選夥伴可查看完整資料',
+    lb_row_aria: '查看 {name} · {branch} 的媒合資料',
     lb_view_all: '查看完整排行榜與聊天室',
 
     live_eyebrow: '現場互動',
@@ -875,6 +877,8 @@ export const translations = {
     lb_empty_received_sub: 'Ask partners to tap 1-on-1 on your card in Connect',
     lb_score_mutual: 'mutual',
     lb_score_received: 'marked',
+    lb_tap_profile: 'Tap a member to view their profile',
+    lb_row_aria: 'View profile for {name} · {branch}',
     lb_view_all: 'Full leaderboard & chat',
 
     live_eyebrow: 'Live at the event',

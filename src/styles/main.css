@@ -1238,6 +1238,16 @@ body.admin-mode #user-bar { display: none !important; }
   padding: 12px 14px; border-radius: var(--r-sm);
   background: #101629; border: 1px solid rgba(255,255,255,0.08);
 }
+.lb-row-btn {
+  width: 100%; border: 1px solid rgba(255,255,255,0.08);
+  font-family: inherit; text-align: left; cursor: pointer;
+  transition: border-color 0.15s, transform 0.12s;
+}
+.lb-row-btn:hover, .lb-row-btn:focus-visible {
+  border-color: rgba(250, 199, 117, 0.38);
+}
+.lb-row-btn:active { transform: scale(0.99); }
+.leaderboard-hint-tap { color: var(--gold, #fac775); font-weight: 600; }
 .lb-row-top { border-color: rgba(250,199,117,0.4); }
 .lb-row-1 { background: linear-gradient(90deg, rgba(250,199,117,0.18), #101629); }
 .lb-row-2 { background: linear-gradient(90deg, rgba(192,192,192,0.15), #101629); }
