@@ -182,6 +182,10 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
   border-left: 3px solid var(--gold);
 }
 .ai-result-analysis-label { font-weight: 700; color: var(--gold); margin-right: 4px; }
+.search-ai-source-hint {
+  font-size: calc(12px * var(--fs-k, 0.78)); color: var(--muted);
+  margin: 0 0 10px; line-height: 1.45;
+}
 .keyword-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
 .keyword-tag {
   background: var(--gold); color: #fff;

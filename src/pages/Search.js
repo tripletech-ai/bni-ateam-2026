@@ -200,6 +200,7 @@ function buildResultCardHTML(input, steps, intent) {
         </ol>
       </div>
       ${intent.analysis ? `<p class="ai-result-analysis"><span class="ai-result-analysis-label">${escHtml(t('search_ai_analysis'))}</span>${escHtml(intent.analysis)}</p>` : ''}
+      <p class="search-ai-source-hint">${escHtml(t(intent._source === 'local' ? 'search_ai_source_local' : 'search_ai_source_ai'))}</p>
       <div class="intent-parse">${intentTagsHTML(intent)}</div>
       <p class="search-dev-promo-inline">${escHtml(t('search_waiting_dev'))}</p>
       <button id="btn-reset-search" class="btn-reset">${escHtml(t('search_reset'))}</button>

@@ -43,7 +43,7 @@ export const INDUSTRY_CATEGORIES = [
   {
     id: 'education_consult',
     labelKey: 'ind_education_consult',
-    keywords: ['培訓', '教練', '課程', '陪跑', 'esg', '碳盤', '勞資', '顧問', '教育', '孵化', '企業培訓'],
+    keywords: ['培訓', '教練', '課程', '陪跑', 'esg', '碳盤', '勞資', '顧問', '教育', '孵化', '企業培訓', '魔術方塊', '魔方', '才藝', '益智', '桌遊', '教學'],
   },
   {
     id: 'trade_retail',

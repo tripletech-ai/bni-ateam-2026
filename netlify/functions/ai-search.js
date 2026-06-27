@@ -6,7 +6,7 @@ const openai = new OpenAI({
 
 const SYSTEM_PROMPT = `你是 BNI 年會現場的資深商務媒合顧問。使用者會用口語或分段格式描述身分與想找的人；請先仔細分析，再拆成結構化搜尋意圖。
 
-名單涵蓋：法律、會計記帳、稅務、保險、不動產、室內設計裝修、廣告行銷、科技 IT、醫療健康美業、餐飲、教育培訓、金融理財、建設、貿易、人資、活動企劃等。
+名單涵蓋：法律、會計記帳、稅務、保險、不動產、室內設計裝修、廣告行銷、科技 IT、醫療健康美業、餐飲、教育培訓（含魔術方塊、才藝、企業培訓）、金融理財、建設、貿易、人資、活動企劃等。
 
 ## 你的思考步驟（寫在 analysis 欄位，給使用者看）
 1. 使用者「真正想找誰」？是決策者、供應商、還是同客群夥伴？
@@ -45,7 +45,10 @@ const SYSTEM_PROMPT = `你是 BNI 年會現場的資深商務媒合顧問。使�
 → {"thinking_steps":["第一層：無有效商業身分，核心需求是醫療健康產業夥伴。","第二層：展開醫美、診所、醫師、美容醫學、健康等同義詞。","第三層：以 iSeek 比對 profession/have，找可直接對接的醫療夥伴。"],"analysis":"無有效商業身分。想找醫療健康產業夥伴，展開醫美、診所、醫師、美容醫學等同義詞。","iAm":[],"iOffer":[],"iSeek":["醫療","醫美","診所","美容醫學","醫學","健康","醫師"],"iRefer":[],"exclude":[]}
 
 輸入：「【我是】活動策展 【想找】醫美、企業主」
-→ {"thinking_steps":["第一層：你是活動策展方，想找醫美機構與企業決策者。","第二層：展開醫美、診所、美容醫學、企業主、公司負責人。","第三層：精準媒合同客群夥伴，可結盟開發醫美與企業客戶。"],"analysis":"你是活動策展方，想找醫美機構與企業決策者合作，屬精準媒合。","iAm":["活動策展","活動企劃"],"iOffer":["品牌發表會","企業活動"],"iSeek":["醫美","診所","美容醫學","企業主","公司負責人"],"iRefer":[],"exclude":[]}`;
+→ {"thinking_steps":["第一層：你是活動策展方，想找醫美機構與企業決策者。","第二層：展開醫美、診所、美容醫學、企業主、公司負責人。","第三層：精準媒合同客群夥伴，可結盟開發醫美與企業客戶。"],"analysis":"你是活動策展方，想找醫美機構與企業決策者合作，屬精準媒合。","iAm":["活動策展","活動企劃"],"iOffer":["品牌發表會","企業活動"],"iSeek":["醫美","診所","美容醫學","企業主","公司負責人"],"iRefer":[],"exclude":[]}
+
+輸入：「【我是】魔術方塊教學 【我提供】魔術方塊課程、企業Team Building 【想找】教育機構、企業主、才藝補習班」
+→ {"thinking_steps":["第一層：你是魔術方塊教育培訓方，想找學校、補習班與企業決策者。","第二層：展開教育、培訓、才藝、企業主、學校、補習班等同義詞。","第三層：精準媒合教育與企業客群，可結盟推廣才藝課程。"],"analysis":"你是魔術方塊教學與企業培訓服務方，想找教育機構與企業主合作。","iAm":["魔術方塊教學","教育培訓"],"iOffer":["魔術方塊課程","企業Team Building"],"iSeek":["教育機構","學校","補習班","才藝","企業主","公司負責人","企業培訓"],"iRefer":[],"exclude":[]}`;
 
 function sanitizeTerms(arr, max = 10) {
   if (!Array.isArray(arr)) return [];
@@ -186,6 +189,24 @@ export default async (req) => {
       intent.iRefer.length;
 
     if (!hasContent) {
+      const fallbackSeek = sanitizedInput
+        .replace(/[，。！？,.!?\s【】]/g, ' ')
+        .split(' ')
+        .map(w => w.trim())
+        .filter(w => w.length >= 2 && w.length <= 16)
+        .slice(0, 8);
+      if (fallbackSeek.length) {
+        intent.iSeek = sanitizeTerms(fallbackSeek, 10);
+      }
+    }
+
+    const hasContentAfterFallback =
+      intent.iAm.length ||
+      intent.iOffer.length ||
+      intent.iSeek.length ||
+      intent.iRefer.length;
+
+    if (!hasContentAfterFallback) {
       return Response.json(
         { ok: false, message: "無法提取媒合意圖" },
         { status: 422, headers: corsHeaders }

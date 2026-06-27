@@ -31,6 +31,7 @@ export async function getSearchIntentFromAI(input) {
     const data = await res.json();
     if (data.ok && !intentIsEmpty(data)) {
       const merged = mergeIntent(data, structured);
+      merged._source = 'ai';
       if (typeof data.analysis === 'string' && data.analysis.trim()) {
         merged.analysis = data.analysis.trim().slice(0, 400);
       }
@@ -47,7 +48,7 @@ export async function getSearchIntentFromAI(input) {
     if (err.name !== 'AbortError') {
       console.warn('AI search failed, using local intent:', err.message);
     }
-    return mergeIntent(structured, localExtractIntent(input));
+    return finalizeLocalIntent(mergeIntent(structured, localExtractIntent(input)));
   }
 }
 
@@ -74,6 +75,7 @@ const BNI_KEYWORDS = [
   '創業', '新創', '中小企業', '家族企業', '二代', '接班', '傳承', '投資', '融資', '貸款',
   '電商', '網路', '數位', '品牌', '公關', '媒體', '設計', '工程', '製造', '進出口', '統包',
   '裝修', '建商', '創辦人', '負責人', '決策者', '保健食品', '餐廳', '室內裝修', '美容醫學', '整形',
+  '魔術方塊', '魔方', '才藝', '益智玩具', '桌遊', '教學',
 ];
 
 function localExtractIntent(input) {
@@ -106,4 +108,8 @@ function localExtractIntent(input) {
   }
 
   return normalizeIntent({ iAm, iSeek: seek, exclude });
+}
+
+function finalizeLocalIntent(intent) {
+  return { ...intent, _source: 'local' };
 }

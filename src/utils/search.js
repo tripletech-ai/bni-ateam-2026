@@ -94,6 +94,13 @@ function expandMedicalCluster(terms) {
   }
 }
 
+function expandEducationCluster(terms) {
+  const blob = [...terms].join(' ');
+  if (/魔術方塊|魔方|才藝|益智|桌遊|教學|培訓|課程|教育|講師|教練/.test(blob)) {
+    ['魔術方塊', '魔方', '才藝', '教育', '培訓', '課程', '講師', '教學', '企業培訓', 'team building'].forEach(t => terms.add(t));
+  }
+}
+
 function expandKeyword(k) {
   const terms = new Set();
   for (const part of decomposeKeyword(k)) {
@@ -108,6 +115,7 @@ function expandKeyword(k) {
     }
   }
   expandMedicalCluster(terms);
+  expandEducationCluster(terms);
   return [...terms];
 }
 
@@ -277,8 +285,12 @@ function scoreMemberByIntent(member, intent) {
       matchReasons.push({ type: 'network', text: `業務人脈圈：對方想認識「${kw}」類夥伴，可共同服務客群` });
     }
     if (fieldHit(f.profession, terms)) {
-      peerPenalty += 14;
-      matchReasons.push({ type: 'peer', text: `同業（${member.profession}）— 已降低排序` });
+      const alsoSeeking = allSeek.some(({ terms: st }) =>
+        fieldHit(f.profession, st) || fieldHit(f.have, st) || fieldHit(f.bio, st));
+      if (!alsoSeeking) {
+        peerPenalty += 14;
+        matchReasons.push({ type: 'peer', text: `同業（${member.profession}）— 已降低排序` });
+      }
     }
   }
 
