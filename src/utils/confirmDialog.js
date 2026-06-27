@@ -21,8 +21,8 @@ export function showConfirmDialog({
         ${title ? `<h2 class="app-confirm-title">${escHtml(title)}</h2>` : ''}
         <p class="app-confirm-message">${escHtml(message)}</p>
         <div class="app-confirm-actions">
-          <button type="button" class="btn-outline app-confirm-cancel">${escHtml(cancelLabel || t('confirm_cancel'))}</button>
           <button type="button" class="btn-ai app-confirm-ok">${escHtml(confirmLabel || t('confirm_ok'))}</button>
+          <button type="button" class="btn-outline app-confirm-cancel">${escHtml(cancelLabel || t('confirm_cancel'))}</button>
         </div>
       </div>`;
 

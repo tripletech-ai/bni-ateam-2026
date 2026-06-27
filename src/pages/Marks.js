@@ -1,4 +1,4 @@
-import { getMarks, getPendingMarks, removeMark, getOneMarkCount, getConnectionCount } from '../utils/storage.js';
+import { getMarks, getPendingMarks, removeMark, getOneMarkCount, getConnectionCount, getMark, setMark, isMutuallyConnected } from '../utils/storage.js';
 import { showToast } from '../utils/toast.js';
 import { renderTabBar } from '../components/TabBar.js';
 import { goalProgressHTML, MARK_PARTNER_GOAL, MARK_ONE_GOAL } from '../components/GoalProgress.js';
@@ -7,28 +7,39 @@ import { t }                    from '../i18n/translations.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
 import { bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 import { endGuestTrial } from '../utils/guestTrial.js';
-import { fetchIncomingMarks, ackIncomingMarks } from '../services/auth.js';
+import { fetchIncomingMarks, ackIncomingMarks, isBound } from '../services/auth.js';
 import {
   resolveIncomingMemberLine,
+  resolveIncomingMember,
   setIncomingUnseenCount,
+  refreshConnectionCache,
 } from '../utils/incomingMarks.js';
+import { syncMarkToServer } from '../utils/markSync.js';
+import { showConfirmDialog } from '../utils/confirmDialog.js';
+import { openMemberProfile } from '../utils/feedMemberNav.js';
 
 function statsGridHTML(connected, oneCount, bizCount) {
   return `
     <div class="result-grid marks-stats-grid">
-      <div class="result-stat stagger-1">
+      <button type="button" class="result-stat marks-stat-btn stagger-1" data-scroll-to="marks-incoming"
+        aria-label="${escAttr(t('marks_stat_connected_aria', { n: connected }))}">
         <div class="result-stat-num serif">${connected}</div>
         <div class="result-stat-label">${escHtml(t('goal_connected_label'))}</div>
-      </div>
-      <div class="result-stat stagger-2">
+        ${connected > 0 ? `<div class="marks-stat-tap">${escHtml(t('marks_stat_tap'))}</div>` : ''}
+      </button>
+      <button type="button" class="result-stat marks-stat-btn marks-stat-one stagger-2" data-scroll-to="marks-one-section"
+        aria-label="${escAttr(t('marks_stat_one_aria', { n: oneCount }))}">
         <div class="result-stat-num serif">${oneCount}</div>
         <div class="result-stat-label">${escHtml(t('result_one'))}</div>
-      </div>
-      <div class="result-stat stagger-3">
+        <div class="marks-stat-tap">${escHtml(t('marks_stat_tap'))}</div>
+      </button>
+      <button type="button" class="result-stat marks-stat-btn stagger-3" data-scroll-to="marks-biz-section"
+        aria-label="${escAttr(t('marks_stat_biz_aria', { n: bizCount }))}">
         <div class="result-stat-num serif">${bizCount}</div>
         <div class="result-stat-label">${escHtml(t('result_biz'))}</div>
-      </div>
-      <div class="result-stat stagger-4">
+        ${bizCount > 0 ? `<div class="marks-stat-tap">${escHtml(t('marks_stat_tap'))}</div>` : ''}
+      </button>
+      <div class="result-stat stagger-4 marks-stat-goal" aria-hidden="true">
         <div class="result-stat-num serif">${MARK_PARTNER_GOAL}</div>
         <div class="result-stat-label">${escHtml(t('result_goal'))}</div>
       </div>
@@ -67,9 +78,14 @@ function markCardHTML(m, i) {
 }
 
 function incomingCardHTML(row, i) {
+  const member = resolveIncomingMember(row);
+  const mark = member ? getMark(member) : { one: false, biz: false };
+  const mutual = member ? isMutuallyConnected(member) : false;
   const { lineId, lineLink } = resolveIncomingMemberLine(row);
   const isNew = !row.seen_by_target;
   const stagger = i < 4 ? `stagger-${i + 1}` : '';
+  const oneLabel = mutual ? t('card_mutual') : t('card_one');
+  const oneActive = mark.one || mutual;
   return `
     <div class="mark-card marks-incoming-card ${isNew ? 'marks-incoming-new' : ''} ${stagger}"
       data-incoming-id="${escAttr(row.id || '')}">
@@ -83,16 +99,28 @@ function incomingCardHTML(row, i) {
         </div>
       </div>
       <div class="mark-badges">
-        <span class="mark-badge one">${escHtml(t('mark_one_label'))}</span>
+        <span class="mark-badge one marks-incoming-they">${escHtml(t('card_marked_you'))}</span>
+        ${mutual ? `<span class="mutual-badge">${escHtml(t('card_mutual'))}</span>` : ''}
       </div>
-      <div class="mark-actions">
-        <button class="btn-sm btn-add-line"
+      <div class="mark-actions marks-incoming-actions-row">
+        <button type="button" class="btn-sm btn-incoming-one ${oneActive ? 'active' : ''}${mutual ? ' mutual' : ''}"
+          data-action="incoming-one"
+          data-incoming-id="${escAttr(row.id || '')}"
+          data-name="${escAttr(row.name || '')}"
+          data-branch="${escAttr(row.branch || '')}"
+          data-from-id="${escAttr(row.from_id || '')}">
+          ${escHtml(oneLabel)}
+        </button>
+        <button type="button" class="btn-sm btn-incoming-more"
+          data-action="incoming-profile"
+          data-name="${escAttr(row.name || '')}"
+          data-branch="${escAttr(row.branch || '')}">
+          ${escHtml(t('card_more'))}
+        </button>
+        <button type="button" class="btn-sm btn-add-line"
           data-action="incoming-line"
           data-line-link="${escAttr(lineLink)}"
           data-line-id="${escAttr(lineId)}">${escHtml(t('marks_line'))}</button>
-        ${isNew ? `<button class="btn-sm marks-incoming-ack"
-          data-action="incoming-ack"
-          data-incoming-id="${escAttr(row.id || '')}">${escHtml(t('marks_incoming_ack'))}</button>` : ''}
       </div>
     </div>`;
 }
@@ -110,16 +138,46 @@ function incomingLoadingHTML() {
   return `<div class="marks-incoming-loading">${escHtml(t('marks_incoming_loading'))}</div>`;
 }
 
-function emptyListHTML() {
+function emptyOneListHTML() {
   return `
-    <div class="marks-empty-inline">
-      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.2" aria-hidden="true">
-        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
-      </svg>
-      <div class="empty-state-title">${escHtml(t('marks_empty_title'))}</div>
-      <div class="empty-state-sub">${t('marks_empty_sub').replace('\n', '<br>')}</div>
+    <div class="marks-empty-inline marks-empty-compact">
+      <div class="empty-state-sub">${escHtml(t('marks_one_empty'))}</div>
       <button type="button" class="btn-ai marks-go-search">${escHtml(t('marks_go'))}</button>
     </div>`;
+}
+
+function marksListSectionsHTML(marks) {
+  const oneMarks = marks.filter(m => m.one);
+  const bizMarks = marks.filter(m => m.biz);
+  return `
+    <div class="marks-list-section" id="marks-one-section">
+      <div class="marks-list-section-head">
+        <div class="section-title">${escHtml(t('marks_one_list_title', { n: oneMarks.length }))}</div>
+      </div>
+      <div id="marks-one-list">
+        ${oneMarks.length ? oneMarks.map(markCardHTML).join('') : emptyOneListHTML()}
+      </div>
+    </div>
+    ${bizMarks.length ? `
+    <div class="marks-list-section" id="marks-biz-section">
+      <div class="marks-list-section-head">
+        <div class="section-title">${escHtml(t('marks_biz_list_title', { n: bizMarks.length }))}</div>
+      </div>
+      <div id="marks-biz-list">${bizMarks.map(markCardHTML).join('')}</div>
+    </div>` : ''}`;
+}
+
+function bindStatsScroll(container) {
+  container.querySelectorAll('.marks-stat-btn[data-scroll-to]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.scrollTo;
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.classList.add('marks-section-highlight');
+      setTimeout(() => el.classList.remove('marks-section-highlight'), 1600);
+    });
+  });
 }
 
 function openLine({ lineLink, lineId }) {
@@ -138,12 +196,12 @@ function openLine({ lineLink, lineId }) {
 }
 
 function bindMarksList(container) {
-  const list = container.querySelector('#marks-list');
-  if (!list) return;
+  const page = container.querySelector('.marks-page');
+  if (!page) return;
 
-  list.addEventListener('click', e => {
+  page.addEventListener('click', e => {
     const btn = e.target.closest('[data-action]');
-    if (!btn) return;
+    if (!btn || !page.contains(btn)) return;
     const key = btn.dataset.key;
     const action = btn.dataset.action;
 
@@ -157,11 +215,98 @@ function bindMarksList(container) {
   });
 }
 
+function memberFromIncomingBtn(btn) {
+  return resolveIncomingMember({
+    id: btn.dataset.incomingId,
+    from_id: btn.dataset.fromId || null,
+    name: btn.dataset.name,
+    branch: btn.dataset.branch,
+  });
+}
+
+function refreshMarksStatsGrid(container) {
+  const connected = getConnectionCount();
+  const oneCount = getOneMarkCount();
+  const bizCount = getMarks().filter(m => m.biz).length;
+  const page = container.querySelector('.marks-page');
+  if (!page) return;
+  const nums = page.querySelectorAll('.marks-stats-grid .result-stat-num');
+  if (nums[0]) nums[0].textContent = String(connected);
+  if (nums[1]) nums[1].textContent = String(oneCount);
+  if (nums[2]) nums[2].textContent = String(bizCount);
+  const hint = page.querySelector('.marks-goal-hint');
+  if (hint) {
+    const done = connected >= MARK_PARTNER_GOAL && oneCount >= MARK_ONE_GOAL;
+    hint.textContent = done ? t('result_done') : t('result_goal_hint');
+  }
+}
+
+async function handleIncomingOne(btn, container) {
+  const member = memberFromIncomingBtn(btn);
+  if (!member) {
+    showToast(t('marks_incoming_member_missing'));
+    return;
+  }
+  const before = getMark(member);
+  if (before.one) {
+    const mutual = isMutuallyConnected(member);
+    const ok = await showConfirmDialog({
+      title: t('mark_unmark_confirm_title'),
+      message: mutual ? t('mark_unmark_mutual_warn') : t('mark_unmark_confirm_body'),
+      confirmLabel: t('mark_unmark_confirm_ok'),
+      cancelLabel: t('confirm_cancel'),
+    });
+    if (!ok) return;
+  }
+  btn.disabled = true;
+  setMark(member, 'one');
+  const updated = getMark(member);
+  if (isBound()) {
+    const result = await syncMarkToServer(member, 'one', updated.one);
+    if (result?.ok === false && !result.skipped) showToast(t('mark_sync_fail'));
+  }
+  await refreshConnectionCache().catch(() => {});
+  const mutual = isMutuallyConnected(member);
+  if (updated.one) {
+    showToast(mutual ? t('marks_incoming_mutual') : t('marks_incoming_one_ok'));
+    const incomingId = btn.dataset.incomingId;
+    if (incomingId) {
+      try { await ackIncomingMarks([incomingId]); } catch { /* ignore */ }
+    }
+  }
+  refreshMarksStatsGrid(container);
+  refreshGoalProgress(container);
+  refreshOneMarksList(container);
+  await loadIncomingSection(container);
+  renderTabBar(document.getElementById('tab-bar'), window.location.hash || '#marks');
+  btn.disabled = false;
+}
+
+function refreshGoalProgress(container) {
+  const page = container.querySelector('.marks-page');
+  const old = page?.querySelector('.goal-progress-wrap');
+  if (!old) return;
+  old.outerHTML = goalProgressHTML();
+}
+
+function refreshOneMarksList(container) {
+  const listEl = container.querySelector('#marks-one-list');
+  const headEl = container.querySelector('#marks-one-section .section-title');
+  if (!listEl) return;
+  const oneMarks = getMarks().filter(m => m.one);
+  if (headEl) headEl.textContent = t('marks_one_list_title', { n: oneMarks.length });
+  listEl.innerHTML = oneMarks.length ? oneMarks.map(markCardHTML).join('') : emptyOneListHTML();
+  listEl.querySelectorAll('.marks-go-search').forEach(btn => {
+    btn.addEventListener('click', () => { location.hash = 'search'; });
+  });
+}
+
 function bindIncomingSection(container) {
   const section = container.querySelector('#marks-incoming');
   if (!section || section.dataset.bound === '1') return;
   section.dataset.bound = '1';
 
+  const page = container.querySelector('.marks-page');
   section.addEventListener('click', async e => {
     const btn = e.target.closest('[data-action]');
     if (!btn) return;
@@ -169,6 +314,16 @@ function bindIncomingSection(container) {
 
     if (action === 'incoming-line') {
       openLine({ lineLink: btn.dataset.lineLink, lineId: btn.dataset.lineId });
+      return;
+    }
+
+    if (action === 'incoming-profile') {
+      openMemberProfile(btn.dataset.name, btn.dataset.branch);
+      return;
+    }
+
+    if (action === 'incoming-one') {
+      await handleIncomingOne(btn, container);
       return;
     }
 
@@ -186,19 +341,20 @@ function bindIncomingSection(container) {
       }
       return;
     }
+  });
 
-    if (action === 'incoming-ack-all') {
-      const btnAll = btn;
-      btnAll.disabled = true;
-      try {
-        await ackIncomingMarks(null);
-        await loadIncomingSection(container);
-        renderTabBar(document.getElementById('tab-bar'), window.location.hash || '#marks');
-      } catch (err) {
-        console.warn('ack all incoming:', err.message);
-        btnAll.disabled = false;
-        showToast(t('marks_incoming_ack_fail'));
-      }
+  page?.querySelector('#marks-incoming-ack-all')?.addEventListener('click', async e => {
+    const btnAll = e.target.closest('[data-action="incoming-ack-all"]');
+    if (!btnAll) return;
+    btnAll.disabled = true;
+    try {
+      await ackIncomingMarks(null);
+      await loadIncomingSection(container);
+      renderTabBar(document.getElementById('tab-bar'), window.location.hash || '#marks');
+    } catch (err) {
+      console.warn('ack all incoming:', err.message);
+      btnAll.disabled = false;
+      showToast(t('marks_incoming_ack_fail'));
     }
   });
 }
@@ -298,19 +454,15 @@ export function renderMarks(container) {
       <p class="marks-stats-hint">${escHtml(t('marks_stats_hint'))}</p>
       ${goalProgressHTML()}
       ${goalHintHTML(connected, oneCount)}
-      <div class="section-header marks-list-header">
-        <div class="section-title">${escHtml(t('marks_list_title'))}</div>
-      </div>
-      <div id="marks-list">
-        ${marks.length ? marks.map(markCardHTML).join('') : emptyListHTML()}
-      </div>
+      ${marksListSectionsHTML(marks)}
       <div style="height:24px"></div>
     </div>`;
 
-  container.querySelector('.marks-go-search')?.addEventListener('click', () => {
-    location.hash = 'search';
+  container.querySelectorAll('.marks-go-search').forEach(btn => {
+    btn.addEventListener('click', () => { location.hash = 'search'; });
   });
 
+  bindStatsScroll(container);
   bindMarksList(container);
   bindIncomingSection(container);
   loadIncomingSection(container).then(() => {

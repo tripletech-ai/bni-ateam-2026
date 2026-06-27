@@ -412,3 +412,75 @@ export function getMembersByIndustry(industryId) {
 export function getAllMembers() {
   return [...getMembers()];
 }
+
+function directNorm(s) {
+  return String(s || '').replace(/\s+/g, '').toLowerCase();
+}
+
+function memberDirectBlob(member) {
+  const parts = [
+    member.name,
+    member.branch,
+    member.profession,
+    member.bio,
+    member.have,
+    member.wantMeet,
+    member.wantReferral,
+    ...(member.tags || []),
+  ];
+  const ids = member.industries?.length
+    ? member.industries
+    : inferIndustriesFromText(member.profession, member.have);
+  for (const id of ids) {
+    const cat = INDUSTRY_CATEGORIES.find(c => c.id === id);
+    if (cat) parts.push(...cat.keywords);
+  }
+  return directNorm(parts.filter(Boolean).join(' '));
+}
+
+/**
+ * 直接查姓名、分會、產業（不走 AI）
+ * @param {string} query
+ * @param {{ limit?: number }} [opts]
+ */
+export function searchMembersDirect(query, { limit = 50 } = {}) {
+  const q = String(query || '').trim();
+  if (!q) return [];
+
+  const nq = directNorm(q);
+  const terms = q.split(/[\s,，、]+/).map(s => s.trim()).filter(Boolean);
+  const scored = [];
+
+  for (const member of getMembers()) {
+    const name = member.name || '';
+    const branch = member.branch || '';
+    const profession = member.profession || '';
+    const nn = directNorm(name);
+    const nb = directNorm(branch);
+    const np = directNorm(profession);
+    const blob = memberDirectBlob(member);
+
+    let score = 0;
+
+    if (nn && (nn === nq || nn.includes(nq))) score += 30;
+    else if (nn && nq.includes(nn) && nn.length >= 2) score += 20;
+    if (name && q.length >= 2 && name.includes(q)) score += 28;
+
+    if (nb && nb.includes(nq)) score += 12;
+    if (np && np.includes(nq)) score += 14;
+    if (profession && q.length >= 2 && profession.includes(q)) score += 12;
+
+    if (blob.includes(nq)) score += 6;
+
+    if (terms.length > 1) {
+      const allHit = terms.every(term => blob.includes(directNorm(term)));
+      if (allHit) score += 8;
+    }
+
+    if (score > 0) scored.push({ ...member, _directScore: score });
+  }
+
+  return scored
+    .sort((a, b) => b._directScore - a._directScore || a.name.localeCompare(b.name, 'zh-TW'))
+    .slice(0, limit);
+}

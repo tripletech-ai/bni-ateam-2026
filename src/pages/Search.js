@@ -1,5 +1,5 @@
 import { getSearchIntentFromAI, MIN_THINKING_MS } from '../utils/aiSearch.js';
-import { searchMembersByIntent, getMembersByBranch, getMembersByIndustry } from '../utils/search.js';
+import { searchMembersByIntent, getMembersByBranch, getMembersByIndustry, searchMembersDirect } from '../utils/search.js';
 import { personCardHTML, bindCardEvents } from '../components/PersonCard.js';
 import { resolveBranchLists, normalizeBranchName } from '../data/branches.js';
 import { industryLabel, mergeIndustryStatsFromPublic } from '../data/industries.js';
@@ -10,7 +10,7 @@ import { findMemberByNameBranch } from '../utils/feedMemberNav.js';
 import { industryPieChartHTML } from '../components/IndustryPieChart.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 import { showToast } from '../utils/toast.js';
-import { saveSearchSession, loadSearchSession, clearSearchSession } from '../utils/searchSession.js';
+import { saveSearchSession, loadSearchSession, clearSearchSession, loadSearchDraft, saveSearchDraft } from '../utils/searchSession.js';
 import { fetchAllMembers, fetchPublicStats } from '../services/auth.js';
 import { refreshMembersCache } from '../services/membersApi.js';
 import { eventRegistryBrowseHTML, bindEventChapterClicks } from '../components/EventChapterBrowse.js';
@@ -28,6 +28,7 @@ export function renderSearch(container) {
 
   container.innerHTML = buildSearchUI();
   bindSearchEvents(container);
+  bindDirectSearchEvents(container);
   bindProfileEnrichBanner();
   renderQuickFilters(document.getElementById('search-quick-filters'));
   renderBranchBrowse(document.getElementById('branch-browse-area'));
@@ -54,6 +55,18 @@ export function renderSearch(container) {
 function buildSearchUI() {
   return `
     ${profileEnrichBannerHTML()}
+    <section class="search-direct-box" id="search-direct-box" aria-label="${escAttr(t('search_direct_title'))}">
+      <div class="search-direct-head">
+        <div class="search-direct-title">${escHtml(t('search_direct_title'))}</div>
+        <p class="search-direct-sub">${escHtml(t('search_direct_sub'))}</p>
+      </div>
+      <div class="search-direct-row">
+        <input type="search" id="direct-search-input" class="search-direct-input"
+          placeholder="${escAttr(t('search_direct_ph'))}" autocomplete="off" enterkeyhint="search"
+          maxlength="40" aria-label="${escAttr(t('search_direct_ph'))}">
+        <button type="button" id="direct-search-btn" class="btn-ai search-direct-btn">${escHtml(t('search_direct_btn'))}</button>
+      </div>
+    </section>
     <div id="search-ai-box" class="ai-box">
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
       <details class="search-format-details">
@@ -87,29 +100,48 @@ function buildSearchUI() {
 function bindSearchEvents(container) {
   const input = document.getElementById('ai-input');
   const charCount = document.getElementById('ai-char-count');
+  let draftTimer;
 
   const syncCharCount = () => {
     if (charCount && input) charCount.textContent = `${input.value.length} / 500`;
   };
 
+  const applyDraft = () => {
+    if (!input || input.value.trim()) return false;
+    const draft = loadSearchDraft();
+    if (!draft) return false;
+    input.value = draft;
+    syncCharCount();
+    return true;
+  };
+
+  applyDraft();
   if (input && !input.value) {
     try { input.focus({ preventScroll: true }); } catch { input.focus(); }
   }
   syncCharCount();
-  input?.addEventListener('input', syncCharCount);
+
+  input?.addEventListener('input', () => {
+    syncCharCount();
+    clearTimeout(draftTimer);
+    draftTimer = setTimeout(() => saveSearchDraft(input.value), 400);
+  });
 
   document.getElementById('ai-copy-example')?.addEventListener('click', () => {
     if (!input) return;
     input.value = t('search_placeholder');
     syncCharCount();
+    saveSearchDraft(input.value);
     showToast(t('search_copy_example_ok'));
     input.focus();
   });
 
   document.getElementById('ai-submit').addEventListener('click', () => {
     const val = document.getElementById('ai-input').value.trim();
-    if (val.length >= 2) triggerSearch(val);
-    else showToast(t('search_need_more'));
+    if (val.length >= 2) {
+      saveSearchDraft(val);
+      triggerSearch(val);
+    } else showToast(t('search_need_more'));
   });
 
   input?.addEventListener('keydown', e => {
@@ -117,6 +149,48 @@ function bindSearchEvents(container) {
       e.preventDefault();
       document.getElementById('ai-submit').click();
     }
+  });
+}
+
+function bindDirectSearchEvents(container) {
+  const input = document.getElementById('direct-search-input');
+  const btn = document.getElementById('direct-search-btn');
+
+  const run = () => {
+    const q = input?.value?.trim() || '';
+    if (!q) {
+      showToast(t('search_direct_need'));
+      input?.focus();
+      return;
+    }
+    triggerDirectSearch(q);
+  };
+
+  btn?.addEventListener('click', run);
+  input?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      run();
+    }
+  });
+}
+
+async function triggerDirectSearch(query) {
+  try {
+    await refreshSearchRoster();
+  } catch (e) {
+    console.warn('refreshSearchRoster:', e.message);
+  }
+  const members = searchMembersDirect(query);
+  const container = document.getElementById('search-results-area');
+  if (!container) return;
+  hideBrowseChrome();
+  document.getElementById('ai-result-area').style.display = 'none';
+  showMemberList(container, {
+    title: t('search_direct_results', { q: query, n: members.length }),
+    members,
+    emptyTitle: t('search_direct_empty', { q: query }),
+    onClose: closeSearchMemberList,
   });
 }
 
@@ -370,9 +444,11 @@ function closeSearchMemberList() {
 
 function hideBrowseChrome() {
   const aiBox = document.getElementById('search-ai-box');
+  const direct = document.getElementById('search-direct-box');
   const quick = document.getElementById('search-quick-filters');
   const branches = document.getElementById('branch-browse-area');
   const pie = document.querySelector('.industry-pie-section');
+  if (direct) direct.style.display = 'none';
   if (aiBox) aiBox.style.display = 'none';
   if (quick) quick.style.display = 'none';
   if (branches) branches.style.display = 'none';
@@ -381,9 +457,11 @@ function hideBrowseChrome() {
 
 function showBrowseChrome() {
   const aiBox = document.getElementById('search-ai-box');
+  const direct = document.getElementById('search-direct-box');
   const quick = document.getElementById('search-quick-filters');
   const branches = document.getElementById('branch-browse-area');
   const pie = document.querySelector('.industry-pie-section');
+  if (direct) direct.style.display = '';
   if (aiBox) aiBox.style.display = 'block';
   if (quick) quick.style.display = 'block';
   if (branches) branches.style.display = 'block';
@@ -399,7 +477,13 @@ function resetSearch() {
   showBrowseChrome();
   document.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
   const input = document.getElementById('ai-input');
-  if (input) { input.value = ''; input.focus(); }
+  if (input) {
+    const draft = loadSearchDraft();
+    input.value = draft || input.value;
+    const charCount = document.getElementById('ai-char-count');
+    if (charCount) charCount.textContent = `${input.value.length} / 500`;
+    input.focus();
+  }
 }
 
 function renderQuickFilters(container) {
@@ -506,4 +590,14 @@ function showMemberProfile(name, branch) {
     emptyTitle: branchLabel ? `${name} · ${branchLabel} — ${t('feed_member_not_found')}` : t('feed_member_not_found'),
     onClose: closeSearchMemberList,
   });
+  if (member) {
+    queueMicrotask(() => {
+      const card = container.querySelector('.person-card');
+      if (!card) return;
+      card.classList.add('expanded');
+      card.dataset.expanded = 'true';
+      const cue = card.querySelector('.cue-text');
+      if (cue) cue.textContent = t('card_less');
+    });
+  }
 }
