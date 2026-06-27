@@ -39,10 +39,6 @@ function statsGridHTML(connected, oneCount, bizCount) {
         <div class="result-stat-label">${escHtml(t('result_biz'))}</div>
         ${bizCount > 0 ? `<div class="marks-stat-tap">${escHtml(t('marks_stat_tap'))}</div>` : ''}
       </button>
-      <div class="result-stat stagger-4 marks-stat-goal" aria-hidden="true">
-        <div class="result-stat-num serif">${MARK_PARTNER_GOAL}</div>
-        <div class="result-stat-label">${escHtml(t('result_goal'))}</div>
-      </div>
     </div>`;
 }
 
@@ -65,7 +61,7 @@ function markCardHTML(m, i) {
         ${m.one ? `<span class="mark-badge one">${escHtml(t('mark_one_label'))}</span>` : ''}
         ${m.biz ? `<span class="mark-badge biz">${escHtml(t('mark_biz_label'))}</span>` : ''}
       </div>
-      ${m.have ? `<div class="mark-have-snippet">${escHtml(m.have.length > 80 ? m.have.substring(0, 80) + '…' : m.have)}</div>` : ''}
+      ${m.have ? `<div class="mark-have-snippet">${escHtml(m.have)}</div>` : ''}
       <div class="mark-actions">
         <button class="btn-sm btn-add-line"
           data-action="line" data-key="${escAttr(m.key)}"

@@ -15,6 +15,52 @@ import { fetchAllMembers, fetchPublicStats } from '../services/auth.js';
 import { refreshMembersCache } from '../services/membersApi.js';
 import { eventRegistryBrowseHTML, bindEventChapterClicks } from '../components/EventChapterBrowse.js';
 
+/** 找人脈：'direct' | 'ai' | null（未展開） */
+let activeSearchMode = null;
+
+function applySearchModeUI() {
+  const direct = document.getElementById('search-direct-box');
+  const aiBox = document.getElementById('search-ai-box');
+  const launcher = document.getElementById('search-mode-launcher');
+
+  launcher?.querySelectorAll('[data-search-mode]').forEach(btn => {
+    const on = btn.dataset.searchMode === activeSearchMode;
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-expanded', String(on));
+  });
+
+  if (direct) {
+    const show = activeSearchMode === 'direct';
+    direct.hidden = !show;
+    direct.classList.toggle('search-panel-open', show);
+  }
+  if (aiBox) {
+    const show = activeSearchMode === 'ai';
+    aiBox.hidden = !show;
+    aiBox.style.display = show ? 'block' : 'none';
+    aiBox.classList.toggle('search-panel-open', show);
+  }
+}
+
+function setSearchMode(mode, { focus = true } = {}) {
+  activeSearchMode = mode;
+  applySearchModeUI();
+  if (!focus) return;
+  if (mode === 'direct') {
+    document.getElementById('direct-search-input')?.focus();
+  } else if (mode === 'ai') {
+    document.getElementById('ai-input')?.focus();
+  }
+}
+
+function bindSearchModeLauncher() {
+  document.getElementById('search-mode-launcher')?.addEventListener('click', e => {
+    const btn = e.target.closest('[data-search-mode]');
+    if (!btn) return;
+    setSearchMode(btn.dataset.searchMode);
+  });
+}
+
 export function renderSearch(container) {
   container.classList.add('page-root');
   const pending = sessionStorage.getItem('bni_pending_search');
@@ -26,7 +72,10 @@ export function renderSearch(container) {
   if (pendingIndustry) sessionStorage.removeItem('bni_pending_industry');
   if (pendingMemberRaw) sessionStorage.removeItem('bni_pending_member');
 
+  activeSearchMode = null;
+
   container.innerHTML = buildSearchUI();
+  bindSearchModeLauncher();
   bindSearchEvents(container);
   bindDirectSearchEvents(container);
   bindProfileEnrichBanner();
@@ -39,8 +88,10 @@ export function renderSearch(container) {
     renderBranchBrowse(document.getElementById('branch-browse-area'));
   }).catch(e => console.warn('refresh members:', e.message));
 
-  if (pending) setTimeout(() => triggerSearch(pending), 50);
-  else if (pendingBranch) setTimeout(() => showBranchMembers(pendingBranch), 50);
+  if (pending) {
+    setSearchMode('ai', { focus: false });
+    setTimeout(() => triggerSearch(pending), 50);
+  } else if (pendingBranch) setTimeout(() => showBranchMembers(pendingBranch), 50);
   else if (pendingIndustry) setTimeout(() => showIndustryMembers(pendingIndustry), 50);
   else if (pendingMemberRaw) {
     try {
@@ -55,7 +106,20 @@ export function renderSearch(container) {
 function buildSearchUI() {
   return `
     ${profileEnrichBannerHTML()}
-    <section class="search-direct-box" id="search-direct-box" aria-label="${escAttr(t('search_direct_title'))}">
+    <div class="search-mode-launcher" id="search-mode-launcher" role="group" aria-label="${escAttr(t('search_mode_group'))}">
+      <button type="button" class="search-mode-btn search-mode-direct" data-search-mode="direct"
+        aria-expanded="false" aria-controls="search-direct-box">
+        <span class="search-mode-btn-label">${escHtml(t('search_mode_direct'))}</span>
+        <span class="search-mode-btn-hint">${escHtml(t('search_mode_direct_hint'))}</span>
+      </button>
+      <button type="button" class="search-mode-btn search-mode-ai" data-search-mode="ai"
+        aria-expanded="false" aria-controls="search-ai-box">
+        <span class="search-mode-btn-label">${escHtml(t('search_mode_ai'))}</span>
+        <span class="search-mode-btn-hint">${escHtml(t('search_mode_ai_hint'))}</span>
+      </button>
+    </div>
+    <section class="search-direct-box search-panel" id="search-direct-box" hidden
+      aria-label="${escAttr(t('search_direct_title'))}">
       <div class="search-direct-head">
         <div class="search-direct-title">${escHtml(t('search_direct_title'))}</div>
         <p class="search-direct-sub">${escHtml(t('search_direct_sub'))}</p>
@@ -67,7 +131,7 @@ function buildSearchUI() {
         <button type="button" id="direct-search-btn" class="btn-ai search-direct-btn">${escHtml(t('search_direct_btn'))}</button>
       </div>
     </section>
-    <div id="search-ai-box" class="ai-box">
+    <div id="search-ai-box" class="ai-box search-panel" hidden>
       <div class="ai-box-label">${escHtml(t('search_label'))}</div>
       <details class="search-format-details">
         <summary>${escHtml(t('search_format_toggle'))}</summary>
@@ -116,9 +180,6 @@ function bindSearchEvents(container) {
   };
 
   applyDraft();
-  if (input && !input.value) {
-    try { input.focus({ preventScroll: true }); } catch { input.focus(); }
-  }
   syncCharCount();
 
   input?.addEventListener('input', () => {
@@ -443,12 +504,14 @@ function closeSearchMemberList() {
 }
 
 function hideBrowseChrome() {
+  const launcher = document.getElementById('search-mode-launcher');
   const aiBox = document.getElementById('search-ai-box');
   const direct = document.getElementById('search-direct-box');
   const quick = document.getElementById('search-quick-filters');
   const branches = document.getElementById('branch-browse-area');
   const pie = document.querySelector('.industry-pie-section');
-  if (direct) direct.style.display = 'none';
+  if (launcher) launcher.style.display = 'none';
+  if (direct) direct.hidden = true;
   if (aiBox) aiBox.style.display = 'none';
   if (quick) quick.style.display = 'none';
   if (branches) branches.style.display = 'none';
@@ -456,13 +519,12 @@ function hideBrowseChrome() {
 }
 
 function showBrowseChrome() {
-  const aiBox = document.getElementById('search-ai-box');
-  const direct = document.getElementById('search-direct-box');
+  const launcher = document.getElementById('search-mode-launcher');
   const quick = document.getElementById('search-quick-filters');
   const branches = document.getElementById('branch-browse-area');
   const pie = document.querySelector('.industry-pie-section');
-  if (direct) direct.style.display = '';
-  if (aiBox) aiBox.style.display = 'block';
+  if (launcher) launcher.style.display = '';
+  applySearchModeUI();
   if (quick) quick.style.display = 'block';
   if (branches) branches.style.display = 'block';
   if (pie) pie.style.display = '';
@@ -475,6 +537,7 @@ function resetSearch() {
   if (result) result.style.display = 'none';
   if (search) search.style.display = 'none';
   showBrowseChrome();
+  setSearchMode('ai');
   document.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
   const input = document.getElementById('ai-input');
   if (input) {

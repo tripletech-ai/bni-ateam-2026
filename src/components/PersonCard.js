@@ -153,6 +153,11 @@ export function bindCardEvents(container, members) {
       card.dataset.expanded = String(!expanded);
       const cue = card.querySelector('.cue-text');
       if (cue) cue.textContent = expanded ? t('card_more') : t('card_less');
+      if (!expanded) {
+        requestAnimationFrame(() => {
+          card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        });
+      }
       return;
     }
 

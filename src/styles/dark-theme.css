@@ -54,6 +54,28 @@ body {
   background: linear-gradient(180deg, #0d1a3a 0%, #0a0f1e 100%);
 }
 
+.search-mode-launcher { margin: 12px 16px 0; }
+.search-mode-direct {
+  background: #101629;
+  border-color: var(--dark-border2);
+  color: var(--dark-text);
+  box-shadow: none;
+}
+.search-mode-direct.active {
+  border-color: rgba(250, 199, 117, 0.45);
+  box-shadow: 0 0 0 2px rgba(250, 199, 117, 0.15);
+}
+.search-mode-direct .search-mode-btn-hint { color: var(--dark-muted); }
+.search-mode-ai {
+  background: linear-gradient(160deg, #c9922a 0%, #fac775 50%, #fde4a8 100%);
+  color: #0a0f1e;
+  box-shadow: 0 4px 16px -6px rgba(250, 199, 117, 0.45);
+}
+.search-mode-ai .search-mode-btn-hint { color: rgba(10, 15, 30, 0.72); }
+.search-mode-ai.active {
+  box-shadow: 0 0 0 3px rgba(250, 199, 117, 0.4);
+}
+
 .search-direct-box {
   border-color: rgba(250, 199, 117, 0.28);
   background: linear-gradient(145deg, rgba(250, 199, 117, 0.08), rgba(13, 26, 58, 0.85));
@@ -66,6 +88,11 @@ body {
   color: var(--dark-text);
 }
 .search-direct-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+.search-direct-row .search-direct-btn.btn-ai {
+  max-width: 38%;
+  padding: 12px 14px;
+  font-size: calc(15px * var(--fs-k, 0.78));
+}
 
 .stats-strip {
   background: var(--dark-surface);
@@ -117,9 +144,15 @@ body {
   opacity: 0;
   transition: max-height 0.35s ease, opacity 0.25s ease;
 }
-.person-card.expanded .person-card-body {
-  max-height: 720px;
+.person-card.expanded .person-card-body,
+.person-card[data-expanded="true"] .person-card-body {
+  max-height: none;
+  overflow: visible;
   opacity: 1;
+}
+.person-card.expanded,
+.person-card[data-expanded="true"] {
+  overflow: visible;
 }
 .person-card:active { transform: scale(0.985); transition: transform 0.12s; }
 
@@ -372,7 +405,22 @@ body {
 }
 .dir-about-btn.has-link { color: var(--gold-bright); border-color: rgba(250,199,117,0.25); }
 .dir-about-btn:active   { background: var(--dark-surface3); }
-.dir-expand-body { padding: 10px 16px 14px; }
+.dir-expand-body {
+  padding: 10px 16px 14px;
+  max-height: none;
+  overflow: visible;
+}
+.director-card-v2[data-expanded="true"] .dir-expand-body {
+  max-height: min(75dvh, 2400px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+.dir-section-text {
+  font-size: 13px; color: var(--dark-text); line-height: 1.6;
+  word-break: break-word; white-space: pre-wrap;
+}
 .dir-section {
   display: flex; flex-direction: column; gap: 2px;
   margin-bottom: 8px;
@@ -381,7 +429,6 @@ body {
   font-size: 11px; color: var(--dark-muted); font-family: 'Noto Sans TC', sans-serif;
   text-transform: uppercase; letter-spacing: 0.5px;
 }
-.dir-section-text { font-size: 13px; color: var(--dark-text); line-height: 1.5; }
 .dir-actions {
   display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap;
 }
@@ -899,12 +946,13 @@ html.fs-l { --fs-k: 1.18; }   /* 特大 */
 /* "更多 ▾" tap hint — makes it obvious the card opens */
 .card-expand-cue {
   display: flex; align-items: center; gap: 3px;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.10);
-  padding: 4px 10px; border-radius: 20px;
-  color: rgba(255,255,255,0.62);
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.14);
+  padding: 5px 11px; border-radius: 20px;
+  color: rgba(255,255,255,0.78);
   font-family: 'Noto Sans TC', sans-serif;
-  font-size: calc(13px * var(--fs-k));
+  font-size: calc(13px * var(--fs-k, 0.78));
+  font-weight: 600;
 }
 .card-expand-cue .cue-text { white-space: nowrap; }
 .card-expand-cue .card-chevron { color: inherit; }

@@ -124,13 +124,53 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 
 /* AI Search Box */
 .ai-box { background: var(--navy); padding: 24px 16px; }
+.search-mode-launcher {
+  display: flex; gap: 10px;
+  margin: 12px 16px 0; padding: 0;
+}
+.search-mode-btn {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; min-height: 72px; padding: 14px 10px;
+  border-radius: var(--r); cursor: pointer; font-family: inherit;
+  transition: border-color 0.15s, transform 0.12s, box-shadow 0.15s;
+}
+.search-mode-btn:active { transform: scale(0.98); }
+.search-mode-btn-label {
+  font-size: calc(17px * var(--fs-k, 0.78)); font-weight: 800; line-height: 1.25;
+}
+.search-mode-btn-hint {
+  font-size: calc(11px * var(--fs-k, 0.78)); font-weight: 500; line-height: 1.35;
+  opacity: 0.92;
+}
+.search-mode-direct {
+  background: var(--surface);
+  border: 1.5px solid rgba(4, 44, 83, 0.22);
+  color: var(--navy);
+  box-shadow: var(--shadow);
+}
+.search-mode-direct.active {
+  border-color: var(--navy-mid, #185fa5);
+  box-shadow: 0 0 0 2px rgba(24, 95, 165, 0.18);
+}
+.search-mode-ai {
+  background: linear-gradient(160deg, #c9922a 0%, #e8b04a 55%, #fac775 100%);
+  border: 1.5px solid rgba(186, 117, 23, 0.45);
+  color: #fff;
+  box-shadow: 0 4px 14px -6px rgba(186, 117, 23, 0.45);
+}
+.search-mode-ai .search-mode-btn-hint { color: rgba(255, 255, 255, 0.88); }
+.search-mode-ai.active {
+  box-shadow: 0 0 0 3px rgba(250, 199, 117, 0.45);
+}
+.search-panel[hidden] { display: none !important; }
 .search-direct-box {
-  margin: 12px 16px 0;
+  margin: 10px 16px 10px;
   padding: 14px 14px 16px;
   border-radius: var(--r);
   border: 1px solid rgba(186, 117, 23, 0.35);
   background: linear-gradient(145deg, rgba(250, 199, 117, 0.12), rgba(4, 44, 83, 0.06));
 }
+.search-direct-head { margin-bottom: 0; }
 .search-direct-title {
   font-size: calc(16px * var(--fs-k, 0.78)); font-weight: 800;
   color: var(--navy); margin-bottom: 4px;
@@ -145,13 +185,10 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
   padding: 12px 14px; border-radius: var(--r-sm);
   border: 1px solid var(--border); font-size: calc(16px * var(--fs-k, 0.78));
   font-family: inherit; background: var(--surface);
+  box-sizing: border-box;
 }
 .search-direct-input:focus {
   outline: none; border-color: var(--gold); box-shadow: 0 0 0 2px rgba(186, 117, 23, 0.2);
-}
-.search-direct-btn {
-  flex-shrink: 0; width: auto; min-width: 72px;
-  padding: 12px 16px; margin: 0;
 }
 .ai-box-label { color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 10px; }
 .ai-textarea {
@@ -170,6 +207,17 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
   padding: 17px; font-size: 20px; font-weight: 700;
   border-radius: var(--r-sm); border: none; cursor: pointer;
   font-family: 'Noto Sans TC', sans-serif;
+}
+/* 直接搜尋列：覆寫 .btn-ai 全寬，維持 input + 按鈕同一行 */
+.search-direct-row .search-direct-btn.btn-ai {
+  width: auto;
+  flex: 0 0 auto;
+  min-width: 72px;
+  max-width: 38%;
+  margin-top: 0;
+  padding: 12px 14px;
+  font-size: calc(15px * var(--fs-k, 0.78));
+  white-space: nowrap;
 }
 .btn-ai:disabled { opacity: 0.6; cursor: not-allowed; }
 .ai-examples { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
@@ -470,6 +518,40 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .person-keywords { padding: 0 16px 10px; font-size: 11px; color: var(--gold); font-weight: 600; }
 .person-actions { display: flex; gap: 8px; padding: 10px 16px 14px; border-top: 1px solid var(--border); }
 
+/* Collapsible member card body — expanded content scrolls with page (no height cap) */
+.person-card { cursor: pointer; }
+.person-card-body {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.35s ease, opacity 0.25s ease;
+}
+.person-card.expanded .person-card-body,
+.person-card[data-expanded="true"] .person-card-body {
+  max-height: none;
+  overflow: visible;
+  opacity: 1;
+}
+.person-card.expanded,
+.person-card[data-expanded="true"] {
+  overflow: visible;
+}
+.card-chevron {
+  flex-shrink: 0;
+  transition: transform 0.2s;
+}
+.person-card.expanded .card-chevron,
+.person-card[data-expanded="true"] .card-chevron {
+  transform: rotate(180deg);
+}
+.card-expand-cue {
+  display: flex; align-items: center; gap: 3px;
+  padding: 5px 11px; border-radius: 20px;
+  font-size: calc(13px * var(--fs-k, 0.78)); font-weight: 600;
+  white-space: nowrap;
+}
+.card-expand-cue .cue-text { white-space: nowrap; }
+
 /* Branch chips */
 .branch-section { padding: 16px; }
 .branch-region-title { font-size: 13px; font-weight: 600; color: var(--muted); margin-bottom: 10px; }
@@ -764,8 +846,16 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
   border: 1px solid rgba(186, 117, 23, 0.35);
 }
 .marks-incoming-they { font-weight: 600; }
-.mark-have-snippet { font-size: 12px; color: var(--muted); margin: 4px 0 8px; line-height: 1.6; word-break: break-all; }
-.marks-stats-grid { margin-bottom: 4px; }
+.mark-have-snippet { font-size: 12px; color: var(--muted); margin: 4px 0 8px; line-height: 1.6; word-break: break-word; white-space: pre-wrap; max-height: 160px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+.marks-stats-grid {
+  margin-bottom: 4px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 16px 16px 0;
+}
+.marks-stats-grid .result-stat { padding: 12px 8px; }
+.marks-stats-grid .result-stat-num { font-size: 26px; }
+.marks-stats-grid .result-stat-label { font-size: 11px; line-height: 1.35; }
 .marks-stat-btn {
   width: 100%; text-align: center; border: 1px solid transparent;
   cursor: pointer; font-family: inherit; transition: border-color 0.15s, transform 0.12s;
@@ -777,9 +867,8 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
 .marks-stat-one { border-color: rgba(186, 117, 23, 0.28); }
 .marks-stat-tap {
   font-size: 10px; font-weight: 700; color: var(--gold, #ba7517);
-  margin-top: 6px; letter-spacing: 0.02em;
+  margin-top: 6px;   letter-spacing: 0.02em;
 }
-.marks-stat-goal { cursor: default; }
 .marks-list-section { margin: 0 0 20px; scroll-margin-top: 12px; }
 .marks-list-section-head { padding: 8px 16px 10px; }
 .marks-list-section-head .section-title { font-size: calc(16px * var(--fs-k, 0.78)); }
