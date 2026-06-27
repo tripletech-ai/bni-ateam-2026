@@ -11,6 +11,8 @@ import { industryPieChartHTML } from '../components/IndustryPieChart.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 import { showToast } from '../utils/toast.js';
 import { saveSearchSession, loadSearchSession, clearSearchSession } from '../utils/searchSession.js';
+import { fetchAllMembers } from '../services/auth.js';
+import { refreshMembersCache } from '../services/membersApi.js';
 
 export function renderSearch(container) {
   container.classList.add('page-root');
@@ -28,6 +30,12 @@ export function renderSearch(container) {
   bindProfileEnrichBanner();
   renderQuickFilters(document.getElementById('search-quick-filters'));
   renderBranchBrowse(document.getElementById('branch-browse-area'));
+
+  refreshMembersCache(fetchAllMembers, { force: true }).then(() => {
+    if (!document.getElementById('branch-browse-area')) return;
+    renderQuickFilters(document.getElementById('search-quick-filters'));
+    renderBranchBrowse(document.getElementById('branch-browse-area'));
+  }).catch(e => console.warn('refresh members:', e.message));
 
   if (pending) setTimeout(() => triggerSearch(pending), 50);
   else if (pendingBranch) setTimeout(() => showBranchMembers(pendingBranch), 50);
@@ -251,6 +259,7 @@ async function triggerSearch(input) {
 
   const [intent] = await Promise.all([
     getSearchIntentFromAI(input),
+    refreshMembersCache(fetchAllMembers, { force: true }),
     new Promise(resolve => setTimeout(resolve, MIN_THINKING_MS)),
   ]);
 
@@ -317,6 +326,15 @@ function showResults(intent, container) {
   for (const [id, list] of [['collaborate', collaborate], ['referral', referral], ['possible', possible]]) {
     const el = document.getElementById(`cards-list-${id}`);
     if (el && list.length) bindCardEvents(el, list);
+  }
+}
+
+function closeSearchMemberList() {
+  showBrowseChrome();
+  const area = document.getElementById('search-results-area');
+  if (area) {
+    area.style.display = 'none';
+    area.innerHTML = '';
   }
 }
 
@@ -407,17 +425,20 @@ function renderQuickFilters(container) {
 }
 
 function showIndustryMembers(industryId) {
-  const members = getMembersByIndustry(industryId);
-  const container = document.getElementById('search-results-area');
-  const label = industryLabel(industryId, t);
-  if (!container) return;
-  hideBrowseChrome();
-  document.getElementById('ai-result-area').style.display = 'none';
-  showMemberList(container, {
-    title: `${label} ${t('ind_browse_members_suffix')}`,
-    members,
-    emptyTitle: `${label} — ${t('ind_browse_empty')}`,
-  });
+  refreshMembersCache(fetchAllMembers, { force: true }).then(() => {
+    const members = getMembersByIndustry(industryId);
+    const container = document.getElementById('search-results-area');
+    const label = industryLabel(industryId, t);
+    if (!container) return;
+    hideBrowseChrome();
+    document.getElementById('ai-result-area').style.display = 'none';
+    showMemberList(container, {
+      title: `${label} ${t('ind_browse_members_suffix')}`,
+      members,
+      emptyTitle: `${label} — ${t('ind_browse_empty')}`,
+      onClose: closeSearchMemberList,
+    });
+  }).catch(e => console.warn('refresh members:', e.message));
 }
 
 function renderBranchBrowse(container) {
@@ -471,16 +492,19 @@ function renderBranchBrowse(container) {
 }
 
 function showBranchMembers(branchName) {
-  const members = getMembersByBranch(branchName);
-  const container = document.getElementById('search-results-area');
-  if (!container) return;
-  hideBrowseChrome();
-  document.getElementById('ai-result-area').style.display = 'none';
-  showMemberList(container, {
-    title: `${branchName} 夥伴`,
-    members,
-    emptyTitle: `${branchName} 目前沒有夥伴資料`,
-  });
+  refreshMembersCache(fetchAllMembers, { force: true }).then(() => {
+    const members = getMembersByBranch(branchName);
+    const container = document.getElementById('search-results-area');
+    if (!container) return;
+    hideBrowseChrome();
+    document.getElementById('ai-result-area').style.display = 'none';
+    showMemberList(container, {
+      title: `${branchName} 夥伴`,
+      members,
+      emptyTitle: `${branchName} 目前沒有夥伴資料`,
+      onClose: closeSearchMemberList,
+    });
+  }).catch(e => console.warn('refresh members:', e.message));
 }
 
 function showMemberProfile(name, branch) {
@@ -494,5 +518,6 @@ function showMemberProfile(name, branch) {
     title: branchLabel ? `${name} · ${branchLabel}` : name,
     members: member ? [member] : [],
     emptyTitle: branchLabel ? `${name} · ${branchLabel} — ${t('feed_member_not_found')}` : t('feed_member_not_found'),
+    onClose: closeSearchMemberList,
   });
 }

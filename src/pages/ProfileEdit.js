@@ -9,7 +9,7 @@ import {
   bindProfileTemplatePanel,
 } from '../components/ProfileTemplatePanel.js';
 import { showToast } from '../utils/toast.js';
-import { loadMembersFromDb } from '../services/membersApi.js';
+import { refreshMembersCache } from '../services/membersApi.js';
 import { notifyProfileMilestone } from '../utils/profileMilestone.js';
 import { industryPickerHTML, bindIndustryPicker, readIndustryPickerValues } from '../components/IndustryPicker.js';
 import { inferIndustriesFromText } from '../data/industries.js';
@@ -223,7 +223,7 @@ export function renderProfileEdit(container) {
         industries: readIndustryPickerValues(container),
       });
       try {
-        await loadMembersFromDb(fetchAllMembers);
+        await refreshMembersCache(fetchAllMembers, { force: true });
         const hit = notifyProfileMilestone(window.BNI_MEMBERS);
         if (hit) window.BNI_PROFILE_MILESTONE = hit;
       } catch (err) {

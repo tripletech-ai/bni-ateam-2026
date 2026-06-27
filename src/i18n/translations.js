@@ -95,6 +95,7 @@ export const translations = {
     search_browse_all_branches: '瀏覽全部分會',
     search_browse_all_branches_sub: '點分會名稱，查看該分會所有夥伴',
     inline_results_close: '關閉',
+    search_back_browse: '回到上一頁',
     search_guest_empty: '其他分會夥伴建立檔案後，分會名稱會顯示於此',
     search_branch_members: '位',
 
@@ -742,6 +743,7 @@ export const translations = {
     search_browse_all_branches: 'Browse all chapters',
     search_browse_all_branches_sub: 'Tap a chapter to see all its members',
     inline_results_close: 'Close',
+    search_back_browse: 'Back',
     search_guest_empty: 'Guest chapter names appear here once members register',
     search_branch_members: '',
 

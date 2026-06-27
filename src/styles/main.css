@@ -517,6 +517,20 @@ h1, h2, h3, .serif { font-family: 'Noto Serif TC', serif; }
   border: none; background: transparent; color: var(--muted);
   font-size: 24px; line-height: 1; cursor: pointer; padding: 4px 8px;
 }
+.inline-results-footer {
+  padding: 12px 16px 8px;
+}
+.inline-results-back {
+  width: 100%;
+  margin-top: 0;
+}
+.inline-results-empty {
+  padding: 16px;
+  text-align: center;
+}
+.inline-results-empty .inline-results-back {
+  margin-top: 14px;
+}
 .branch-browse-details { margin: 8px 16px 16px; }
 .branch-browse-summary {
   cursor: pointer; font-size: 14px; font-weight: 600;

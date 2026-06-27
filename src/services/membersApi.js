@@ -1,3 +1,6 @@
+const MEMBERS_STALE_MS = 90_000;
+let refreshPromise = null;
+
 function mapRow(row) {
   const tags = Array.isArray(row.tags) ? row.tags : [];
   const claimed = row.claimed === true || !!row.auth_user_id;
@@ -31,7 +34,24 @@ export async function loadMembersFromDb(fetchAllMembers) {
   const rows = await fetchAllMembers();
   const members = rows.map(mapRow);
   window.BNI_MEMBERS = members;
+  window.BNI_MEMBERS_LOADED_AT = Date.now();
   return members;
+}
+
+/** 進入搜尋／填完資料後刷新名單，讓新認領會員可被搜到 */
+export async function refreshMembersCache(fetchAllMembers, { force = false } = {}) {
+  const loadedAt = window.BNI_MEMBERS_LOADED_AT || 0;
+  if (!force && Date.now() - loadedAt < MEMBERS_STALE_MS && window.BNI_MEMBERS?.length) {
+    return window.BNI_MEMBERS;
+  }
+  if (refreshPromise) return refreshPromise;
+  refreshPromise = loadMembersFromDb(fetchAllMembers)
+    .then(members => {
+      window.dispatchEvent(new CustomEvent('bni-members-updated'));
+      return members;
+    })
+    .finally(() => { refreshPromise = null; });
+  return refreshPromise;
 }
 
 export function applyMemberToCache(row) {
@@ -41,4 +61,5 @@ export function applyMemberToCache(row) {
   if (idx >= 0) list[idx] = mapped;
   else list.push(mapped);
   window.BNI_MEMBERS = list;
+  window.BNI_MEMBERS_LOADED_AT = Date.now();
 }

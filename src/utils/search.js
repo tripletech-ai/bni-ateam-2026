@@ -58,6 +58,7 @@ const SYNONYM_GROUPS = [
   ['投資', '融資', '貸款'],
   ['攝影', '攝影師', '拍攝', '錄影'],
   ['教育', '培訓', '課程', '講師'],
+  ['魔術方塊', '魔方', '才藝', '益智玩具', '桌遊'],
   ['餐飲', '餐廳', '美食'],
   ['電商', '網路購物', '網購'],
   ['高資產', '高淨值'],
@@ -388,7 +389,8 @@ export function getSuggestions() {
 }
 
 export function getMembersByBranch(branchName) {
-  return getMembers().filter(m => m.branch === branchName);
+  const norm = normalizeBranchName(branchName);
+  return getMembers().filter(m => normalizeBranchName(m.branch) === norm);
 }
 
 export function getMembersByIndustry(industryId) {
