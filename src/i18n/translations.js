@@ -28,6 +28,10 @@ export const translations = {
     reg_closed_no_new: '現已停止新會員加入與認領，無法再建立新帳號。',
     reg_closed_already_hint: '若你已在活動當天完成登入，請關閉後重新開啟 App，或清除瀏覽器快取後再試。',
     reg_closed_toast: '年會登入時間已結束，無法新加入',
+    reg_closed_reclaim_title: '請重新認領您的身分',
+    reg_closed_reclaim_body: '頁面重整後請再輸入分會與中文全名。僅限資料庫內已有名單的夥伴可登入，無法新建立帳號。',
+    reg_closed_reclaim_sub: '請輸入分會與姓名，重新認領活動當天的身分',
+    reg_closed_not_in_roster: '找不到您的名單資料，無法登入。請確認分會與姓名與名單完全一致（含「分會」二字）。',
 
     home_primary_cta: '開始找人',
     home_mark_summary_prefix: '已標記 ',
@@ -719,6 +723,10 @@ export const translations = {
     reg_closed_no_new: 'New sign-ups and claims are closed.',
     reg_closed_already_hint: 'If you signed in during the event, close and reopen the app, or clear browser cache.',
     reg_closed_toast: 'On-site sign-in has ended — no new accounts',
+    reg_closed_reclaim_title: 'Re-claim your profile',
+    reg_closed_reclaim_body: 'After a refresh, enter chapter and full name again. Only names already in the roster can sign in.',
+    reg_closed_reclaim_sub: 'Enter chapter and name to re-claim your event-day profile',
+    reg_closed_not_in_roster: 'No roster match found — cannot sign in. Check chapter and name match the list exactly.',
 
     home_primary_cta: 'Find people',
     home_mark_summary_prefix: 'Marked ',

@@ -8,6 +8,7 @@ import { claimByNameBranch,
   isValidChineseName,
   loadPendingClaim,
   clearPendingClaim,
+  savePendingClaim,
   matchesBoundIdentity,
 } from '../utils/memberClaim.js';
 import {
@@ -29,7 +30,7 @@ import { showConfirmDialog } from '../utils/confirmDialog.js';
 import { resolveClaimCredentials } from '../config/yangBoss.js';
 import { onboardRegionPickerHTML, bindOnboardRegionPicker } from '../components/EventChapterBrowse.js';
 import { isRegistrationClosed } from '../config/appMode.js';
-import { renderRegistrationClosed } from './RegistrationClosed.js';
+import { reclaimGraceNoticeHTML } from '../components/ReclaimGraceNotice.js';
 
 function memberCountLine() {
   const { registered, goal } = getCollect800Stats();
@@ -84,7 +85,9 @@ export function mapAuthError(err) {
   if (msg.includes('ALREADY_BOUND')) return t('onboard_err_already_device');
   if (msg.includes('NAME_BRANCH_TAKEN')) return t('onboard_err_taken');
   if (msg.includes('NOT_AUTHENTICATED')) return t('onboard_err_session');
-  if (msg.includes('MEMBER_NOT_FOUND')) return t('claim_err_not_found');
+  if (msg.includes('MEMBER_NOT_FOUND')) {
+    return isRegistrationClosed() ? t('reg_closed_not_in_roster') : t('claim_err_not_found');
+  }
   if (msg.includes('NOT_ATEAM_BRANCH')) return t('claim_err_not_ateam');
   if (msg.includes('INVALID_NAME')) return t('onboard_err_name');
   if (msg.includes('INVALID_BRANCH')) return t('onboard_pick_branch_first');
@@ -92,7 +95,7 @@ export function mapAuthError(err) {
     return t('onboard_err_register_rpc');
   }
   if (msg === 'AUTH_NETWORK') return t('onboard_err_network');
-  if (msg.includes('REGISTRATION_CLOSED')) return t('reg_closed_toast');
+  if (msg.includes('REGISTRATION_CLOSED')) return t('reg_closed_not_in_roster');
   return msg || '操作失敗';
 }
 
@@ -151,14 +154,24 @@ function updateNameHint(container) {
   }
 }
 
+function persistClaimDraft(container) {
+  const { branch, name, fromBoss } = readClaimForm(container);
+  if (fromBoss) return;
+  if (branch || name) savePendingClaim({ branch, name });
+}
+
 function bindClaimPreview(container) {
   const nameInput = container.querySelector('#claim-name-input');
   const branchInput = container.querySelector('#claim-branch-input');
   nameInput?.addEventListener('input', () => {
     updateNameHint(container);
     updateClaimPreview(container);
+    persistClaimDraft(container);
   });
-  branchInput?.addEventListener('input', () => updateClaimPreview(container));
+  branchInput?.addEventListener('input', () => {
+    updateClaimPreview(container);
+    persistClaimDraft(container);
+  });
   updateNameHint(container);
   updateClaimPreview(container);
 }
@@ -177,6 +190,7 @@ function bindBranchSearch(container) {
       chip.classList.toggle('active', chip.dataset.branch === full);
     });
     updateClaimPreview(container);
+    persistClaimDraft(container);
   };
 
   input?.addEventListener('input', () => {
@@ -220,12 +234,9 @@ function bindBranchSearch(container) {
 }
 
 async function submitClaim(container, { onComplete }) {
-  if (isRegistrationClosed()) {
-    showToast(t('reg_closed_toast'));
-    return;
-  }
   const payload = readClaimForm(container);
   if (!validateClaimForm(payload)) return;
+  persistClaimDraft(container);
 
   if (!payload.fromBoss) {
     const ok = await showConfirmDialog({
@@ -286,28 +297,35 @@ function renderClaimScreen(container, {
   onGuestTrial,
   preserveForm,
 } = {}) {
-  if (isRegistrationClosed()) {
-    renderRegistrationClosed(container);
-    return;
-  }
+  const reclaimMode = isRegistrationClosed();
   const pending = preserveForm || loadPendingClaim();
-  const screenOpts = { titleKey, subKey, showGuestTrial, showLoginSteps, onComplete, onGuestTrial };
+  const effectiveSubKey = reclaimMode ? 'reg_closed_reclaim_sub' : (subKey || 'onboard_simple_sub');
+  const effectiveGuestTrial = showGuestTrial && !reclaimMode;
+  const screenOpts = {
+    titleKey,
+    subKey: effectiveSubKey,
+    showGuestTrial: effectiveGuestTrial,
+    showLoginSteps,
+    onComplete,
+    onGuestTrial,
+  };
   container.innerHTML = `
     <div class="onboard-wrap onboard-flow-wrap">
       <header class="login-hero login-hero-compact">
         <h1 class="login-hero-title serif">${escHtml(t(titleKey || 'onboard_title'))}</h1>
-        <p class="login-hero-sub">${escHtml(t(subKey || 'onboard_simple_sub'))}</p>
+        <p class="login-hero-sub">${escHtml(t(effectiveSubKey))}</p>
       </header>
       <div class="onboard-card">
-        ${memberCountLine()}
-        ${collect800HTML({ context: 'login' })}
+        ${reclaimMode ? reclaimGraceNoticeHTML() : ''}
+        ${reclaimMode ? '' : memberCountLine()}
+        ${reclaimMode ? '' : collect800HTML({ context: 'login' })}
         ${loginPrefsHTML()}
-        ${showLoginSteps ? loginStepsGuideHTML() : ''}
+        ${showLoginSteps && !reclaimMode ? loginStepsGuideHTML() : ''}
         ${isInAppBrowser() ? inAppBrowserGateHTML() : simpleClaimFormHTML({
           branch: pending?.branch || '',
           name: pending?.name || '',
         })}
-        ${showGuestTrial ? `
+        ${effectiveGuestTrial ? `
         <div class="login-guest-divider" aria-hidden="true">${escHtml(t('login_guest_divider'))}</div>
         <div class="login-guest-compare" aria-label="${escAttr(t('login_guest_compare_title'))}">
           <p class="login-guest-compare-title">${escHtml(t('login_guest_compare_title'))}</p>
@@ -361,7 +379,6 @@ function renderClaimScreen(container, {
 }
 
 export async function tryPendingClaim() {
-  if (isRegistrationClosed()) return false;
   const pending = loadPendingClaim();
   if (!pending || !getCurrentUser()) return false;
   try {

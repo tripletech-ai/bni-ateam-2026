@@ -57,7 +57,6 @@ import {
 import { renderAdminLogin } from './pages/AdminLogin.js';
 import { isAppFullyClosed, isRegistrationClosed } from './config/appMode.js';
 import { renderEventClosed } from './pages/EventClosed.js';
-import { renderRegistrationClosed } from './pages/RegistrationClosed.js';
 import { mountSunsetBanner } from './components/SunsetBanner.js';
 
 // ── Language & font (set on login screen; persisted in localStorage) ──
@@ -86,10 +85,6 @@ function shouldShowEventClosed() {
   return isAppFullyClosed() && !isAdminRoute();
 }
 
-function shouldShowRegistrationClosed() {
-  return isRegistrationClosed() && !isAdminRoute();
-}
-
 function bootEventClosed() {
   appReady = true;
   setChromeVisible(false);
@@ -113,11 +108,6 @@ function navigate() {
     renderEventClosed(app);
     return;
   }
-  if (shouldShowRegistrationClosed() && !isAdminRoute() && (isGuestTrial() || !isBound())) {
-    setChromeVisible(false);
-    renderRegistrationClosed(app);
-    return;
-  }
   syncAdminPathToHash();
   let hash = window.location.hash || '';
   if (isAdminRoute() && !hash) hash = '#admin';
@@ -139,6 +129,12 @@ function navigate() {
     }
   }
   if (isGuestTrial()) {
+    if (isRegistrationClosed()) {
+      endGuestTrial();
+      renderLoginGate(app, { onComplete: afterBindComplete });
+      setChromeVisible(false);
+      return;
+    }
     if (hash === '#admin' || hash === '#profile') {
       hash = '#home';
       if (window.location.hash === '#admin' || window.location.hash === '#profile') {
@@ -340,10 +336,10 @@ async function loadPublicStatsWithRetry() {
 }
 
 async function enterGuestMode() {
-  if (shouldShowRegistrationClosed()) {
+  if (isRegistrationClosed()) {
     appReady = true;
     setChromeVisible(false);
-    renderRegistrationClosed(app);
+    renderLoginGate(app, { onComplete: afterBindComplete });
     return;
   }
   try {
@@ -428,13 +424,7 @@ async function boot() {
       renderAdminLogin(app, { onSuccess: () => boot() });
       return;
     }
-    if (shouldShowRegistrationClosed()) {
-      appReady = true;
-      setChromeVisible(false);
-      renderRegistrationClosed(app);
-      return;
-    }
-    if (isGuestTrial()) {
+    if (isGuestTrial() && !isRegistrationClosed()) {
       await enterGuestMode();
       return;
     }
@@ -456,12 +446,6 @@ async function boot() {
         onSuccess: () => boot(),
         denied: true,
       });
-      return;
-    }
-    if (shouldShowRegistrationClosed()) {
-      appReady = true;
-      setChromeVisible(false);
-      renderRegistrationClosed(app);
       return;
     }
     const auto = await tryAutoBindOnLogin();

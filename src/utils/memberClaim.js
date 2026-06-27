@@ -70,6 +70,11 @@ function isAlreadyBoundError(err) {
   return /ALREADY_BOUND/i.test(err?.message || '');
 }
 
+function isRosterMissError(err) {
+  const msg = String(err?.message || err?.code || '');
+  return /MEMBER_NOT_FOUND|NOT_IN_ROSTER|NO_ROSTER_MATCH|ROSTER_NOT_FOUND/i.test(msg);
+}
+
 /** 此裝置已綁定且與表單分會／姓名一致 → 可直接視為登入成功 */
 export function matchesBoundIdentity({ name, branch }) {
   const member = getMyStatus()?.member;
@@ -114,6 +119,10 @@ async function claimViaClientMatch({ name, branch, region }) {
     return bindExistingMember(best.dbId);
   }
 
+  if (isRegistrationClosed()) {
+    throw new Error('MEMBER_NOT_FOUND');
+  }
+
   return registerNewMember({
     name,
     branch,
@@ -128,9 +137,6 @@ async function claimViaClientMatch({ name, branch, region }) {
 
 /** 依分會 + 姓名認領：優先後端 DB 匹配既有名單 */
 export async function claimByNameBranch({ name, branch, region = '' }) {
-  if (isRegistrationClosed()) {
-    throw new Error('REGISTRATION_CLOSED');
-  }
   const resolved = resolveClaimCredentials({ name, branch, region });
   const trimmedName = normalizeChineseName(resolved.name);
   const normBranch = normalizeRegisterBranch(resolved.branch);
@@ -152,6 +158,9 @@ export async function claimByNameBranch({ name, branch, region = '' }) {
   } catch (err) {
     const resumed = await resumeIfAlreadyBound(payload, err);
     if (resumed) return resumed;
+    if (isRegistrationClosed() && isRosterMissError(err)) {
+      throw new Error('MEMBER_NOT_FOUND');
+    }
     if (!isRpcMissing(err)) throw err;
     console.warn('bni_claim_by_name_branch missing, fallback to client match');
     try {

@@ -2809,3 +2809,32 @@ body.event-closed-mode #user-bar { display: none !important; }
   color: var(--dark-muted);
   margin: 0;
 }
+
+/* ── Reclaim grace notice (登入頁) ── */
+.reclaim-grace-notice {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(135deg, rgba(185, 28, 28, 0.18) 0%, rgba(120, 53, 15, 0.28) 100%);
+  border: 1px solid rgba(250, 199, 117, 0.4);
+}
+.reclaim-grace-title {
+  font-size: calc(15px * var(--fs-k, 0.78));
+  font-weight: 800;
+  color: #fde4a8;
+  margin: 0 0 8px;
+}
+.reclaim-grace-body,
+.reclaim-grace-sunset {
+  font-size: calc(13px * var(--fs-k, 0.78));
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.88);
+  margin: 0 0 6px;
+}
+.reclaim-grace-urgent {
+  font-size: calc(13px * var(--fs-k, 0.78));
+  line-height: 1.55;
+  margin: 0;
+  color: var(--gold-bright);
+  font-weight: 600;
+}
