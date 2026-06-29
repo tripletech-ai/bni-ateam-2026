@@ -2629,6 +2629,27 @@ body.event-closed-mode #user-bar { display: none !important; }
   padding: 0 20px;
   margin-bottom: 24px;
 }
+.event-closed-warning {
+  padding: 16px;
+  border-radius: var(--r-sm);
+  background: linear-gradient(145deg, rgba(185, 28, 28, 0.2), rgba(13, 26, 58, 0.92));
+  border: 1px solid rgba(252, 165, 165, 0.45);
+  box-shadow: 0 0 18px rgba(248, 113, 113, 0.12);
+}
+.event-closed-warning-title {
+  font-size: calc(16px * var(--fs-k, 0.78));
+  font-weight: 800;
+  color: #fca5a5;
+  margin: 0 0 12px;
+  letter-spacing: 0.04em;
+}
+.event-closed-warning-emphasis {
+  margin-top: 12px;
+  font-size: calc(14px * var(--fs-k, 0.78));
+  line-height: 1.65;
+  font-weight: 700;
+  color: var(--gold-bright);
+}
 .event-closed-lead {
   font-size: calc(18px * var(--fs-k, 0.78));
   font-weight: 700;

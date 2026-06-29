@@ -8,7 +8,7 @@ export const EVENT_CLOSED = false;
 
 export const REGISTRATION_CLOSED = true;
 
-/** 台北時間 — 系統完全關閉 */
+/** 台北時間 — 2026/6/29（日）23:59 自動全站關閉（除 /admin） */
 export const SUNSET_AT = '2026-06-29T23:59:59+08:00';
 
 export function isPastSunset() {

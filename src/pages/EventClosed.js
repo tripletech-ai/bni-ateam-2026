@@ -32,6 +32,16 @@ export function renderEventClosed(container) {
            data-text="${escAttr('說你想找誰，AI 幫你媒合')}">${escHtml('說你想找誰，AI 幫你媒合')}</p>
       </header>
 
+      <section class="event-closed-section event-closed-warning">
+        <h2 class="event-closed-warning-title serif">重要提醒</h2>
+        <p class="event-closed-body">麻煩會員夥伴請勿利用此系統，加 LINE 之後濫發推銷或宣傳之訊息與文件，</p>
+        <p class="event-closed-body">以防造成其他會員夥伴騷擾之情事，請大家務必配合。</p>
+        <p class="event-closed-body">如有造成不便，敬請原諒。</p>
+        <p class="event-closed-warning-emphasis">
+          本次因有會員惡意使用此程式獲取個資進行廣告推銷，請大家一起維護 BNI 的友好商務環境！
+        </p>
+      </section>
+
       <section class="event-closed-section">
         <p class="event-closed-lead">感謝 7/26 BNI 台灣年會的熱情！</p>
         <p class="event-closed-body">
