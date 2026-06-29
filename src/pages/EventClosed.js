@@ -1,7 +1,6 @@
 import { escHtml, escAttr } from '../utils/html.js';
 import { developerPhotoHTML } from '../utils/avatar.js';
 import { fetchPublicStats } from '../services/auth.js';
-import { SUNSET_AT } from '../config/appMode.js';
 
 const FALLBACK_STATS = {
   members: 574,
@@ -23,25 +22,7 @@ const WANGQI = {
   ],
 };
 
-function formatSunsetLabel() {
-  try {
-    return new Date(SUNSET_AT).toLocaleString('zh-TW', {
-      timeZone: 'Asia/Taipei',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      weekday: 'long',
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    });
-  } catch {
-    return '2026 年 6 月 29 日（日）23:59';
-  }
-}
-
 function eventClosedHTML(stats) {
-  const sunset = formatSunsetLabel();
   return `
     <div class="event-closed-wrap">
       <header class="hero hero-compact event-closed-hero">
@@ -51,25 +32,14 @@ function eventClosedHTML(stats) {
            data-text="${escAttr('說你想找誰，AI 幫你媒合')}">${escHtml('說你想找誰，AI 幫你媒合')}</p>
       </header>
 
-      <section class="event-closed-shutdown" aria-labelledby="event-closed-shutdown-title">
+      <section class="event-closed-shutdown" aria-labelledby="event-closed-notice-title">
         <p class="event-closed-shutdown-badge">系統已關閉</p>
-        <h2 id="event-closed-shutdown-title" class="event-closed-shutdown-title serif">為什麼關閉？</h2>
-        <p class="event-closed-shutdown-body">
-          本 App 已於 <strong>${escHtml(sunset)}</strong>（台北時間）結束年會活動間服務，資料保留期限已過，現已停止開放使用。
-        </p>
-        <p class="event-closed-shutdown-reason">
-          關閉原因：本次活動後，有會員<strong>惡意使用本系統取得夥伴聯絡方式</strong>，並於加 LINE 後<strong>大量推銷、宣傳</strong>，對其他 BNI 夥伴造成騷擾。為維護商務倫理與個資安全，活動結束後即關閉平台。
-        </p>
-      </section>
-
-      <section class="event-closed-warning" aria-labelledby="event-closed-warning-title">
-        <h2 id="event-closed-warning-title" class="event-closed-warning-title serif">重要提醒 · 請務必配合</h2>
-        <p class="event-closed-body">麻煩會員夥伴請勿利用此系統，加 LINE 之後濫發推銷或宣傳之訊息與文件，</p>
-        <p class="event-closed-body">以防造成其他會員夥伴騷擾之情事，請大家務必配合。</p>
-        <p class="event-closed-body">如有造成不便，敬請原諒。</p>
-        <p class="event-closed-warning-emphasis">
-          請大家一起維護 BNI 的友好商務環境，以真誠連結、相互尊重為原則。
-        </p>
+        <h2 id="event-closed-notice-title" class="event-closed-shutdown-title serif">重要公告</h2>
+        <p class="event-closed-shutdown-body">麻煩會員夥伴請勿利用此系統，加 LINE 之後濫發推銷或宣傳之訊息與文件。</p>
+        <p class="event-closed-shutdown-body">以防造成其他會員夥伴騷擾之情事，請大家務必配合。</p>
+        <p class="event-closed-shutdown-body">如有造成不便，敬請原諒。</p>
+        <p class="event-closed-shutdown-reason">本次因有會員惡意使用此程式獲取個資進行廣告推銷，提早關閉系統。</p>
+        <p class="event-closed-warning-emphasis">請大家一起維護 BNI 的友好商務環境！</p>
       </section>
 
       <section class="event-closed-section">

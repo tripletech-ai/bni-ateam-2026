@@ -2671,9 +2671,15 @@ body.event-closed-mode #user-bar { display: none !important; }
   color: var(--gold-bright);
 }
 .event-closed-shutdown-reason {
-  margin-bottom: 0;
-  padding-top: 8px;
+  margin: 12px 0 0;
+  padding-top: 12px;
   border-top: 1px solid rgba(252, 165, 165, 0.25);
+  font-weight: 700;
+  color: #fde4a8;
+}
+.event-closed-shutdown .event-closed-warning-emphasis {
+  margin-top: 12px;
+  margin-bottom: 0;
 }
 
 .event-closed-section {
