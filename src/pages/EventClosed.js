@@ -1,12 +1,14 @@
 import { escHtml, escAttr } from '../utils/html.js';
 import { developerPhotoHTML } from '../utils/avatar.js';
+import { fetchPublicStats } from '../services/auth.js';
+import { SUNSET_AT } from '../config/appMode.js';
 
-const STATS = {
-  members: 557,
+const FALLBACK_STATS = {
+  members: 574,
   branches: 151,
-  oneMarks: 1338,
-  mutualPairs: 191,
-  bizMarks: 722,
+  oneMarks: 1400,
+  mutualPairs: 211,
+  bizMarks: 750,
   feedPosts: 36,
 };
 
@@ -21,9 +23,26 @@ const WANGQI = {
   ],
 };
 
-export function renderEventClosed(container) {
-  container.className = 'page-root event-closed-page';
-  container.innerHTML = `
+function formatSunsetLabel() {
+  try {
+    return new Date(SUNSET_AT).toLocaleString('zh-TW', {
+      timeZone: 'Asia/Taipei',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+  } catch {
+    return '2026 年 6 月 29 日（日）23:59';
+  }
+}
+
+function eventClosedHTML(stats) {
+  const sunset = formatSunsetLabel();
+  return `
     <div class="event-closed-wrap">
       <header class="hero hero-compact event-closed-hero">
         <h1 class="hero-title serif hero-title-gold event-closed-title"
@@ -32,51 +51,59 @@ export function renderEventClosed(container) {
            data-text="${escAttr('說你想找誰，AI 幫你媒合')}">${escHtml('說你想找誰，AI 幫你媒合')}</p>
       </header>
 
-      <section class="event-closed-section event-closed-warning">
-        <h2 class="event-closed-warning-title serif">重要提醒</h2>
+      <section class="event-closed-shutdown" aria-labelledby="event-closed-shutdown-title">
+        <p class="event-closed-shutdown-badge">系統已關閉</p>
+        <h2 id="event-closed-shutdown-title" class="event-closed-shutdown-title serif">為什麼關閉？</h2>
+        <p class="event-closed-shutdown-body">
+          本 App 已於 <strong>${escHtml(sunset)}</strong>（台北時間）結束年會活動間服務，資料保留期限已過，現已停止開放使用。
+        </p>
+        <p class="event-closed-shutdown-reason">
+          關閉原因：本次活動後，有會員<strong>惡意使用本系統取得夥伴聯絡方式</strong>，並於加 LINE 後<strong>大量推銷、宣傳</strong>，對其他 BNI 夥伴造成騷擾。為維護商務倫理與個資安全，活動結束後即關閉平台。
+        </p>
+      </section>
+
+      <section class="event-closed-warning" aria-labelledby="event-closed-warning-title">
+        <h2 id="event-closed-warning-title" class="event-closed-warning-title serif">重要提醒 · 請務必配合</h2>
         <p class="event-closed-body">麻煩會員夥伴請勿利用此系統，加 LINE 之後濫發推銷或宣傳之訊息與文件，</p>
         <p class="event-closed-body">以防造成其他會員夥伴騷擾之情事，請大家務必配合。</p>
         <p class="event-closed-body">如有造成不便，敬請原諒。</p>
         <p class="event-closed-warning-emphasis">
-          本次因有會員惡意使用此程式獲取個資進行廣告推銷，請大家一起維護 BNI 的友好商務環境！
+          請大家一起維護 BNI 的友好商務環境，以真誠連結、相互尊重為原則。
         </p>
       </section>
 
       <section class="event-closed-section">
         <p class="event-closed-lead">感謝 7/26 BNI 台灣年會的熱情！</p>
         <p class="event-closed-body">
-          今天一共收錄了 <strong>${STATS.members}</strong> 人的名單，含
-          <strong>${STATS.branches}</strong> 個分會的會員收錄資料。
+          活動期間一共收錄了 <strong>${stats.members}</strong> 人的名單，含
+          <strong>${stats.branches}</strong> 個分會的會員資料。
         </p>
       </section>
 
       <section class="event-closed-section">
-        <h2 class="event-closed-heading serif">平台累計</h2>
+        <h2 class="event-closed-heading serif">平台累計成果</h2>
         <div class="event-closed-stats">
           <div class="event-closed-stat">
-            <div class="event-closed-stat-num">${STATS.oneMarks.toLocaleString()}</div>
+            <div class="event-closed-stat-num">${stats.oneMarks.toLocaleString()}</div>
             <div class="event-closed-stat-label">想約 1-1</div>
           </div>
           <div class="event-closed-stat">
-            <div class="event-closed-stat-num">${STATS.mutualPairs}</div>
+            <div class="event-closed-stat-num">${stats.mutualPairs}</div>
             <div class="event-closed-stat-label">相互連結（對）</div>
           </div>
           <div class="event-closed-stat">
-            <div class="event-closed-stat-num">${STATS.bizMarks}</div>
+            <div class="event-closed-stat-num">${stats.bizMarks.toLocaleString()}</div>
             <div class="event-closed-stat-label">有合作可能</div>
           </div>
           <div class="event-closed-stat event-closed-stat-wide">
-            <div class="event-closed-stat-num">${STATS.feedPosts}</div>
+            <div class="event-closed-stat-num">${stats.feedPosts}</div>
             <div class="event-closed-stat-label">即時牆發言</div>
           </div>
         </div>
       </section>
 
       <section class="event-closed-section event-closed-notice">
-        <p class="event-closed-body">本次年會的活動間暫時關閉，</p>
-        <p class="event-closed-body">期待未來我們持續在 BNI 活動相見！</p>
-        <p class="event-closed-body">或許變成常駐功能或是 APP？</p>
-        <p class="event-closed-muted">有任何今天使用回饋也歡迎給我們～</p>
+        <p class="event-closed-muted">期待未來我們在 BNI 活動再相見。若有使用回饋，歡迎聯繫下方開發團隊。</p>
       </section>
 
       <section class="event-closed-section event-closed-dev">
@@ -98,6 +125,28 @@ export function renderEventClosed(container) {
           </div>
         </article>
       </section>
-    </div>
-  `;
+    </div>`;
+}
+
+async function resolveClosedStats() {
+  try {
+    const pub = await fetchPublicStats();
+    return {
+      members: pub?.total_members ?? FALLBACK_STATS.members,
+      branches: pub?.branch_count ?? FALLBACK_STATS.branches,
+      oneMarks: FALLBACK_STATS.oneMarks,
+      mutualPairs: FALLBACK_STATS.mutualPairs,
+      bizMarks: FALLBACK_STATS.bizMarks,
+      feedPosts: FALLBACK_STATS.feedPosts,
+    };
+  } catch {
+    return { ...FALLBACK_STATS };
+  }
+}
+
+export async function renderEventClosed(container) {
+  container.className = 'page-root event-closed-page';
+  container.innerHTML = `<div class="event-closed-wrap"><p class="event-closed-loading">載入中…</p></div>`;
+  const stats = await resolveClosedStats();
+  container.innerHTML = eventClosedHTML(stats);
 }

@@ -90,7 +90,9 @@ function bootEventClosed() {
   setChromeVisible(false);
   if (tabBar) tabBar.style.display = 'none';
   document.body.classList.add('event-closed-mode');
-  renderEventClosed(app);
+  renderEventClosed(app).catch(err => {
+    console.warn('renderEventClosed:', err.message);
+  });
 }
 
 function setChromeVisible(showTabs) {
@@ -105,7 +107,7 @@ function setChromeVisible(showTabs) {
 function navigate() {
   if (!appReady || !app) return;
   if (shouldShowEventClosed()) {
-    renderEventClosed(app);
+    renderEventClosed(app).catch(err => console.warn('renderEventClosed:', err.message));
     return;
   }
   syncAdminPathToHash();

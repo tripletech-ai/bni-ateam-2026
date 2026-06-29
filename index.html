@@ -12,14 +12,14 @@
   <title>BNI A Team 商務連結行動</title>
   <!-- 避免分享連結誤打成 //? 時相對路徑 src/main.js 404 白屏 -->
   <base href="/">
-  <meta name="description" content="BNI A Team 年會商務連結 — 已登入夥伴可繼續互換聯繫方式，6/29 23:59 關閉。">
+  <meta name="description" content="BNI A Team 商務連結行動 — 年會活動已結束，系統已關閉。">
   <!-- Private event tool — keep out of search engines -->
   <meta name="robots" content="noindex, nofollow">
 
   <!-- Social share preview (LINE / Facebook). Set og:url & og:image to the full https URL after deploy. -->
   <meta property="og:type" content="website">
   <meta property="og:title" content="BNI A Team 商務連結行動">
-  <meta property="og:description" content="年會夥伴專用 — 請趕快互換聯繫方式，6/29 23:59 關閉。">
+  <meta property="og:description" content="年會活動已結束 — 感謝參與，系統已關閉。">
   <meta property="og:image" content="/assets/photos/楊日陞.png">
   <meta property="og:locale" content="zh_TW">
   <meta name="twitter:card" content="summary_large_image">
@@ -40,8 +40,7 @@
   <main id="app" tabindex="-1"></main>
   <nav id="tab-bar" role="tablist" aria-label="主導覽"></nav>
   <div id="toast" class="toast" role="alert" aria-live="polite"></div>
-  <!-- members.js loaded as classic script to avoid ES module cache issues -->
-  <script src="src/data/members.js"></script>
+  <script>window.BNI_MEMBERS = window.BNI_MEMBERS || [];</script>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

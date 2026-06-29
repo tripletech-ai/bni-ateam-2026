@@ -29,11 +29,21 @@ await check('白屏修復 (appUrl.js)', async () => {
   return '已部署';
 });
 
-await check('靜態名單 members.js', async () => {
-  const r = await fetch(`${SITE}/src/data/members.js`);
+await check('會員名單 API（InsForge）', async () => {
+  const r = await fetch(`${BACKEND}/api/database/rpc/bni_get_public_members`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      apikey: ANON,
+      Authorization: `Bearer ${ANON}`,
+    },
+    body: JSON.stringify({ p_include_inactive: false }),
+  });
   if (!r.ok) throw new Error(`HTTP ${r.status}`);
-  const kb = Math.round((await r.text()).length / 1024);
-  return `${kb} KB`;
+  const data = await r.json();
+  const n = Array.isArray(data) ? data.length : 0;
+  if (n < 1) throw new Error('名單為空');
+  return `${n} 人（後端 DB）`;
 });
 
 await check('AI 媒合 API', async () => {
