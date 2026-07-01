@@ -2106,6 +2106,13 @@ textarea.field-input {
 /* ── Admin panel ── */
 .admin-wrap { color: var(--dark-text); }
 .admin-login-card { background: #101629; border: 1px solid var(--dark-border); }
+.show-gate-input {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(250, 199, 117, 0.28);
+  color: var(--dark-text);
+}
+.show-gate-input::placeholder { color: var(--dark-muted); }
+.show-gate-label { color: var(--dark-muted); }
 .admin-login-emails { background: rgba(255,255,255,0.04); color: var(--dark-muted); }
 .admin-feed-row { background: #101629; border: 1px solid var(--dark-border); }
 .admin-entry-link { color: var(--dark-muted); }

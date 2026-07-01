@@ -1190,6 +1190,14 @@ html { scroll-behavior: smooth; }
 .login-admin-entry { text-align: center; margin-top: 16px; }
 .admin-entry-link { font-size: 13px; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; }
 body.admin-mode #user-bar { display: none !important; }
+.show-gate-card { display: flex; flex-direction: column; gap: 12px; }
+.show-gate-label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.show-gate-input {
+  width: 100%; padding: 12px 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--border); font-size: 16px;
+  font-family: 'Noto Sans TC', sans-serif;
+}
+.show-gate-submit { width: 100%; margin: 4px 0 8px; }
 .result-progress { margin: 16px; background: var(--surface); border-radius: var(--r); padding: 16px; box-shadow: var(--shadow); }
 
 /* Search invite + industry pie */

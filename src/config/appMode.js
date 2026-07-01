@@ -1,7 +1,7 @@
 /**
  * App 運作模式（活動後 grace period）
  * - REGISTRATION_CLOSED：停止「新會員註冊」，但仍可重新認領資料庫既有名單
- * - SUNSET_AT：此時間後（台北）全站改為關閉頁（除 /admin）
+ * - SUNSET_AT：此時間後（台北）全站改為關閉頁（除 /admin、/show 解鎖後）
  * - EVENT_CLOSED：手動強制全站關閉（覆蓋上述邏輯）
  */
 export const EVENT_CLOSED = false;

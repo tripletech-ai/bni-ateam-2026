@@ -9,6 +9,9 @@ export function normalizeAppUrl() {
     if (pathname.replace(/\/+$/, '') === '/admin' && !hash) {
       window.history.replaceState(null, '', `/admin${search}#admin`);
     }
+    if (pathname.replace(/\/+$/, '') === '/show' && !hash) {
+      window.history.replaceState(null, '', `/show${search}#home`);
+    }
   } catch {
     /* ignore */
   }

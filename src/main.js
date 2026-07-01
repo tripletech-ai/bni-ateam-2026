@@ -50,11 +50,15 @@ import { registerNavigator, goToPage } from './utils/nav.js';
 import { initPreferences } from './utils/preferences.js';
 import {
   isAdminRoute,
+  isShowRoute,
+  isShowUnlocked,
   syncAdminPathToHash,
+  syncShowPathToHash,
   consumeAdminLoginIntent,
   hasAdminLoginIntent,
 } from './utils/routing.js';
 import { renderAdminLogin } from './pages/AdminLogin.js';
+import { renderShowGate } from './pages/ShowGate.js';
 import { isAppFullyClosed, isRegistrationClosed } from './config/appMode.js';
 import { renderEventClosed } from './pages/EventClosed.js';
 import { mountSunsetBanner } from './components/SunsetBanner.js';
@@ -82,7 +86,12 @@ const routes = {
 };
 
 function shouldShowEventClosed() {
+  if (isShowRoute() && isShowUnlocked()) return false;
   return isAppFullyClosed() && !isAdminRoute();
+}
+
+function needsShowGate() {
+  return isAppFullyClosed() && isShowRoute() && !isShowUnlocked();
 }
 
 function bootEventClosed() {
@@ -111,6 +120,7 @@ function navigate() {
     return;
   }
   syncAdminPathToHash();
+  syncShowPathToHash();
   let hash = window.location.hash || '';
   if (isAdminRoute() && !hash) hash = '#admin';
   // #admin 僅在直接開啟 /admin 時有效，一般 App 不暴露後台入口
@@ -386,6 +396,14 @@ async function boot() {
   appReady = false;
   if (!app) return;
 
+  if (needsShowGate()) {
+    document.body.classList.remove('event-closed-mode');
+    if (tabBar) tabBar.style.display = 'none';
+    if (userBar) userBar.classList.add('hidden');
+    renderShowGate(app, { onSuccess: () => boot() });
+    return;
+  }
+
   if (shouldShowEventClosed()) {
     bootEventClosed();
     return;
@@ -503,4 +521,5 @@ window.addEventListener('unhandledrejection', event => {
 
 normalizeAppUrl();
 syncAdminPathToHash();
+syncShowPathToHash();
 boot();
