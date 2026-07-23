@@ -28,6 +28,7 @@ import { guestFeedLoginHTML, bindGuestTrialLogin } from '../components/GuestTria
 import { isDinnerMode } from '../config/appMode.js';
 import { CHANGHUI_DINNER_EVENT } from '../data/changhuiDinner.js';
 import { isEventScoped } from '../utils/eventScope.js';
+import { repairDinnerBindIfNeeded } from '../utils/dinnerBind.js';
 
 let livePollTimer = null;
 let liveIsAdmin = false;
@@ -259,7 +260,22 @@ function onPostFeed(container) {
         }
         hideSessionBanner(container);
       }
-      const result = await postFeedMessage(text);
+      let result;
+      try {
+        result = await postFeedMessage(text);
+      } catch (firstErr) {
+        // 晚宴：本機已入場但 DB 未綁定時，補綁一次再重送
+        if (isDinnerMode() && /NOT_BOUND/i.test(firstErr.message || '')) {
+          const repaired = await repairDinnerBindIfNeeded();
+          if (repaired) {
+            result = await postFeedMessage(text);
+          } else {
+            throw firstErr;
+          }
+        } else {
+          throw firstErr;
+        }
+      }
       if (liveMainTab !== 'chat') switchLiveTab(container, 'chat');
       const optimistic = optimisticFeedItem(text, result);
       pushFeedToUI(container, appendFeedItem(window.BNI_FEED || [], optimistic));
@@ -269,7 +285,11 @@ function onPostFeed(container) {
     } catch (e) {
       const msg = e.message || '';
       if (/RATE_LIMIT/i.test(msg)) showToast(t('feed_rate_limit'));
-      else if (/NOT_BOUND/i.test(msg)) showToast(t('feed_not_bound'));
+      else if (/NOT_BOUND/i.test(msg)) {
+        showToast(isDinnerMode()
+          ? '尚未完成身分綁定，請按右上角「換身分」重新選擇後再廣播'
+          : t('feed_not_bound'));
+      }
       else if (/NOT_AUTHENTICATED|jwt expired|401/i.test(msg)) {
         showSessionBanner(container);
         showToast(t('feed_session_expired'));

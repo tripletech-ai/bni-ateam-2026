@@ -47,7 +47,16 @@ export function normalizeBranchName(input) {
   if (!s) return '';
   const base = s.replace(/分會+$/, '');
   if (!base) return '';
+  // 與後端 bni_normalize_claim_branch 對齊：長輝白金 ≡ 長輝
+  if (base === '長輝白金') return '長輝分會';
   return `${base}分會`;
+}
+
+/** 分會是否視為同一會（認領／晚宴綁定比對用） */
+export function branchesEquivalent(a, b) {
+  const na = normalizeBranchName(a);
+  const nb = normalizeBranchName(b);
+  return !!na && na === nb;
 }
 
 /** 比對既有分會名稱，避免「長輝」vs「長輝分會」等重複 */

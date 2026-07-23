@@ -71,8 +71,9 @@ import { renderEventClosed } from './pages/EventClosed.js';
 import { mountSunsetBanner } from './components/SunsetBanner.js';
 import { renderDinnerLanding } from './pages/DinnerLanding.js';
 import { renderDinnerPickLogin } from './pages/DinnerPickLogin.js';
-import { loadDinnerIdentity } from './utils/dinnerSession.js';
+import { loadDinnerIdentity, clearDinnerIdentity } from './utils/dinnerSession.js';
 import { applyDinnerRosterScope } from './utils/dinnerRosterScope.js';
+import { ensureDinnerDbBind } from './utils/dinnerBind.js';
 
 // ── Language & font (set on login screen; persisted in localStorage) ──
 initPreferences();
@@ -511,12 +512,16 @@ async function boot() {
   // ── 長輝晚宴模式：選人入場 ──
   if (isDinnerMode() && !wantsAdmin) {
     const dinnerId = loadDinnerIdentity();
-    if (dinnerId && isBound()) {
-      applyDinnerBoundStatus(dinnerId);
-      await enterDinnerApp();
-      return;
-    }
     if (dinnerId) {
+      // 回訪也要補齊真實 DB 綁定，否則聊天廣播會 NOT_BOUND
+      const bind = await ensureDinnerDbBind(dinnerId);
+      if (!bind.ok) {
+        console.warn('dinner re-bind failed:', bind.error);
+        clearDinnerIdentity();
+        showToast('身分綁定失效，請重新選擇身分後再廣播');
+        showDinnerGate();
+        return;
+      }
       applyDinnerBoundStatus(dinnerId);
       await enterDinnerApp();
       return;

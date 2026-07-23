@@ -5,8 +5,9 @@ import {
   findDinnerPersonById,
 } from '../data/changhuiDinner.js';
 import { saveDinnerIdentity } from '../utils/dinnerSession.js';
-import { ensureAuthSession, refreshStatus, applyDinnerBoundStatus, registerNewMember } from '../services/auth.js';
-import { claimByNameBranch } from '../utils/memberClaim.js';
+import { applyDinnerBoundStatus, refreshStatus, getMyStatus } from '../services/auth.js';
+import { ensureDinnerDbBind } from '../utils/dinnerBind.js';
+import { matchesBoundIdentity } from '../utils/memberClaim.js';
 import { showToast } from '../utils/toast.js';
 import { showConfirmDialog } from '../utils/confirmDialog.js';
 
@@ -133,38 +134,24 @@ export function renderDinnerPickLogin(container, { onComplete, onBack } = {}) {
     }
 
     try {
-      await ensureAuthSession();
-      saveDinnerIdentity(person);
-      window.BNI_DINNER_PROFILE = person;
-
-      const claimName = (person.name.replace(/\s+[A-Za-z].*$/, '').trim() || person.name)
-        .replace(/\s+/g, '');
-
-      try {
-        await claimByNameBranch({
-          name: claimName,
-          branch: person.branch,
-          region: person.region,
-        });
-      } catch (claimErr) {
-        console.warn('dinner claim:', claimErr.message);
-        try {
-          await registerNewMember({
-            name: claimName,
-            branch: person.branch,
-            region: person.region || (person.type === 'guest' ? 'guest' : 'zhongshan'),
-            profession: person.profession || '',
-            have: person.have || '',
-            wantMeet: person.wantMeet || '',
-            tags: person.tags || [],
-          });
-        } catch (regErr) {
-          console.warn('dinner register:', regErr.message);
-          await refreshStatus().catch(() => {});
+      // 廣播／標記需要 DB auth_user_id；必須真實綁定成功才能入場
+      const bind = await ensureDinnerDbBind(person);
+      await refreshStatus().catch(() => {});
+      const dbOk = bind.ok && getMyStatus()?.bound && matchesBoundIdentity({
+        name: person.name.replace(/\s+[A-Za-z].*$/, '').trim() || person.name,
+        branch: person.branch,
+      });
+      if (!dbOk) {
+        showToast('身分綁定失敗，請再試一次（需完成綁定才能廣播）');
+        if (submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('loading');
         }
+        return;
       }
 
-      // 無論 DB 認領是否成功，晚宴身分視為已入場（全功能）
+      saveDinnerIdentity(person);
+      window.BNI_DINNER_PROFILE = person;
       applyDinnerBoundStatus(person);
 
       showToast(`歡迎 ${person.name}`);

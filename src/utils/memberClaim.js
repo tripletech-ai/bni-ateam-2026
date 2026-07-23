@@ -1,4 +1,4 @@
-import { normalizeBranchName, getRegionForBranch } from '../data/branches.js';
+import { normalizeBranchName, getRegionForBranch, branchesEquivalent } from '../data/branches.js';
 import { bindExistingMember, registerNewMember, getClient, refreshStatus, getMyStatus, isBound } from '../services/auth.js';
 import { resolveClaimCredentials } from '../config/yangBoss.js';
 import { isRegistrationClosed } from '../config/appMode.js';
@@ -21,7 +21,7 @@ export function findMembersByNameBranch(name, branch) {
   const norm = normalizeBranchName(branch);
   if (!n || !norm) return [];
   return (window.BNI_MEMBERS || []).filter(m =>
-    normalizeChineseName(m.name) === n && normalizeBranchName(m.branch) === norm,
+    normalizeChineseName(m.name) === n && branchesEquivalent(m.branch, norm),
   );
 }
 
@@ -80,7 +80,7 @@ export function matchesBoundIdentity({ name, branch }) {
   const member = getMyStatus()?.member;
   if (!member?.name || !member?.branch) return false;
   return normalizeChineseName(member.name) === normalizeChineseName(name)
-    && normalizeBranchName(member.branch) === normalizeRegisterBranch(branch);
+    && branchesEquivalent(member.branch, branch);
 }
 
 async function resumeIfAlreadyBound(payload, err) {
