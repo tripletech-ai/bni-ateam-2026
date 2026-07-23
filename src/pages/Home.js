@@ -11,7 +11,7 @@ import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 import { isDinnerMode } from '../config/appMode.js';
 import { CHANGHUI_DINNER_EVENT, dinnerRosterStats } from '../data/changhuiDinner.js';
-import { dinnerOfficersHTML } from '../components/DinnerOfficers.js';
+import { dinnerOfficersHTML, dinnerRegionLeadersHTML } from '../components/DinnerOfficers.js';
 
 function developerCardHTML(d) {
   const tags = (d.tagKeys || []).map(k =>
@@ -63,19 +63,6 @@ function dinnerTonightCardHTML() {
     </section>`;
 }
 
-function dinnerRegionNoteHTML() {
-  // 區域資深董事保留；不帶年會董顧／800 等舊活動內容
-  return `
-    <section class="dinner-region-note" aria-label="區域資深董事">
-      <p class="dinner-region-note-eyebrow">BNI ANDERSON TEAM</p>
-      <p class="dinner-region-note-body">
-        <span class="dinner-region-note-role">區域資深董事</span>
-        <span class="dinner-region-note-name serif">楊日陞 Anderson</span>
-      </p>
-      <p class="dinner-region-note-sub">大使：游姿菱 Rita</p>
-    </section>`;
-}
-
 export function renderHome(container) {
   container.classList.add('page-root');
   const markCount = getMarkCount();
@@ -92,7 +79,7 @@ export function renderHome(container) {
 
     ${dinner ? dinnerTonightCardHTML() : collect800HTML({ context: 'home' })}
     ${dinner ? dinnerOfficersHTML() : ''}
-    ${dinner ? dinnerRegionNoteHTML() : yangIntroHTML()}
+    ${dinner ? dinnerRegionLeadersHTML() : yangIntroHTML()}
 
     ${markCount > 0 ? `
     <div class="home-mark-summary">

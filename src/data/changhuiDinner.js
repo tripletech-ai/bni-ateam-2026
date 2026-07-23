@@ -1801,6 +1801,24 @@ export function findDinnerPersonById(id) {
   return getChanghuiDinnerRoster().find(p => p.id === id) || null;
 }
 
+/** 以中文核心姓名找本場名單（忽略英文後綴與空白） */
+export function findDinnerPersonByName(name) {
+  const core = String(name || '')
+    .replace(/\s+/g, '')
+    .replace(/[（(].*?[）)]/g, '')
+    .replace(/[A-Za-z].*$/, '')
+    .trim();
+  if (!core) return null;
+  return getChanghuiDinnerRoster().find(p => {
+    const pCore = String(p.name || '')
+      .replace(/\s+/g, '')
+      .replace(/[（(].*?[）)]/g, '')
+      .replace(/[A-Za-z].*$/, '')
+      .trim();
+    return pCore === core || String(p.name || '').replace(/\s+/g, '') === String(name || '').replace(/\s+/g, '');
+  }) || null;
+}
+
 export function dinnerRosterStats() {
   return {
     members: CHANGHUI_DINNER_MEMBERS.length,

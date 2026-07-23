@@ -2995,18 +2995,21 @@ body.dinner-mode { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 .dinner-tonight-body { color: var(--dark-text); }
 .dinner-evershine-link { color: var(--gold-bright); }
 
-.dinner-officers {
+.dinner-vip-section {
   background: #101629; border-color: rgba(250,199,117,0.28);
 }
-.dinner-officers-eyebrow, .dinner-officer-name { color: var(--gold-bright); }
-.dinner-officer-role { color: var(--dark-muted); }
-.dinner-officer { border-bottom-color: rgba(255,255,255,0.08); }
+.dinner-vip-eyebrow, .dinner-vip-name { color: var(--gold-bright); }
+.dinner-vip-card {
+  background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08);
+}
+.dinner-vip-role, .dinner-vip-profession { color: var(--dark-muted); }
+.dinner-vip-intro { color: var(--dark-text); }
+.dinner-vip-photo {
+  background: linear-gradient(145deg, #1a2744, #0a101c);
+  border-color: rgba(250,199,117,0.45);
+}
 
 .live-lb-eyebrow { color: var(--gold-bright); }
-
-.dinner-region-note { background: #101629; border-color: rgba(250,199,117,0.28); }
-.dinner-region-note-eyebrow, .dinner-region-note-name { color: var(--gold-bright); }
-.dinner-region-note-role, .dinner-region-note-sub { color: var(--dark-muted); }
 
 #beginner-guide-overlay { background: rgba(4, 8, 18, 0.82); }
 .beginner-guide-card {
