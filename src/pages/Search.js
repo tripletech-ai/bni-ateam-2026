@@ -108,6 +108,8 @@ export function renderSearch(container) {
     } catch { /* ignore */ }
   } else {
     restoreSearchSession();
+    // 預設展開「AI 幫我找」（核心動作）
+    setSearchMode('ai');
   }
 }
 
@@ -153,15 +155,15 @@ function buildSearchUI() {
   return `
     ${profileEnrichBannerHTML()}
     <div class="search-mode-launcher" id="search-mode-launcher" role="group" aria-label="${escAttr(t('search_mode_group'))}">
+      <button type="button" class="search-mode-btn search-mode-ai" data-search-mode="ai"
+        aria-expanded="true" aria-controls="search-ai-box">
+        <span class="search-mode-btn-label">${escHtml(t('search_mode_ai'))}</span>
+        <span class="search-mode-btn-hint">${escHtml(simplify ? '填想找的資源即可' : t('search_mode_ai_hint'))}</span>
+      </button>
       <button type="button" class="search-mode-btn search-mode-direct" data-search-mode="direct"
         aria-expanded="false" aria-controls="search-direct-box">
         <span class="search-mode-btn-label">${escHtml(t('search_mode_direct'))}</span>
         <span class="search-mode-btn-hint">${escHtml(t('search_mode_direct_hint'))}</span>
-      </button>
-      <button type="button" class="search-mode-btn search-mode-ai" data-search-mode="ai"
-        aria-expanded="false" aria-controls="search-ai-box">
-        <span class="search-mode-btn-label">${escHtml(t('search_mode_ai'))}</span>
-        <span class="search-mode-btn-hint">${escHtml(simplify ? '填想找的資源即可' : t('search_mode_ai_hint'))}</span>
       </button>
     </div>
     <section class="search-direct-box search-panel" id="search-direct-box" hidden
