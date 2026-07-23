@@ -11,9 +11,11 @@ import { industryPieChartHTML } from '../components/IndustryPieChart.js';
 import { profileEnrichBannerHTML, bindProfileEnrichBanner } from '../components/ProfileEnrichBanner.js';
 import { showToast } from '../utils/toast.js';
 import { saveSearchSession, loadSearchSession, clearSearchSession, loadSearchDraft, saveSearchDraft } from '../utils/searchSession.js';
-import { fetchAllMembers, fetchPublicStats } from '../services/auth.js';
+import { fetchAllMembers, fetchPublicStats, getMyStatus, isBound } from '../services/auth.js';
 import { refreshMembersCache } from '../services/membersApi.js';
 import { eventRegistryBrowseHTML, bindEventChapterClicks } from '../components/EventChapterBrowse.js';
+import { loadDinnerIdentity } from '../utils/dinnerSession.js';
+import { isDinnerMode } from '../config/appMode.js';
 
 /** 找人脈：'direct' | 'ai' | null（未展開） */
 let activeSearchMode = null;
@@ -103,7 +105,45 @@ export function renderSearch(container) {
   }
 }
 
+function getMyMatchProfile() {
+  const dinner = window.BNI_DINNER_PROFILE || loadDinnerIdentity();
+  const member = getMyStatus()?.member;
+  const profession = dinner?.profession || member?.profession || '';
+  const have = dinner?.have || member?.have || '';
+  const name = dinner?.name || member?.name || window.BNI_MY_NAME || '';
+  return { name, profession, have };
+}
+
+function buildPrefillSeekQuery(seekText) {
+  const seek = String(seekText || '').trim();
+  const { profession, have } = getMyMatchProfile();
+  const lines = [];
+  if (profession) lines.push(`【我是】${profession}`);
+  if (have) lines.push(`【我提供】${have}`);
+  // 使用者可能已寫【想找】或只寫關鍵字
+  if (/【想找】/.test(seek) || /\[Seeking\]/i.test(seek)) {
+    lines.push(seek);
+  } else {
+    lines.push(`【想找】${seek}`);
+  }
+  return lines.join('\n');
+}
+
 function buildSearchUI() {
+  const profile = getMyMatchProfile();
+  const simplify = isBound() || isDinnerMode() || !!profile.profession || !!profile.name;
+  const profileHint = simplify && (profile.profession || profile.name)
+    ? `<div class="search-ai-autofill" role="status">
+        <div class="search-ai-autofill-title">已帶入你的資料</div>
+        <p class="search-ai-autofill-body">
+          ${profile.name ? `<strong>${escHtml(profile.name)}</strong>` : ''}
+          ${profile.profession ? ` · ${escHtml(profile.profession)}` : ''}
+          ${profile.have ? `<br><span class="search-ai-autofill-have">提供：${escHtml(profile.have.slice(0, 80))}${profile.have.length > 80 ? '…' : ''}</span>` : ''}
+        </p>
+        <p class="search-ai-autofill-tip">你只要填「想找什麼資源／對象」即可</p>
+      </div>`
+    : '';
+
   return `
     ${profileEnrichBannerHTML()}
     <div class="search-mode-launcher" id="search-mode-launcher" role="group" aria-label="${escAttr(t('search_mode_group'))}">
@@ -115,7 +155,7 @@ function buildSearchUI() {
       <button type="button" class="search-mode-btn search-mode-ai" data-search-mode="ai"
         aria-expanded="false" aria-controls="search-ai-box">
         <span class="search-mode-btn-label">${escHtml(t('search_mode_ai'))}</span>
-        <span class="search-mode-btn-hint">${escHtml(t('search_mode_ai_hint'))}</span>
+        <span class="search-mode-btn-hint">${escHtml(simplify ? '填想找的資源即可' : t('search_mode_ai_hint'))}</span>
       </button>
     </div>
     <section class="search-direct-box search-panel" id="search-direct-box" hidden
@@ -132,7 +172,9 @@ function buildSearchUI() {
       </div>
     </section>
     <div id="search-ai-box" class="ai-box search-panel" hidden>
-      <div class="ai-box-label">${escHtml(t('search_label'))}</div>
+      ${profileHint}
+      <div class="ai-box-label">${escHtml(simplify ? '你想找什麼？' : t('search_label'))}</div>
+      ${simplify ? '' : `
       <details class="search-format-details">
         <summary>${escHtml(t('search_format_toggle'))}</summary>
         <p class="search-format-hint">${escHtml(t('search_format_hint'))}</p>
@@ -142,12 +184,14 @@ function buildSearchUI() {
           <li><strong>【${escHtml(t('search_intent_seek'))}】</strong>${escHtml(t('search_format_seek'))}</li>
           <li><strong>【${escHtml(t('search_intent_exclude'))}】</strong>${escHtml(t('search_format_exclude'))}</li>
         </ul>
-      </details>
+      </details>`}
       <textarea id="ai-input" class="ai-textarea"
-        placeholder="${escHtml(t('search_placeholder'))}"
-        rows="5" aria-label="${escHtml(t('search_label'))}" maxlength="500"></textarea>
+        placeholder="${escAttr(simplify ? '例：企業主、室內設計、醫美診所、AI 系統整合' : t('search_placeholder'))}"
+        rows="${simplify ? 3 : 5}" aria-label="${escAttr(simplify ? '想找的資源' : t('search_label'))}" maxlength="500"></textarea>
       <div class="search-ai-actions">
-        <button type="button" id="ai-copy-example" class="btn-text search-copy-example">${escHtml(t('search_copy_example'))}</button>
+        ${simplify
+          ? `<button type="button" id="ai-copy-example" class="btn-text search-copy-example">填入範例</button>`
+          : `<button type="button" id="ai-copy-example" class="btn-text search-copy-example">${escHtml(t('search_copy_example'))}</button>`}
         <span id="ai-char-count" class="search-char-count" aria-live="polite">0 / 500</span>
       </div>
       <button id="ai-submit" class="btn-ai">${escHtml(t('search_btn'))}</button>
@@ -190,7 +234,8 @@ function bindSearchEvents(container) {
 
   document.getElementById('ai-copy-example')?.addEventListener('click', () => {
     if (!input) return;
-    input.value = t('search_placeholder');
+    const simplify = isBound() || isDinnerMode() || !!getMyMatchProfile().profession;
+    input.value = simplify ? '企業主、室內設計、醫美診所' : t('search_placeholder');
     syncCharCount();
     saveSearchDraft(input.value);
     showToast(t('search_copy_example_ok'));
@@ -198,11 +243,15 @@ function bindSearchEvents(container) {
   });
 
   document.getElementById('ai-submit').addEventListener('click', () => {
-    const val = document.getElementById('ai-input').value.trim();
-    if (val.length >= 2) {
-      saveSearchDraft(val);
-      triggerSearch(val);
-    } else showToast(t('search_need_more'));
+    const raw = document.getElementById('ai-input').value.trim();
+    if (raw.length < 2) {
+      showToast(t('search_need_more'));
+      return;
+    }
+    const simplify = isBound() || isDinnerMode() || !!getMyMatchProfile().profession;
+    const val = simplify ? buildPrefillSeekQuery(raw) : raw;
+    saveSearchDraft(raw);
+    triggerSearch(val);
   });
 
   input?.addEventListener('keydown', e => {

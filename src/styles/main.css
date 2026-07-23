@@ -2406,3 +2406,69 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 }
 .profile-import-bio { margin: 8px 0 12px; }
 .profile-reclaim-btn-prominent { width: 100%; font-weight: 700; }
+
+/* -- Changhui dinner landing / pick -- */
+.dinner-landing-wrap { padding: 0 0 40px; max-width: var(--mobile-max); margin: 0 auto; }
+.dinner-landing-hero { text-align: center; padding: 36px 20px 20px; }
+.dinner-landing-eyebrow { font-size: 12px; letter-spacing: 0.12em; color: var(--gold); margin-bottom: 10px; }
+.dinner-landing-title { font-size: calc(26px * var(--fs-k, 0.78)); margin-bottom: 8px; }
+.dinner-landing-date { font-size: calc(16px * var(--fs-k, 0.78)); color: var(--muted); font-weight: 600; }
+.dinner-landing-card {
+  margin: 0 16px 20px; padding: 18px 16px; border-radius: var(--r-sm);
+  background: var(--surface); box-shadow: var(--shadow); border: 1px solid var(--border);
+}
+.dinner-landing-meta { list-style: none; margin: 0 0 14px; padding: 0; }
+.dinner-landing-meta li {
+  display: grid; grid-template-columns: 52px 1fr; gap: 8px;
+  padding: 8px 0; border-bottom: 1px solid var(--border); font-size: calc(14px * var(--fs-k, 0.78));
+}
+.dinner-landing-meta li:last-child { border-bottom: none; }
+.dinner-meta-k { color: var(--muted); font-weight: 600; }
+.dinner-meta-v { color: var(--text); line-height: 1.45; }
+.dinner-landing-note { font-size: calc(14px * var(--fs-k, 0.78)); color: var(--gold); font-weight: 700; margin: 0 0 14px; }
+.dinner-landing-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.dinner-stat { text-align: center; padding: 12px 6px; border-radius: var(--r-sm); background: var(--bg); }
+.dinner-stat-num { font-family: 'Noto Serif TC', serif; font-size: 22px; font-weight: 900; color: var(--gold); }
+.dinner-stat-label { margin-top: 4px; font-size: 12px; color: var(--muted); }
+.dinner-landing-cta-block { padding: 0 16px; }
+.dinner-enter-btn { width: 100%; padding: 14px 16px; font-size: 16px; }
+.dinner-landing-hint { margin-top: 12px; text-align: center; font-size: 13px; color: var(--muted); line-height: 1.5; }
+
+.dinner-pick-wrap { padding: 16px 16px 40px; }
+.dinner-pick-back { margin-bottom: 8px; }
+.dinner-pick-title { font-size: 22px; margin-bottom: 6px; }
+.dinner-pick-sub { font-size: 13px; color: var(--muted); margin-bottom: 14px; }
+.dinner-pick-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.dinner-pick-tab {
+  flex: 1; padding: 10px 8px; border-radius: var(--r-sm); border: 1px solid var(--border);
+  background: var(--surface); color: var(--muted); font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.dinner-pick-tab.active { border-color: var(--gold); color: var(--gold); background: rgba(186,117,23,0.08); }
+.dinner-pick-search-label { display: block; font-size: 13px; margin-bottom: 6px; color: var(--muted); }
+.dinner-pick-search { margin-bottom: 14px; }
+.dinner-person-grid { display: flex; flex-direction: column; gap: 8px; }
+.dinner-person-card {
+  display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto;
+  gap: 2px 10px; text-align: left; padding: 12px 14px; border-radius: var(--r-sm);
+  border: 1px solid var(--border); background: var(--surface); cursor: pointer; width: 100%;
+  font-family: inherit;
+}
+.dinner-person-card:active { transform: scale(0.99); }
+.dinner-person-badge {
+  grid-row: 1 / span 2; align-self: center; padding: 4px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; white-space: nowrap;
+}
+.dinner-person-badge-member { background: rgba(186,117,23,0.15); color: var(--gold); }
+.dinner-person-badge-guest { background: rgba(24,95,165,0.12); color: var(--navy-mid); }
+.dinner-person-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.dinner-person-sub { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.dinner-pick-empty { text-align: center; padding: 24px; color: var(--muted); }
+
+.search-ai-autofill {
+  margin-bottom: 12px; padding: 12px 14px; border-radius: var(--r-sm);
+  background: rgba(186,117,23,0.08); border: 1px solid rgba(186,117,23,0.25);
+}
+.search-ai-autofill-title { font-size: 12px; font-weight: 700; color: var(--gold); margin-bottom: 4px; }
+.search-ai-autofill-body { font-size: 13px; line-height: 1.5; color: var(--text); margin: 0 0 6px; }
+.search-ai-autofill-have { color: var(--muted); }
+.search-ai-autofill-tip { font-size: 12px; color: var(--muted); margin: 0; }

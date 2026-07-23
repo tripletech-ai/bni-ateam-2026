@@ -25,6 +25,7 @@ import {
   fetchEventChapters,
   getMyStatus,
   refreshStatus,
+  applyDinnerBoundStatus,
 } from './services/auth.js';
 import { showIncomingOneOverlay, dismissIncomingOverlay } from './components/IncomingOneBanner.js';
 import { setIncomingUnseenCount } from './utils/incomingMarks.js';
@@ -59,9 +60,13 @@ import {
 } from './utils/routing.js';
 import { renderAdminLogin } from './pages/AdminLogin.js';
 import { renderShowGate } from './pages/ShowGate.js';
-import { isAppFullyClosed, isRegistrationClosed } from './config/appMode.js';
+import { isAppFullyClosed, isRegistrationClosed, isDinnerMode } from './config/appMode.js';
 import { renderEventClosed } from './pages/EventClosed.js';
 import { mountSunsetBanner } from './components/SunsetBanner.js';
+import { renderDinnerLanding } from './pages/DinnerLanding.js';
+import { renderDinnerPickLogin } from './pages/DinnerPickLogin.js';
+import { loadDinnerIdentity } from './utils/dinnerSession.js';
+import { getChanghuiDinnerRoster } from './data/changhuiDinner.js';
 
 // ── Language & font (set on login screen; persisted in localStorage) ──
 initPreferences();
@@ -172,7 +177,7 @@ function navigate() {
   }
   renderTabBar(tabBar, hash, { isBound: isBound() });
   renderUserBar(userBar);
-  if (isBound() && !shouldShowEventClosed()) {
+  if (isBound() && !shouldShowEventClosed() && !isDinnerMode()) {
     mountSunsetBanner(app);
   }
   if (hash === '#marks' || hash === '#result') dismissIncomingOverlay();
@@ -392,6 +397,75 @@ async function enterAdminApp() {
   navigate();
 }
 
+function mergeDinnerRosterIntoMembers() {
+  if (!isDinnerMode()) return;
+  const dinner = getChanghuiDinnerRoster();
+  const existing = window.BNI_MEMBERS || [];
+  const keyOf = (m) => `${String(m.name || '').replace(/\s+/g, '')}||${m.branch || ''}`;
+  const map = new Map(existing.map(m => [keyOf(m), m]));
+  for (const p of dinner) {
+    const k = keyOf(p);
+    const prev = map.get(k);
+    map.set(k, {
+      ...(prev || {}),
+      id: prev?.id || p.id,
+      dbId: prev?.dbId,
+      name: p.name,
+      branch: p.branch,
+      region: p.region,
+      profession: p.profession || prev?.profession || '',
+      have: p.have || prev?.have || '',
+      wantMeet: p.wantMeet || prev?.wantMeet || '',
+      bio: p.bio || prev?.bio || '',
+      photo: p.photo || prev?.photo || '',
+      lineLink: p.lineLink || prev?.lineLink || '',
+      tags: (p.tags?.length ? p.tags : prev?.tags) || [],
+      invitedBy: p.invitedBy || '',
+      joinIntent: p.joinIntent || '',
+      dinnerType: p.type,
+    });
+  }
+  window.BNI_MEMBERS = [...map.values()];
+}
+
+function showDinnerGate() {
+  document.body.classList.remove('event-closed-mode');
+  document.body.classList.add('dinner-mode');
+  appReady = false;
+  setChromeVisible(false);
+  if (tabBar) tabBar.style.display = 'none';
+
+  const goPick = () => {
+    renderDinnerPickLogin(app, {
+      onBack: () => showDinnerGate(),
+      onComplete: async () => {
+        mergeDinnerRosterIntoMembers();
+        await enterDinnerApp();
+      },
+    });
+  };
+
+  renderDinnerLanding(app, { onEnter: goPick });
+}
+
+async function enterDinnerApp() {
+  const identity = loadDinnerIdentity();
+  if (identity) applyDinnerBoundStatus(identity);
+  mergeDinnerRosterIntoMembers();
+  endGuestTrial();
+  appReady = true;
+  setChromeVisible(true);
+  preloadLiveData();
+  if (isBound()) {
+    startIncomingPoll();
+    recordPresence().catch(() => {});
+  }
+  if (!window.location.hash || window.location.hash === '#admin') {
+    location.hash = '#home';
+  }
+  navigate();
+}
+
 async function boot() {
   appReady = false;
   if (!app) return;
@@ -416,28 +490,49 @@ async function boot() {
     await withRetry(() => initAuth(), { retries: 2, delayMs: 500, label: 'initAuth' });
   } catch (e) {
     console.error('initAuth failed:', e);
-    showBootError('登入狀態載入失敗，請檢查網路後重試');
-    return;
+    // 晚宴模式：auth 失敗仍可進選人流程
+    if (!isDinnerMode()) {
+      showBootError('登入狀態載入失敗，請檢查網路後重試');
+      return;
+    }
   }
 
   if (getCurrentUser()) endGuestTrial();
 
-  isAdmin = await checkIsAdmin();
+  isAdmin = await checkIsAdmin().catch(() => false);
 
   try {
     await loadMembersWithRetry();
   } catch (e) {
     console.warn('DB members load failed:', e.message);
-    if (!window.BNI_MEMBERS?.length) {
+    if (!window.BNI_MEMBERS?.length && !isDinnerMode()) {
       showBootError('會員資料載入失敗，週六現場請確認網路後重試');
       return;
     }
   }
+  mergeDinnerRosterIntoMembers();
   await loadPublicStatsWithRetry();
   await loadEventChaptersWithRetry();
 
   const user = getCurrentUser();
   const wantsAdmin = isAdminRoute() || hasAdminLoginIntent();
+
+  // ── 長輝晚宴模式：選人入場 ──
+  if (isDinnerMode() && !wantsAdmin) {
+    const dinnerId = loadDinnerIdentity();
+    if (dinnerId && isBound()) {
+      applyDinnerBoundStatus(dinnerId);
+      await enterDinnerApp();
+      return;
+    }
+    if (dinnerId) {
+      applyDinnerBoundStatus(dinnerId);
+      await enterDinnerApp();
+      return;
+    }
+    showDinnerGate();
+    return;
+  }
 
   if (!user) {
     if (wantsAdmin) {

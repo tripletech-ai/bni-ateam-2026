@@ -88,6 +88,39 @@ export function isBound() {
   return myStatus?.bound === true;
 }
 
+/** 晚宴選人入場：本機視為已綁定，開啟全功能 */
+export function applyDinnerBoundStatus(person) {
+  if (!person?.name) return;
+  const member = {
+    ...(myStatus?.member || {}),
+    name: person.name,
+    branch: person.branch,
+    region: person.region || '',
+    profession: person.profession || myStatus?.member?.profession || '',
+    have: person.have || myStatus?.member?.have || '',
+    want_meet: person.wantMeet || myStatus?.member?.want_meet || '',
+    wantMeet: person.wantMeet || myStatus?.member?.wantMeet || '',
+    bio: person.bio || myStatus?.member?.bio || '',
+    line_link: person.lineLink || myStatus?.member?.line_link || '',
+    photo: person.photo || '',
+    invitedBy: person.invitedBy || '',
+    joinIntent: person.joinIntent || '',
+  };
+  myStatus = {
+    authenticated: true,
+    bound: true,
+    tutorial_done: true,
+    member,
+  };
+  if (typeof window !== 'undefined') {
+    window.BNI_MY_BRANCH = member.branch || '';
+    window.BNI_MY_MEMBER_KEY = `${member.name}||${member.branch}`;
+    window.BNI_MY_MEMBER_ID = member.id || member.roster_id || person.id || '';
+    window.BNI_MY_NAME = member.name || '';
+    window.BNI_DINNER_PROFILE = person;
+  }
+}
+
 export function isTutorialDone() {
   return myStatus?.tutorial_done === true;
 }

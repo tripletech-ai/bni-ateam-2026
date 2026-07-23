@@ -2958,3 +2958,31 @@ body.event-closed-mode #user-bar { display: none !important; }
   color: var(--gold-bright);
   font-weight: 600;
 }
+
+/* -- Changhui dinner (dark) -- */
+body.dinner-mode { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+.dinner-landing-card {
+  background: #101629; border-color: rgba(250,199,117,0.28);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.dinner-landing-date { color: var(--dark-muted); }
+.dinner-meta-k { color: var(--dark-muted); }
+.dinner-meta-v { color: var(--dark-text); }
+.dinner-landing-note { color: var(--gold-bright); }
+.dinner-stat { background: rgba(255,255,255,0.04); }
+.dinner-stat-num { color: var(--gold-bright); }
+.dinner-stat-label { color: var(--dark-muted); }
+.dinner-landing-hint { color: var(--dark-muted); }
+.dinner-pick-sub { color: var(--dark-muted); }
+.dinner-pick-tab { background: #101629; border-color: var(--dark-border); color: var(--dark-muted); }
+.dinner-pick-tab.active { background: rgba(250,199,117,0.12); color: var(--gold-bright); border-color: rgba(250,199,117,0.45); }
+.dinner-person-card { background: #101629; border-color: var(--dark-border); }
+.dinner-person-name { color: var(--dark-text); }
+.dinner-person-sub { color: var(--dark-muted); }
+.dinner-person-badge-guest { background: rgba(96,165,250,0.15); color: #93c5fd; }
+.search-ai-autofill {
+  background: rgba(250,199,117,0.1); border-color: rgba(250,199,117,0.35);
+}
+.search-ai-autofill-title { color: var(--gold-bright); }
+.search-ai-autofill-body { color: var(--dark-text); }
+.search-ai-autofill-have, .search-ai-autofill-tip { color: var(--dark-muted); }
