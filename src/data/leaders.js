@@ -1,7 +1,9 @@
 export const LEADERS = {
   primary: {
     name: '楊日陞',
-    nameEn: 'Yang Ri-Sheng',
+    nameEn: 'Anderson',
+    displayName: '楊日陞 Anderson',
+    photoName: '楊日陞',
     title: '區域資深董事',
     titleEn: 'Senior Regional Director',
     region: '台北市北區 Anderson Team / 新北市西北B區',
@@ -59,7 +61,10 @@ export const LEADERS = {
       lineId: '0947230963', lineLink: 'https://line.me/ti/p/DJjRUnCyrg', cardLink: '',
     },
     {
-      name: '游姿菱', branch: '長佑分會', profession: '呼吸照護',
+      name: '游姿菱 Rita',
+      role: '大使',
+      branch: '長佑分會',
+      profession: '呼吸照護',
       have: '耳鼻喉科醫師、胸腔內科醫師、呼吸治療師、打呼族群、出院準備、氧氣治療族群',
       wantMeet: '',
       lineId: '@rita577990', lineLink: '', cardLink: '',

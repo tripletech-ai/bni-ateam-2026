@@ -14,7 +14,7 @@ function personCardHTML(p) {
   const badge = p.type === 'member' ? '會員' : '來賓';
   const sub = p.type === 'member'
     ? (p.profession || '長輝白金分會')
-    : [p.profession, p.invitedBy ? `邀約：${p.invitedBy}` : '', p.joinIntent ? `意願：${p.joinIntent}` : '']
+    : [p.profession, p.invitedBy ? `邀約：${p.invitedBy}` : '']
       .filter(Boolean).join(' · ');
   return `
     <button type="button" class="dinner-person-card" data-person-id="${escAttr(p.id)}">

@@ -11,7 +11,21 @@ export const CHANGHUI_DINNER_EVENT = {
   "memberBranch": "長輝白金分會",
   "guestBranch": "長輝晚會來賓",
   "website": "https://evershine.tw/",
-  "websiteLabel": "長輝分會網站 evershine.tw"
+  "websiteLabel": "長輝分會網站 evershine.tw",
+  "officers": [
+    {
+      "role": "主席",
+      "name": "鄭雅菁"
+    },
+    {
+      "role": "副主席",
+      "name": "洪智威"
+    },
+    {
+      "role": "秘書財務",
+      "name": "王執定"
+    }
+  ]
 };
 
 export const CHANGHUI_DINNER_MEMBERS = [
@@ -34,7 +48,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "場地租借(商攝/講座/活動) 合作開課(烹飪/手作/身心/瑜珈)"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -58,7 +71,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "高空蜘蛛人作業工程"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -82,7 +94,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "安養信託"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -106,7 +117,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "到府家教課"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -130,7 +140,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "春酒尾牙Candy Bar"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -154,7 +163,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "包袋類製作"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -176,7 +184,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "人工智慧 & 外匯交易"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -200,7 +207,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "品牌陪跑顧問"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -224,7 +230,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "命盤諮詢"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -247,7 +252,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "品牌角色建立"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -271,7 +275,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "狗便袋，寵物濕紙巾"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -298,7 +301,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "從零開始"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -323,7 +325,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "舊屋翻新"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -346,7 +347,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "智權管理與價值化服務"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -373,7 +373,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "測試"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -397,7 +396,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "手足保養 (教育講座 課程服務)"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -421,7 +419,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "卡牌擴散模組"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -443,7 +440,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "專注於：網站 / APP / 系統 / AI"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -467,7 +463,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "網路電話系統"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -491,7 +486,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "廚衛耐污鍍膜"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -515,7 +509,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "建材表面機能性塗佈技術"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -539,7 +532,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "建築物-水＆電的維修、更新、新增。"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -563,7 +555,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "活動紀錄"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -587,7 +578,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "申請創業青年貸款需求"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -611,7 +601,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "房屋修繕 媒合屋主租客"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -634,7 +623,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "電子商品生產及製作"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -656,7 +644,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "優質中古車買賣交易"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -680,7 +667,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "品牌代理(僅限獨佔技術競爭優勢)"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -704,7 +690,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "高爾夫球體適能訓練"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -727,7 +712,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "AI應用學習"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -751,7 +735,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "土地爭議處理"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -775,7 +758,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "3D示意圖"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -800,7 +782,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "長照規劃"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -824,7 +805,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "職涯顧問"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -847,7 +827,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "AI工具導入"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -871,7 +850,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "制服達人"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -895,7 +873,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "足底壓力"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -919,7 +896,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "客製化訂做"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -943,7 +919,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "健管計劃"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -967,7 +942,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "從設計提案3D到發包施工一條龍的服務"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -991,7 +965,6 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "中古車買賣"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
@@ -1015,27 +988,28 @@ export const CHANGHUI_DINNER_MEMBERS = [
       "專案餐飲提案"
     ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": true
   },
   {
     "id": "dinner-m-43",
     "type": "member",
-    "name": "游姿菱Rita",
-    "branch": "長輝白金分會",
+    "name": "游姿菱 Rita",
+    "branch": "長佑分會",
     "region": "zhongshan",
-    "profession": "",
+    "profession": "大使 · 呼吸照護",
     "company": "",
-    "have": "",
+    "have": "耳鼻喉科醫師、胸腔內科醫師、呼吸治療師、打呼族群、出院準備、氧氣治療族群",
     "wantMeet": "",
-    "bio": "",
+    "bio": "BNI Anderson Team 大使 · 游姿菱 Rita",
     "photo": "",
     "phone": "",
     "email": "",
     "lineLink": "",
-    "tags": [],
+    "tags": [
+      "大使",
+      "呼吸照護"
+    ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": false
   },
   {
@@ -1055,27 +1029,28 @@ export const CHANGHUI_DINNER_MEMBERS = [
     "lineLink": "",
     "tags": [],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": false
   },
   {
     "id": "dinner-m-45",
     "type": "member",
-    "name": "楊日陞",
-    "branch": "長輝白金分會",
+    "name": "楊日陞 Anderson",
+    "branch": "A Team分會",
     "region": "zhongshan",
-    "profession": "",
-    "company": "",
-    "have": "",
+    "profession": "區域資深董事",
+    "company": "BNI Anderson Team",
+    "have": "BNI Anderson Team 區域資深董事",
     "wantMeet": "",
-    "bio": "",
+    "bio": "台北市北區 Anderson Team / 新北市西北B區 區域資深董事",
     "photo": "",
     "phone": "",
     "email": "",
     "lineLink": "",
-    "tags": [],
+    "tags": [
+      "區域資深董事",
+      "Anderson"
+    ],
     "invitedBy": "",
-    "joinIntent": "",
     "evershineMatched": false
   }
 ];
@@ -1100,7 +1075,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "保健品odm"
     ],
     "invitedBy": "廖涌辰",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1122,7 +1096,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "沙發家具"
     ],
     "invitedBy": "江學洋",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1144,7 +1117,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "律師"
     ],
     "invitedBy": "陳亭儒",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1166,7 +1138,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "富邦保險"
     ],
     "invitedBy": "江學洋",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1188,7 +1159,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "行銷總監"
     ],
     "invitedBy": "王執定",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1210,7 +1180,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "法拍屋顧問"
     ],
     "invitedBy": "李秉誠",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1232,7 +1201,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "廣告投放"
     ],
     "invitedBy": "李秉誠",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1254,7 +1222,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "ai系統整合"
     ],
     "invitedBy": "陳夗媃",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1276,7 +1243,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "大圖輸出展場設計"
     ],
     "invitedBy": "多多",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1298,7 +1264,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "共享空間"
     ],
     "invitedBy": "多多",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1320,7 +1285,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "AI 智慧名片CRM系統"
     ],
     "invitedBy": "Darren",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1342,7 +1306,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "地政士"
     ],
     "invitedBy": "王執定",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1364,7 +1327,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "生命禮儀"
     ],
     "invitedBy": "王執定",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1386,7 +1348,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "光波貼片"
     ],
     "invitedBy": "王執定",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1408,7 +1369,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "AI資訊顧問"
     ],
     "invitedBy": "李孟一",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1430,7 +1390,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "燈具照明"
     ],
     "invitedBy": "王執定",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1452,7 +1411,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "職能治療與兒童手作百貨"
     ],
     "invitedBy": "李孟一",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1474,7 +1432,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "瓦斯瓶系統平台"
     ],
     "invitedBy": "李彥慶",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1496,7 +1453,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "活動互動體驗"
     ],
     "invitedBy": "鄭雅菁",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1518,7 +1474,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "整合行銷"
     ],
     "invitedBy": "何子翊",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1540,7 +1495,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "安心超市"
     ],
     "invitedBy": "何子翊",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1562,7 +1516,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "餐具租借"
     ],
     "invitedBy": "王慕煾",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1584,7 +1537,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "生態復育"
     ],
     "invitedBy": "李彥慶",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1606,7 +1558,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "空調師傅"
     ],
     "invitedBy": "陳育文",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1628,7 +1579,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "展覽製作"
     ],
     "invitedBy": "多多",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1650,7 +1600,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "草木堂道場負責人"
     ],
     "invitedBy": "多多",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1672,7 +1621,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "能量風水畫"
     ],
     "invitedBy": "多多",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1694,7 +1642,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "戰略顧問"
     ],
     "invitedBy": "何子翊",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1716,7 +1663,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "派遣醫療"
     ],
     "invitedBy": "江沛璇",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1738,7 +1684,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "數位行銷"
     ],
     "invitedBy": "多多",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1760,7 +1705,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "國際不動產"
     ],
     "invitedBy": "陳育文",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1782,7 +1726,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "無痛整復"
     ],
     "invitedBy": "江學洋",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1804,7 +1747,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "齒模"
     ],
     "invitedBy": "李維培",
-    "joinIntent": "中",
     "evershineMatched": false
   },
   {
@@ -1826,7 +1768,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "非營利組織（兒少與家庭服務）"
     ],
     "invitedBy": "何子翊",
-    "joinIntent": "低",
     "evershineMatched": false
   },
   {
@@ -1848,7 +1789,6 @@ export const CHANGHUI_DINNER_GUESTS = [
       "牙體技術"
     ],
     "invitedBy": "江學洋",
-    "joinIntent": "中",
     "evershineMatched": false
   }
 ];

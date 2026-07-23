@@ -25,6 +25,9 @@ import { refreshLeaderboardCache } from '../utils/leaderboardCache.js';
 import { showToast } from '../utils/toast.js';
 import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { guestFeedLoginHTML, bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
+import { isDinnerMode } from '../config/appMode.js';
+import { CHANGHUI_DINNER_EVENT } from '../data/changhuiDinner.js';
+import { isEventScoped } from '../utils/eventScope.js';
 
 let livePollTimer = null;
 let liveIsAdmin = false;
@@ -59,16 +62,21 @@ function liveMainTabsHTML() {
         data-live-tab="chat">${escHtml(t('live_tab_chat'))}</button>
       <button type="button" class="live-main-tab${liveMainTab === 'leaderboard' ? ' active' : ''}"
         role="tab" aria-selected="${liveMainTab === 'leaderboard'}"
-        data-live-tab="leaderboard">${escHtml(t('live_tab_leaderboard'))}</button>
+        data-live-tab="leaderboard">${escHtml(isDinnerMode() ? '今晚排行榜' : t('live_tab_leaderboard'))}</button>
     </div>`;
 }
 
 function leaderboardPanelHTML() {
   const boards = window.BNI_LEADERBOARDS || {};
   const rows = boards[liveLbMode] || [];
+  const dinner = isEventScoped();
+  const sub = dinner
+    ? `${CHANGHUI_DINNER_EVENT.title} · 今晚獨立計分（不含年會累積）`
+    : t('lb_sub');
   return `
     <section class="live-panel live-panel-leaderboard${liveMainTab !== 'leaderboard' ? ' hidden' : ''}">
-      <p class="live-lb-sub">${escHtml(t('lb_sub'))}</p>
+      ${dinner ? `<p class="live-lb-eyebrow">今晚現場 · 獨立排行榜</p>` : ''}
+      <p class="live-lb-sub">${escHtml(sub)}</p>
       ${leaderboardModeTabsHTML(liveLbModes, liveLbMode)}
       <div id="live-leaderboard-list">${leaderboardHTML(rows, { mode: liveLbMode })}</div>
     </section>`;

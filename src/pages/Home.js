@@ -11,6 +11,7 @@ import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
 import { isDinnerMode } from '../config/appMode.js';
 import { CHANGHUI_DINNER_EVENT, dinnerRosterStats } from '../data/changhuiDinner.js';
+import { dinnerOfficersHTML } from '../components/DinnerOfficers.js';
 
 function developerCardHTML(d) {
   const tags = (d.tagKeys || []).map(k =>
@@ -62,21 +63,36 @@ function dinnerTonightCardHTML() {
     </section>`;
 }
 
+function dinnerRegionNoteHTML() {
+  // 區域資深董事保留；不帶年會董顧／800 等舊活動內容
+  return `
+    <section class="dinner-region-note" aria-label="區域資深董事">
+      <p class="dinner-region-note-eyebrow">BNI ANDERSON TEAM</p>
+      <p class="dinner-region-note-body">
+        <span class="dinner-region-note-role">區域資深董事</span>
+        <span class="dinner-region-note-name serif">楊日陞 Anderson</span>
+      </p>
+      <p class="dinner-region-note-sub">大使：游姿菱 Rita</p>
+    </section>`;
+}
+
 export function renderHome(container) {
   container.classList.add('page-root');
   const markCount = getMarkCount();
   const dinner = isDinnerMode();
+  const heroTitle = dinner ? '長輝擴大商機晚會' : t('hero_title');
+  const heroSub = dinner ? '今晚獨立活動 · 說你想找誰，AI 幫你媒合本場夥伴' : t('hero_sub');
 
   container.innerHTML = `
     <div class="hero hero-compact home-landing">
-      <h1 class="hero-title serif hero-title-gold" data-text="${escAttr(t('hero_title'))}">${escHtml(t('hero_title'))}</h1>
-      <p class="hero-sub">${escHtml(dinner ? '長輝擴大商機晚會 · 說你想找誰，AI 幫你媒合' : t('hero_sub'))}</p>
-      <a href="#search" class="btn-ai home-primary-cta">${escHtml(t('home_primary_cta'))}</a>
+      <h1 class="hero-title serif hero-title-gold" data-text="${escAttr(heroTitle)}">${escHtml(heroTitle)}</h1>
+      <p class="hero-sub">${escHtml(heroSub)}</p>
+      <a href="#search" class="btn-ai home-primary-cta">${escHtml(dinner ? '開始找本場夥伴' : t('home_primary_cta'))}</a>
     </div>
 
     ${dinner ? dinnerTonightCardHTML() : collect800HTML({ context: 'home' })}
-
-    ${yangIntroHTML()}
+    ${dinner ? dinnerOfficersHTML() : ''}
+    ${dinner ? dinnerRegionNoteHTML() : yangIntroHTML()}
 
     ${markCount > 0 ? `
     <div class="home-mark-summary">
@@ -84,12 +100,12 @@ export function renderHome(container) {
       <a href="#marks" class="home-mark-link">${escHtml(t('home_quick_marks'))}</a>
     </div>` : ''}
 
-    ${homeLeadersSectionsHTML()}
+    ${dinner ? '' : homeLeadersSectionsHTML()}
 
     ${homeSectionAccordion(t('home_section_developers'), `
       <p class="home-section-sub">${escHtml(t('home_developers_sub'))}</p>
       <div class="developer-stack home-developer-stack">${DEVELOPERS.map(developerCardHTML).join('')}</div>
-    `, 'home-developers', { defaultOpen: dinner ? false : true })}
+    `, 'home-developers', { defaultOpen: true })}
 
     <div style="height:24px"></div>
   `;

@@ -17,46 +17,68 @@ const MEMBER_NAMES = [
   '江心怡', '李維恩', '施秉辰', '彭顯智', '游凱地', '劉弼凱', '宋兆禮', '陳亭儒',
   '李秉誠', '蘇子超', '宋岳霖', '邱翰城', '廖涌辰', '王祈', '何昇軒', '陳育文',
   '吳介輝', '王慕煾', '王銓', '李慰祖', '林修賢', '王冠勛', '江沛璇', '劉懿德',
-  '呂學承', '陳夗媃', '游姿菱Rita', '林昱璋', '楊日陞',
+  '呂學承', '陳夗媃', '游姿菱 Rita', '林昱璋', '楊日陞 Anderson',
 ];
 
-/** @type {{ name: string, profession: string, invitedBy: string, joinIntent: string }[]} */
+/** Manual enrich when evershine has no match（可覆寫 branch 以便認領對到後端） */
+const MANUAL_ENRICH = {
+  '游姿菱 Rita': {
+    branch: '長佑分會',
+    profession: '大使 · 呼吸照護',
+    company: '',
+    have: '耳鼻喉科醫師、胸腔內科醫師、呼吸治療師、打呼族群、出院準備、氧氣治療族群',
+    wantMeet: '',
+    bio: 'BNI Anderson Team 大使 · 游姿菱 Rita',
+    tags: ['大使', '呼吸照護'],
+  },
+  '楊日陞 Anderson': {
+    branch: 'A Team分會',
+    profession: '區域資深董事',
+    company: 'BNI Anderson Team',
+    have: 'BNI Anderson Team 區域資深董事',
+    wantMeet: '',
+    bio: '台北市北區 Anderson Team / 新北市西北B區 區域資深董事',
+    tags: ['區域資深董事', 'Anderson'],
+  },
+};
+
+/** @type {{ name: string, profession: string, invitedBy: string }[]} */
 const GUESTS = [
-  { name: '顧桂榮', profession: '保健品odm', invitedBy: '廖涌辰', joinIntent: '中' },
-  { name: '胡宇駿', profession: '沙發家具', invitedBy: '江學洋', joinIntent: '中' },
-  { name: '洪瑄憶', profession: '律師', invitedBy: '陳亭儒', joinIntent: '低' },
-  { name: '劉囍兒', profession: '富邦保險', invitedBy: '江學洋', joinIntent: '低' },
-  { name: '蔡坤達', profession: '行銷總監', invitedBy: '王執定', joinIntent: '低' },
-  { name: '邱淮紳', profession: '法拍屋顧問', invitedBy: '李秉誠', joinIntent: '低' },
-  { name: '劉睿杰', profession: '廣告投放', invitedBy: '李秉誠', joinIntent: '低' },
-  { name: '林品爵', profession: 'ai系統整合', invitedBy: '陳夗媃', joinIntent: '中' },
-  { name: '廖家頡', profession: '大圖輸出展場設計', invitedBy: '多多', joinIntent: '低' },
-  { name: '葉宛昀', profession: '共享空間', invitedBy: '多多', joinIntent: '低' },
-  { name: '陳柏旭 Wilson', profession: 'AI 智慧名片CRM系統', invitedBy: 'Darren', joinIntent: '中' },
-  { name: '李逸強', profession: '地政士', invitedBy: '王執定', joinIntent: '低' },
-  { name: '陳志信', profession: '生命禮儀', invitedBy: '王執定', joinIntent: '低' },
-  { name: '尚明', profession: '光波貼片', invitedBy: '王執定', joinIntent: '中' },
-  { name: '符嘉尹', profession: 'AI資訊顧問', invitedBy: '李孟一', joinIntent: '低' },
-  { name: '邱裕峯', profession: '燈具照明', invitedBy: '王執定', joinIntent: '低' },
-  { name: '鄭崇皓', profession: '職能治療與兒童手作百貨', invitedBy: '李孟一', joinIntent: '低' },
-  { name: '施冠彰Eric', profession: '瓦斯瓶系統平台', invitedBy: '李彥慶', joinIntent: '中' },
-  { name: '林宜穎', profession: '活動互動體驗', invitedBy: '鄭雅菁', joinIntent: '中' },
-  { name: '陳柔羽', profession: '整合行銷', invitedBy: '何子翊', joinIntent: '低' },
-  { name: '陳玉惠', profession: '安心超市', invitedBy: '何子翊', joinIntent: '低' },
-  { name: '林映辰 Stan', profession: '餐具租借', invitedBy: '王慕煾', joinIntent: '中' },
-  { name: '游欣憓', profession: '生態復育', invitedBy: '李彥慶', joinIntent: '中' },
-  { name: '嚴弘智', profession: '空調師傅', invitedBy: '陳育文', joinIntent: '中' },
-  { name: '張錦鎰', profession: '展覽製作', invitedBy: '多多', joinIntent: '低' },
-  { name: '吳俊慶', profession: '草木堂道場負責人', invitedBy: '多多', joinIntent: '低' },
-  { name: '林思瑀', profession: '能量風水畫', invitedBy: '多多', joinIntent: '低' },
-  { name: '蔡清淵', profession: '戰略顧問', invitedBy: '何子翊', joinIntent: '低' },
-  { name: '陳以恩', profession: '派遣醫療', invitedBy: '江沛璇', joinIntent: '低' },
-  { name: '張亦玎', profession: '數位行銷', invitedBy: '多多', joinIntent: '低' },
-  { name: '謝穎翾', profession: '國際不動產', invitedBy: '陳育文', joinIntent: '中' },
-  { name: '李維培', profession: '無痛整復', invitedBy: '江學洋', joinIntent: '中' },
-  { name: '張婕', profession: '齒模', invitedBy: '李維培', joinIntent: '中' },
-  { name: '鄭偉銘', profession: '非營利組織（兒少與家庭服務）', invitedBy: '何子翊', joinIntent: '低' },
-  { name: '羅文全', profession: '牙體技術', invitedBy: '江學洋', joinIntent: '中' },
+  { name: '顧桂榮', profession: '保健品odm', invitedBy: '廖涌辰' },
+  { name: '胡宇駿', profession: '沙發家具', invitedBy: '江學洋' },
+  { name: '洪瑄憶', profession: '律師', invitedBy: '陳亭儒' },
+  { name: '劉囍兒', profession: '富邦保險', invitedBy: '江學洋' },
+  { name: '蔡坤達', profession: '行銷總監', invitedBy: '王執定' },
+  { name: '邱淮紳', profession: '法拍屋顧問', invitedBy: '李秉誠' },
+  { name: '劉睿杰', profession: '廣告投放', invitedBy: '李秉誠' },
+  { name: '林品爵', profession: 'ai系統整合', invitedBy: '陳夗媃' },
+  { name: '廖家頡', profession: '大圖輸出展場設計', invitedBy: '多多' },
+  { name: '葉宛昀', profession: '共享空間', invitedBy: '多多' },
+  { name: '陳柏旭 Wilson', profession: 'AI 智慧名片CRM系統', invitedBy: 'Darren' },
+  { name: '李逸強', profession: '地政士', invitedBy: '王執定' },
+  { name: '陳志信', profession: '生命禮儀', invitedBy: '王執定' },
+  { name: '尚明', profession: '光波貼片', invitedBy: '王執定' },
+  { name: '符嘉尹', profession: 'AI資訊顧問', invitedBy: '李孟一' },
+  { name: '邱裕峯', profession: '燈具照明', invitedBy: '王執定' },
+  { name: '鄭崇皓', profession: '職能治療與兒童手作百貨', invitedBy: '李孟一' },
+  { name: '施冠彰Eric', profession: '瓦斯瓶系統平台', invitedBy: '李彥慶' },
+  { name: '林宜穎', profession: '活動互動體驗', invitedBy: '鄭雅菁' },
+  { name: '陳柔羽', profession: '整合行銷', invitedBy: '何子翊' },
+  { name: '陳玉惠', profession: '安心超市', invitedBy: '何子翊' },
+  { name: '林映辰 Stan', profession: '餐具租借', invitedBy: '王慕煾' },
+  { name: '游欣憓', profession: '生態復育', invitedBy: '李彥慶' },
+  { name: '嚴弘智', profession: '空調師傅', invitedBy: '陳育文' },
+  { name: '張錦鎰', profession: '展覽製作', invitedBy: '多多' },
+  { name: '吳俊慶', profession: '草木堂道場負責人', invitedBy: '多多' },
+  { name: '林思瑀', profession: '能量風水畫', invitedBy: '多多' },
+  { name: '蔡清淵', profession: '戰略顧問', invitedBy: '何子翊' },
+  { name: '陳以恩', profession: '派遣醫療', invitedBy: '江沛璇' },
+  { name: '張亦玎', profession: '數位行銷', invitedBy: '多多' },
+  { name: '謝穎翾', profession: '國際不動產', invitedBy: '陳育文' },
+  { name: '李維培', profession: '無痛整復', invitedBy: '江學洋' },
+  { name: '張婕', profession: '齒模', invitedBy: '李維培' },
+  { name: '鄭偉銘', profession: '非營利組織（兒少與家庭服務）', invitedBy: '何子翊' },
+  { name: '羅文全', profession: '牙體技術', invitedBy: '江學洋' },
 ];
 
 function normName(n) {
@@ -120,12 +142,13 @@ function enrichFromEvershine(name) {
 }
 
 const members = MEMBER_NAMES.map((name, i) => {
-  const enrich = enrichFromEvershine(name) || {};
+  const display = displayName(name);
+  const enrich = enrichFromEvershine(name) || MANUAL_ENRICH[display] || {};
   return {
     id: `dinner-m-${i + 1}`,
     type: 'member',
-    name: displayName(name),
-    branch: BRANCH_MEMBER,
+    name: display,
+    branch: enrich.branch || BRANCH_MEMBER,
     region: REGION,
     profession: enrich.profession || '',
     company: enrich.company || '',
@@ -138,7 +161,6 @@ const members = MEMBER_NAMES.map((name, i) => {
     lineLink: enrich.lineLink || '',
     tags: enrich.tags || [],
     invitedBy: '',
-    joinIntent: '',
     evershineMatched: !!enrich.evershineMatched,
   };
 });
@@ -160,7 +182,6 @@ const guests = GUESTS.map((g, i) => ({
   lineLink: '',
   tags: g.profession ? [g.profession] : [],
   invitedBy: g.invitedBy || '',
-  joinIntent: g.joinIntent || '',
   evershineMatched: false,
 }));
 
@@ -175,6 +196,13 @@ const event = {
   note: '長輝會員免費參加',
   memberBranch: BRANCH_MEMBER,
   guestBranch: BRANCH_GUEST,
+  website: 'https://evershine.tw/',
+  websiteLabel: '長輝分會網站 evershine.tw',
+  officers: [
+    { role: '主席', name: '鄭雅菁' },
+    { role: '副主席', name: '洪智威' },
+    { role: '秘書財務', name: '王執定' },
+  ],
 };
 
 const roster = { event, members, guests };

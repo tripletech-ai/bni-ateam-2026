@@ -2494,3 +2494,34 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
   text-decoration: underline; text-underline-offset: 3px;
 }
 .dinner-evershine-link:hover { color: var(--gold-bright, #c9892a); }
+
+/* Dinner officers (early on landing / home) */
+.dinner-officers {
+  margin: 8px 16px 16px; padding: 14px 16px; border-radius: var(--r);
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.dinner-officers-eyebrow {
+  margin: 0 0 10px; font-size: 11px; letter-spacing: 0.1em; font-weight: 700; color: var(--gold);
+}
+.dinner-officers-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.dinner-officer {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 12px;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+}
+.dinner-officer:last-child { border-bottom: none; padding-bottom: 0; }
+.dinner-officer-role { font-size: 13px; font-weight: 700; color: var(--muted); flex: 0 0 auto; }
+.dinner-officer-name { font-size: 18px; color: var(--gold); text-align: right; }
+
+.live-lb-eyebrow {
+  margin: 0 16px 4px; font-size: 11px; letter-spacing: 0.1em; font-weight: 700; color: var(--gold);
+}
+
+.dinner-region-note {
+  margin: 0 16px 16px; padding: 14px 16px; border-radius: var(--r);
+  background: var(--surface); border: 1px solid var(--border);
+}
+.dinner-region-note-eyebrow { margin: 0 0 6px; font-size: 11px; letter-spacing: 0.1em; font-weight: 700; color: var(--gold); }
+.dinner-region-note-body { margin: 0; display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: baseline; }
+.dinner-region-note-role { font-size: 13px; color: var(--muted); font-weight: 700; }
+.dinner-region-note-name { font-size: 18px; color: var(--gold); }
+.dinner-region-note-sub { margin: 8px 0 0; font-size: 13px; color: var(--muted); }

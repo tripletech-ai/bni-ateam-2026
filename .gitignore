@@ -9,6 +9,10 @@ node_modules/
 *.xlsx
 *.xls
 *.csv
+scripts/_evershine-*.json
+scripts/_*-check.sql
+scripts/_verify-*.sql
+.ui-check/
 
 # 設計稿（可選）
 *.html.bak

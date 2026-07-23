@@ -66,7 +66,7 @@ import { mountSunsetBanner } from './components/SunsetBanner.js';
 import { renderDinnerLanding } from './pages/DinnerLanding.js';
 import { renderDinnerPickLogin } from './pages/DinnerPickLogin.js';
 import { loadDinnerIdentity } from './utils/dinnerSession.js';
-import { getChanghuiDinnerRoster } from './data/changhuiDinner.js';
+import { applyDinnerRosterScope } from './utils/dinnerRosterScope.js';
 
 // ── Language & font (set on login screen; persisted in localStorage) ──
 initPreferences();
@@ -398,34 +398,7 @@ async function enterAdminApp() {
 }
 
 function mergeDinnerRosterIntoMembers() {
-  if (!isDinnerMode()) return;
-  const dinner = getChanghuiDinnerRoster();
-  const existing = window.BNI_MEMBERS || [];
-  const keyOf = (m) => `${String(m.name || '').replace(/\s+/g, '')}||${m.branch || ''}`;
-  const map = new Map(existing.map(m => [keyOf(m), m]));
-  for (const p of dinner) {
-    const k = keyOf(p);
-    const prev = map.get(k);
-    map.set(k, {
-      ...(prev || {}),
-      id: prev?.id || p.id,
-      dbId: prev?.dbId,
-      name: p.name,
-      branch: p.branch,
-      region: p.region,
-      profession: p.profession || prev?.profession || '',
-      have: p.have || prev?.have || '',
-      wantMeet: p.wantMeet || prev?.wantMeet || '',
-      bio: p.bio || prev?.bio || '',
-      photo: p.photo || prev?.photo || '',
-      lineLink: p.lineLink || prev?.lineLink || '',
-      tags: (p.tags?.length ? p.tags : prev?.tags) || [],
-      invitedBy: p.invitedBy || '',
-      joinIntent: p.joinIntent || '',
-      dinnerType: p.type,
-    });
-  }
-  window.BNI_MEMBERS = [...map.values()];
+  applyDinnerRosterScope();
 }
 
 function showDinnerGate() {

@@ -3,6 +3,7 @@ import {
   CHANGHUI_DINNER_EVENT,
   dinnerRosterStats,
 } from '../data/changhuiDinner.js';
+import { dinnerOfficersHTML } from '../components/DinnerOfficers.js';
 
 /**
  * 長輝擴大商機晚會 Landing
@@ -21,6 +22,8 @@ export function renderDinnerLanding(container, { onEnter } = {}) {
             data-text="${escAttr(ev.title)}">${escHtml(ev.title)}</h1>
         <p class="dinner-landing-date">${escHtml(ev.dateLabel)}</p>
       </header>
+
+      ${dinnerOfficersHTML()}
 
       <section class="dinner-landing-card" aria-label="活動資訊">
         <ul class="dinner-landing-meta">

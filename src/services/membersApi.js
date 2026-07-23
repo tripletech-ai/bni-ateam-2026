@@ -1,3 +1,6 @@
+import { applyDinnerRosterScope } from '../utils/dinnerRosterScope.js';
+import { isEventScoped } from '../utils/eventScope.js';
+
 const MEMBERS_STALE_MS = 90_000;
 let refreshPromise = null;
 
@@ -34,8 +37,10 @@ export async function loadMembersFromDb(fetchAllMembers) {
   const rows = await fetchAllMembers();
   const members = rows.map(mapRow);
   window.BNI_MEMBERS = members;
+  // 晚宴：再收斂／補齊本場靜態預填，避免混入年會全量
+  if (isEventScoped()) applyDinnerRosterScope();
   window.BNI_MEMBERS_LOADED_AT = Date.now();
-  return members;
+  return window.BNI_MEMBERS;
 }
 
 /** 進入搜尋／填完資料後刷新名單，讓新認領會員可被搜到 */

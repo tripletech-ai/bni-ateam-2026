@@ -131,11 +131,12 @@ function leaderContactGridHTML(l) {
 }
 
 function leaderCardPrimary(l) {
+  const displayName = l.displayName || [l.name, l.nameEn].filter(Boolean).join(' ');
   return `
     <div class="leader-card-primary">
       <div class="lc-top">
         <div>
-          <div class="leader-name">${escHtml(l.name)}</div>
+          <div class="leader-name">${escHtml(displayName)}</div>
           <div class="leader-title">${escHtml(l.title)}</div>
           <div class="leader-region">${escHtml(l.region || '')}</div>
         </div>
@@ -164,9 +165,10 @@ function leaderCardSecondary(l) {
 
 function directorCardHTML(p, index, { nameSuffix = '' } = {}) {
   const dirCard = getCardLink(p.name) || p.cardLink || '';
-  const metaParts = [p.branch, p.profession].filter(Boolean);
+  const metaParts = [p.role, p.branch, p.profession].filter(Boolean);
   const metaLine  = metaParts.length ? `<div class="dir-meta">${escHtml(metaParts.join(' · '))}</div>` : '';
-  const suffix = nameSuffix || '';
+  // 有自訂角色（如大使）時，不再套用預設「董顧」後綴
+  const suffix = p.role ? '' : (nameSuffix || '');
   const nameLabel = index != null ? `${index}. ${p.name}${suffix}` : `${p.name}${suffix}`;
 
   const haveSection = p.have

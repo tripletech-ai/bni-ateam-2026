@@ -5,6 +5,8 @@ import { normalizeBranchName } from '../data/branches.js';
 import { normalizeIntent } from './searchIntent.js';
 import { getMark, memberKey, isMutuallyConnected } from './storage.js';
 import { hasIncomingOneMark } from './connectionCache.js';
+import { isEventScoped } from './eventScope.js';
+import { getChanghuiDinnerRoster } from '../data/changhuiDinner.js';
 
 function getMyMemberKey() {
   return (typeof window !== 'undefined' && window.BNI_MY_MEMBER_KEY) || '';
@@ -33,7 +35,18 @@ function isSelfMember(member) {
 }
 
 function getMembers() {
-  return window.BNI_MEMBERS || [];
+  const all = window.BNI_MEMBERS || [];
+  // 雙重保險：晚宴模式只允許本場出席者進入媒合池
+  if (!isEventScoped()) return all;
+  if (all.length && all.every(m => m.eventScoped)) return all;
+  const allow = new Set(
+    getChanghuiDinnerRoster().map(p =>
+      String(p.name || '').replace(/\s+/g, '').replace(/[A-Za-z].*$/, ''),
+    ),
+  );
+  return all.filter(m =>
+    allow.has(String(m.name || '').replace(/\s+/g, '').replace(/[A-Za-z].*$/, '')),
+  );
 }
 
 const memberId = m => m.id || m.name;

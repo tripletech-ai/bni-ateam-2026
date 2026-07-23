@@ -22,8 +22,10 @@ function yangContactHTML(y) {
 /** 首頁楊董介紹（含照片） */
 export function yangIntroHTML() {
   const y = LEADERS.primary;
-  const photo = heroPhotoHTML(y.name, { className: 'yang-intro-photo' });
-  const cardLink = getCardLink(y.name) || y.cardLink || '';
+  const photoName = y.photoName || y.name;
+  const displayName = y.displayName || [y.name, y.nameEn].filter(Boolean).join(' ');
+  const photo = heroPhotoHTML(photoName, { className: 'yang-intro-photo' });
+  const cardLink = getCardLink(photoName) || getCardLink(y.name) || y.cardLink || '';
   const cardBtn = cardLink
     ? `<a href="${escAttr(cardLink)}" class="btn-yang yang-intro-card-link" target="_blank" rel="noopener">${escHtml(t('leaders_card'))}</a>`
     : '';
@@ -33,15 +35,12 @@ export function yangIntroHTML() {
         ${photo ? `<div class="yang-intro-photo-wrap">${photo}</div>` : ''}
         <div class="yang-intro-head">
           <div class="yang-intro-eyebrow">BNI ANDERSON TEAM</div>
-          <h2 class="yang-intro-name serif">${escHtml(y.name)}</h2>
+          <h2 class="yang-intro-name serif">${escHtml(displayName)}</h2>
           <p class="yang-intro-title">${escHtml(y.title)} · ${escHtml(t('yang_intro_region'))}</p>
         </div>
       </div>
       <p class="yang-intro-text">${escHtml(t('yang_intro_body'))}</p>
       ${yangContactHTML(y)}
-      <div class="yang-intro-actions">
-        <a href="#leaders" class="btn-yang yang-intro-cta">${escHtml(t('home_view_leaders'))}</a>
-        ${cardBtn}
-      </div>
+      ${cardBtn ? `<div class="yang-intro-actions">${cardBtn}</div>` : ''}
     </article>`;
 }

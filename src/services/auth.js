@@ -4,6 +4,7 @@ import { withRetry } from '../utils/retry.js';
 import { loadSession, saveSession, clearSession } from './sessionStore.js';
 import { isAdminEmail, normalizeAdminEmail } from '../config/admins.js';
 import { isInAppBrowser } from '../utils/inAppBrowser.js';
+import { activeEventId } from '../utils/eventScope.js';
 
 const PKCE_KEY = 'bni_oauth_code_verifier';
 const DEVICE_CREDS_KEY = 'bni_device_creds';
@@ -667,10 +668,17 @@ async function updateMyProfileOnce(payload) {
 
 export async function recordConnectionMark(toMemberId, markType) {
   return withAuthRetry(async () => {
-    const { data, error } = await getClient().database.rpc('bni_record_connection_mark', {
-      p_to_member_id: toMemberId,
-      p_mark_type: markType,
-    });
+    const eventId = activeEventId();
+    const { data, error } = eventId
+      ? await getClient().database.rpc('bni_record_event_connection_mark', {
+          p_event_id: eventId,
+          p_to_member_id: toMemberId,
+          p_mark_type: markType,
+        })
+      : await getClient().database.rpc('bni_record_connection_mark', {
+          p_to_member_id: toMemberId,
+          p_mark_type: markType,
+        });
     if (error) throw error;
     return data;
   });
@@ -678,19 +686,32 @@ export async function recordConnectionMark(toMemberId, markType) {
 
 export async function removeConnectionMark(toMemberId, markType) {
   return withAuthRetry(async () => {
-    const { data, error } = await getClient().database.rpc('bni_remove_connection_mark', {
-      p_to_member_id: toMemberId,
-      p_mark_type: markType,
-    });
+    const eventId = activeEventId();
+    const { data, error } = eventId
+      ? await getClient().database.rpc('bni_remove_event_connection_mark', {
+          p_event_id: eventId,
+          p_to_member_id: toMemberId,
+          p_mark_type: markType,
+        })
+      : await getClient().database.rpc('bni_remove_connection_mark', {
+          p_to_member_id: toMemberId,
+          p_mark_type: markType,
+        });
     if (error) throw error;
     return data;
   });
 }
 
 export async function fetchIncomingMarks(unseenOnly = true) {
-  const { data, error } = await getClient().database.rpc('bni_get_incoming_marks', {
-    p_unseen_only: unseenOnly,
-  });
+  const eventId = activeEventId();
+  const { data, error } = eventId
+    ? await getClient().database.rpc('bni_get_event_incoming_marks', {
+        p_event_id: eventId,
+        p_unseen_only: unseenOnly,
+      })
+    : await getClient().database.rpc('bni_get_incoming_marks', {
+        p_unseen_only: unseenOnly,
+      });
   if (error) {
     const msg = error.message || '';
     if (/could not find the function|PGRST202|404/i.test(msg)) {
@@ -704,15 +725,26 @@ export async function fetchIncomingMarks(unseenOnly = true) {
 }
 
 export async function ackIncomingMarks(markIds = null) {
-  const { data, error } = await getClient().database.rpc('bni_ack_incoming_marks', {
-    p_mark_ids: markIds,
-  });
+  const eventId = activeEventId();
+  const { data, error } = eventId
+    ? await getClient().database.rpc('bni_ack_event_incoming_marks', {
+        p_event_id: eventId,
+        p_mark_ids: markIds,
+      })
+    : await getClient().database.rpc('bni_ack_incoming_marks', {
+        p_mark_ids: markIds,
+      });
   if (error) throw error;
   return data;
 }
 
 export async function fetchMyOutgoingMarks() {
-  const { data, error } = await getClient().database.rpc('bni_get_my_outgoing_marks');
+  const eventId = activeEventId();
+  const { data, error } = eventId
+    ? await getClient().database.rpc('bni_get_my_event_outgoing_marks', {
+        p_event_id: eventId,
+      })
+    : await getClient().database.rpc('bni_get_my_outgoing_marks');
   if (error) {
     const msg = error.message || '';
     if (/could not find the function|PGRST202|404/i.test(msg)) {
@@ -750,8 +782,17 @@ export async function fetchTutorialSteps() {
 
 export async function fetchAllMembers({ includeInactive = false, admin = false } = {}) {
   return withRetry(async () => {
-    const rpc = admin ? 'bni_admin_list_members' : 'bni_get_public_members';
     const client = admin ? getClient() : getAnonClient();
+    // 晚宴模式：只取本場出席名單（年會公開名單 RPC 不動）
+    const eventId = !admin ? activeEventId() : null;
+    if (eventId) {
+      const { data, error } = await client.database.rpc('bni_get_event_public_members', {
+        p_event_id: eventId,
+      });
+      if (error) throw error;
+      return Array.isArray(data) ? data : [];
+    }
+    const rpc = admin ? 'bni_admin_list_members' : 'bni_get_public_members';
     const { data, error } = await client.database.rpc(rpc, {
       p_include_inactive: includeInactive,
     });
@@ -835,10 +876,17 @@ function isRpcMissing(error) {
 }
 
 export async function fetchLeaderboard(limit = 30, mode = 'mutual') {
-  const { data, error } = await getAnonClient().database.rpc('bni_get_leaderboard', {
-    p_limit: limit,
-    p_mode: mode,
-  });
+  const eventId = activeEventId();
+  const { data, error } = eventId
+    ? await getAnonClient().database.rpc('bni_get_event_leaderboard', {
+        p_event_id: eventId,
+        p_limit: limit,
+        p_mode: mode,
+      })
+    : await getAnonClient().database.rpc('bni_get_leaderboard', {
+        p_limit: limit,
+        p_mode: mode,
+      });
   if (error) {
     if (isRpcMissing(error)) return [];
     throw error;
@@ -866,7 +914,12 @@ export async function adminSetLeaderboardModes(modes) {
 }
 
 export async function fetchMyMutualStats() {
-  const { data, error } = await getClient().database.rpc('bni_get_my_mutual_stats');
+  const eventId = activeEventId();
+  const { data, error } = eventId
+    ? await getClient().database.rpc('bni_get_my_event_mutual_stats', {
+        p_event_id: eventId,
+      })
+    : await getClient().database.rpc('bni_get_my_mutual_stats');
   if (error) {
     if (isRpcMissing(error)) return null;
     throw error;

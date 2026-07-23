@@ -35,6 +35,40 @@
 | 分會官網 | [evershine.tw](https://evershine.tw/)（Landing／首頁／找人脈皆有連結） |
 | 現場 QR | `public/qr/changhui-dinner-2026-07-23.png` → 正式站 `/` |
 
+### 今晚資料隔離（與年會分離）
+
+| 項目 | 年會 | 今晚（`changhui-2026-0723`） |
+|------|------|------------------------------|
+| 公開名單／媒合 | `bni_get_public_members` | `bni_event_attendees` + `bni_get_event_public_members` |
+| 標記表 | `bni_connection_marks` | `bni_event_connection_marks` |
+| 排行榜 RPC | `bni_get_leaderboard` | `bni_get_event_leaderboard` |
+| 開關 | `DINNER_MODE = false` | `DINNER_MODE = true` |
+
+- 年會歷史分數與全台名單**不動**；晚宴媒合／標記只走活動表
+- 晚宴 UI 不顯示年會 800／董顧舊活動；可保留區域資深董事與本場主席團
+- 長輝夥伴若有年會資料：`node scripts/cue-yearend-into-dinner.mjs` 會把較完整欄位 cue 進本場出席列
+- SQL：`scripts/dinner-event-roster.sql`、`scripts/dinner-event-leaderboard.sql`
+- 重種本場出席：`node scripts/seed-dinner-event-attendees.mjs`
+
+### 後端維護：從 evershine 同步長輝會員
+
+```powershell
+# 1) 抓官網公開會員
+node scripts/fetch-evershine-members.mjs
+
+# 2) 寫入 InsForge（更新既有、補齊缺漏；可加 --with-guests 同步晚宴來賓）
+$env:BNI_API_BASE = "https://a-team9204.zeabur.app"
+$env:BNI_API_KEY = "ik_你的管理員Key"
+node scripts/sync-changhui-from-evershine.mjs --with-guests
+
+# 3) 重建晚宴前端名單（預填用）
+node scripts/build-changhui-dinner-roster.mjs
+```
+
+- DB  canonical 分會名：`長輝分會`（`長輝白金分會` 認領時會正規化為同一分會）
+- 腳本只 enrich／insert，**不會清掉**已綁定的 `auth_user_id`
+- 別名 SQL：`scripts/patch-changhui-branch-alias.sql`
+
 ### 晚宴模式 UI 差異
 
 - 首頁：**不顯示「集齊 800 人」**，改為今晚活動卡

@@ -732,23 +732,12 @@ function showDinnerGroup(group) {
 function dinnerBrowseHTML() {
   const ev = CHANGHUI_DINNER_EVENT;
   const roster = getChanghuiDinnerRoster();
-  const ateamHints = ['長輝白金分會', '長城分會', '長佑分會', '長興分會', '長榮分會']
-    .map(name => {
-      const count = (window.BNI_MEMBERS || []).filter(m =>
-        normalizeBranchName(m.branch || '').includes(normalizeBranchName(name).replace(/分會$/, ''))
-        || (m.branch || '').includes(name.replace(/分會$/, ''))
-        || (m.branch || '') === name
-      ).length;
-      return { name, count };
-    })
-    .filter(b => b.count > 0);
-
   return `
-    <section class="branch-browse-card dinner-browse-card" aria-label="本場與區域夥伴">
+    <section class="branch-browse-card dinner-browse-card" aria-label="本場夥伴">
       <div class="branch-browse-header">
         <div class="branch-browse-head-text">
           <div class="branch-browse-title">${escHtml(ev.title)}</div>
-          <div class="branch-browse-sub">本場名單優先；下方保留少數區域分會供延伸認識</div>
+          <div class="branch-browse-sub">AI 媒合僅限本場 ${roster.length} 人（與年會名單隔離）</div>
         </div>
       </div>
       <div class="branch-browse-body">
@@ -766,14 +755,6 @@ function dinnerBrowseHTML() {
             ${escHtml(ev.websiteLabel || '長輝分會網站 evershine.tw')}
           </a>
         </p>
-        ${ateamHints.length ? `
-          <div class="dinner-browse-region-label">區域延伸（精簡）</div>
-          <div class="branch-chips dinner-browse-chips">
-            ${ateamHints.map(b => `
-              <button type="button" class="branch-chip" data-branch="${escAttr(b.name)}">
-                ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
-              </button>`).join('')}
-          </div>` : ''}
       </div>
     </section>`;
 }
