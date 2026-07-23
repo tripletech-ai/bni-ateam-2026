@@ -9,7 +9,9 @@ export const CHANGHUI_DINNER_EVENT = {
   "address": "臺北市中山區民生東路三段8號",
   "note": "長輝會員免費參加",
   "memberBranch": "長輝白金分會",
-  "guestBranch": "長輝晚會來賓"
+  "guestBranch": "長輝晚會來賓",
+  "website": "https://evershine.tw/",
+  "websiteLabel": "長輝分會網站 evershine.tw"
 };
 
 export const CHANGHUI_DINNER_MEMBERS = [

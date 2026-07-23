@@ -2986,3 +2986,11 @@ body.dinner-mode { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 .search-ai-autofill-title { color: var(--gold-bright); }
 .search-ai-autofill-body { color: var(--dark-text); }
 .search-ai-autofill-have, .search-ai-autofill-tip { color: var(--dark-muted); }
+
+.dinner-tonight-card {
+  background: #101629; border-color: rgba(250,199,117,0.28);
+}
+.dinner-tonight-title { color: var(--gold-bright); }
+.dinner-tonight-meta, .dinner-browse-total, .dinner-browse-region-label { color: var(--dark-muted); }
+.dinner-tonight-body { color: var(--dark-text); }
+.dinner-evershine-link { color: var(--gold-bright); }

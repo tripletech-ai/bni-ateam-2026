@@ -44,6 +44,11 @@ export function renderDinnerLanding(container, { onEnter } = {}) {
             <div class="dinner-stat-label">本場合計</div>
           </div>
         </div>
+        <p class="dinner-evershine-link-wrap">
+          <a class="dinner-evershine-link" href="${escAttr(ev.website)}" target="_blank" rel="noopener noreferrer">
+            ${escHtml(ev.websiteLabel || '長輝分會網站 evershine.tw')}
+          </a>
+        </p>
       </section>
 
       <section class="dinner-landing-cta-block">

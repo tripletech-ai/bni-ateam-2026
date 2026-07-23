@@ -9,6 +9,8 @@ import { homeLeadersSectionsHTML, homeSectionAccordion, bindLeaderEvents } from 
 import { isBound } from '../services/auth.js';
 import { isGuestTrial, endGuestTrial } from '../utils/guestTrial.js';
 import { bindGuestTrialLogin } from '../components/GuestTrialBanner.js';
+import { isDinnerMode } from '../config/appMode.js';
+import { CHANGHUI_DINNER_EVENT, dinnerRosterStats } from '../data/changhuiDinner.js';
 
 function developerCardHTML(d) {
   const tags = (d.tagKeys || []).map(k =>
@@ -42,18 +44,37 @@ function developerCardHTML(d) {
     </article>`;
 }
 
+function dinnerTonightCardHTML() {
+  const ev = CHANGHUI_DINNER_EVENT;
+  const stats = dinnerRosterStats();
+  return `
+    <section class="dinner-tonight-card" aria-label="${escAttr(ev.title)}">
+      <p class="dinner-tonight-eyebrow">今晚現場</p>
+      <h2 class="dinner-tonight-title serif">${escHtml(ev.title)}</h2>
+      <p class="dinner-tonight-meta">${escHtml(ev.dateLabel)} · ${escHtml(ev.timeEntry)} · ${escHtml(ev.venue)}</p>
+      <p class="dinner-tonight-body">本場 ${stats.members} 位長輝會員、${stats.guests} 位來賓 — 用 AI 找合作對象、標記想約 1-1。</p>
+      <a href="#search" class="btn-ai dinner-tonight-cta">開始找本場夥伴</a>
+      <p class="dinner-evershine-link-wrap">
+        <a class="dinner-evershine-link" href="${escAttr(ev.website)}" target="_blank" rel="noopener noreferrer">
+          ${escHtml(ev.websiteLabel || '長輝分會網站 evershine.tw')}
+        </a>
+      </p>
+    </section>`;
+}
+
 export function renderHome(container) {
   container.classList.add('page-root');
   const markCount = getMarkCount();
+  const dinner = isDinnerMode();
 
   container.innerHTML = `
     <div class="hero hero-compact home-landing">
       <h1 class="hero-title serif hero-title-gold" data-text="${escAttr(t('hero_title'))}">${escHtml(t('hero_title'))}</h1>
-      <p class="hero-sub">${escHtml(t('hero_sub'))}</p>
+      <p class="hero-sub">${escHtml(dinner ? '長輝擴大商機晚會 · 說你想找誰，AI 幫你媒合' : t('hero_sub'))}</p>
       <a href="#search" class="btn-ai home-primary-cta">${escHtml(t('home_primary_cta'))}</a>
     </div>
 
-    ${collect800HTML({ context: 'home' })}
+    ${dinner ? dinnerTonightCardHTML() : collect800HTML({ context: 'home' })}
 
     ${yangIntroHTML()}
 
@@ -68,13 +89,13 @@ export function renderHome(container) {
     ${homeSectionAccordion(t('home_section_developers'), `
       <p class="home-section-sub">${escHtml(t('home_developers_sub'))}</p>
       <div class="developer-stack home-developer-stack">${DEVELOPERS.map(developerCardHTML).join('')}</div>
-    `, 'home-developers', { defaultOpen: true })}
+    `, 'home-developers', { defaultOpen: dinner ? false : true })}
 
     <div style="height:24px"></div>
   `;
 
   bindLeaderEvents(container);
-  bindCollect800Game(container);
+  if (!dinner) bindCollect800Game(container);
   if (isGuestTrial()) {
     bindGuestTrialLogin(container, { onBeforeLogin: endGuestTrial });
   }

@@ -2472,3 +2472,25 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 .search-ai-autofill-body { font-size: 13px; line-height: 1.5; color: var(--text); margin: 0 0 6px; }
 .search-ai-autofill-have { color: var(--muted); }
 .search-ai-autofill-tip { font-size: 12px; color: var(--muted); margin: 0; }
+
+/* Dinner tonight (home) */
+.dinner-tonight-card {
+  margin: 12px 16px 20px; padding: 18px 16px; border-radius: var(--r);
+  background: var(--surface); border: 1px solid var(--border); box-shadow: var(--shadow);
+}
+.dinner-tonight-eyebrow { font-size: 11px; letter-spacing: 0.12em; color: var(--gold); margin: 0 0 6px; font-weight: 700; }
+.dinner-tonight-title { font-size: calc(20px * var(--fs-k, 0.78)); margin: 0 0 8px; color: var(--gold); }
+.dinner-tonight-meta { font-size: 13px; color: var(--muted); margin: 0 0 8px; line-height: 1.5; }
+.dinner-tonight-body { font-size: 14px; line-height: 1.55; margin: 0 0 14px; color: var(--text); }
+.dinner-tonight-cta { display: block; text-align: center; text-decoration: none; }
+.dinner-browse-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+.dinner-browse-btn { width: 100%; text-align: center; text-decoration: none; }
+.dinner-browse-total { font-size: 13px; color: var(--muted); margin: 0 0 12px; }
+.dinner-browse-region-label { font-size: 12px; font-weight: 700; color: var(--muted); margin-bottom: 8px; }
+.dinner-browse-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.dinner-evershine-link-wrap { margin: 12px 0 0; text-align: center; }
+.dinner-evershine-link {
+  font-size: 13px; font-weight: 600; color: var(--gold);
+  text-decoration: underline; text-underline-offset: 3px;
+}
+.dinner-evershine-link:hover { color: var(--gold-bright, #c9892a); }

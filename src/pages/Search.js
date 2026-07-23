@@ -16,6 +16,12 @@ import { refreshMembersCache } from '../services/membersApi.js';
 import { eventRegistryBrowseHTML, bindEventChapterClicks } from '../components/EventChapterBrowse.js';
 import { loadDinnerIdentity } from '../utils/dinnerSession.js';
 import { isDinnerMode } from '../config/appMode.js';
+import {
+  CHANGHUI_DINNER_EVENT,
+  CHANGHUI_DINNER_MEMBERS,
+  CHANGHUI_DINNER_GUESTS,
+  getChanghuiDinnerRoster,
+} from '../data/changhuiDinner.js';
 
 /** 找人脈：'direct' | 'ai' | null（未展開） */
 let activeSearchMode = null;
@@ -199,7 +205,7 @@ function buildSearchUI() {
     <div id="search-loading" style="display:none" role="status" aria-live="polite"></div>
     <div id="ai-result-area" style="display:none"></div>
     <div id="search-results-area" style="display:none"></div>
-    ${industryPieChartHTML({ stats: window.BNI_PUBLIC_STATS, members: window.BNI_MEMBERS })}
+    ${isDinnerMode() ? '' : industryPieChartHTML({ stats: window.BNI_PUBLIC_STATS, members: window.BNI_MEMBERS })}
     <div id="search-quick-filters"></div>
     <div id="branch-browse-area"></div>
   `;
@@ -600,6 +606,41 @@ function resetSearch() {
 
 function renderQuickFilters(container) {
   if (!container) return;
+
+  // 晚宴模式：只保留本場快捷，不塞全台產業／分會
+  if (isDinnerMode()) {
+    container.innerHTML = `
+      <div class="quick-filter-section">
+        <div class="quick-filter-label">本場快捷</div>
+        <div class="quick-filter-scroll" role="list">
+          <button type="button" class="quick-filter-chip branch" data-dinner-group="member">
+            長輝會員<span class="chip-count">${CHANGHUI_DINNER_MEMBERS.length}</span>
+          </button>
+          <button type="button" class="quick-filter-chip branch" data-dinner-group="guest">
+            本場來賓<span class="chip-count">${CHANGHUI_DINNER_GUESTS.length}</span>
+          </button>
+          <button type="button" class="quick-filter-chip branch" data-branch="${escAttr(CHANGHUI_DINNER_EVENT.memberBranch)}">
+            長輝白金分會
+          </button>
+        </div>
+      </div>`;
+    container.querySelectorAll('[data-dinner-group]').forEach(el => {
+      el.addEventListener('click', () => {
+        container.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        showDinnerGroup(el.dataset.dinnerGroup);
+      });
+    });
+    container.querySelectorAll('[data-branch]').forEach(el => {
+      el.addEventListener('click', () => {
+        container.querySelectorAll('.quick-filter-chip.active').forEach(c => c.classList.remove('active'));
+        el.classList.add('active');
+        showBranchMembers(el.dataset.branch);
+      });
+    });
+    return;
+  }
+
   const rows = mergeIndustryStatsFromPublic(window.BNI_PUBLIC_STATS, window.BNI_MEMBERS);
   const { zhongshan, sanlu, guest } = resolveBranchLists(window.BNI_PUBLIC_STATS);
   const topBranches = [
@@ -667,8 +708,88 @@ function showIndustryMembers(industryId) {
   }).catch(e => console.warn('refresh members:', e.message));
 }
 
+function showDinnerGroup(group) {
+  const list = group === 'guest' ? CHANGHUI_DINNER_GUESTS : CHANGHUI_DINNER_MEMBERS;
+  const title = group === 'guest' ? '本場來賓' : '本場長輝會員';
+  const members = list.map(p => {
+    const hit = (window.BNI_MEMBERS || []).find(m =>
+      String(m.name || '').replace(/\s+/g, '') === String(p.name || '').replace(/\s+/g, '')
+      && (m.branch === p.branch || !m.branch));
+    return hit || p;
+  });
+  const container = document.getElementById('search-results-area');
+  if (!container) return;
+  hideBrowseChrome();
+  document.getElementById('ai-result-area').style.display = 'none';
+  showMemberList(container, {
+    title: `${title}（${members.length}）`,
+    members,
+    emptyTitle: `${title} — 目前沒有資料`,
+    onClose: closeSearchMemberList,
+  });
+}
+
+function dinnerBrowseHTML() {
+  const ev = CHANGHUI_DINNER_EVENT;
+  const roster = getChanghuiDinnerRoster();
+  const ateamHints = ['長輝白金分會', '長城分會', '長佑分會', '長興分會', '長榮分會']
+    .map(name => {
+      const count = (window.BNI_MEMBERS || []).filter(m =>
+        normalizeBranchName(m.branch || '').includes(normalizeBranchName(name).replace(/分會$/, ''))
+        || (m.branch || '').includes(name.replace(/分會$/, ''))
+        || (m.branch || '') === name
+      ).length;
+      return { name, count };
+    })
+    .filter(b => b.count > 0);
+
+  return `
+    <section class="branch-browse-card dinner-browse-card" aria-label="本場與區域夥伴">
+      <div class="branch-browse-header">
+        <div class="branch-browse-head-text">
+          <div class="branch-browse-title">${escHtml(ev.title)}</div>
+          <div class="branch-browse-sub">本場名單優先；下方保留少數區域分會供延伸認識</div>
+        </div>
+      </div>
+      <div class="branch-browse-body">
+        <div class="dinner-browse-row">
+          <button type="button" class="btn-gold-outline dinner-browse-btn" data-dinner-group="member">
+            本場長輝會員（${CHANGHUI_DINNER_MEMBERS.length}）
+          </button>
+          <button type="button" class="btn-gold-outline dinner-browse-btn" data-dinner-group="guest">
+            本場來賓（${CHANGHUI_DINNER_GUESTS.length}）
+          </button>
+        </div>
+        <p class="dinner-browse-total">本場合計 ${roster.length} 人</p>
+        <p class="dinner-evershine-link-wrap">
+          <a class="dinner-evershine-link" href="${escAttr(ev.website)}" target="_blank" rel="noopener noreferrer">
+            ${escHtml(ev.websiteLabel || '長輝分會網站 evershine.tw')}
+          </a>
+        </p>
+        ${ateamHints.length ? `
+          <div class="dinner-browse-region-label">區域延伸（精簡）</div>
+          <div class="branch-chips dinner-browse-chips">
+            ${ateamHints.map(b => `
+              <button type="button" class="branch-chip" data-branch="${escAttr(b.name)}">
+                ${escHtml(b.name)}<span class="chip-count">${b.count}</span>
+              </button>`).join('')}
+          </div>` : ''}
+      </div>
+    </section>`;
+}
+
 function renderBranchBrowse(container) {
   if (!container) return;
+  if (isDinnerMode()) {
+    container.innerHTML = dinnerBrowseHTML();
+    container.querySelectorAll('[data-dinner-group]').forEach(el => {
+      el.addEventListener('click', () => showDinnerGroup(el.dataset.dinnerGroup));
+    });
+    container.querySelectorAll('[data-branch]').forEach(el => {
+      el.addEventListener('click', () => showBranchMembers(el.dataset.branch));
+    });
+    return;
+  }
   container.innerHTML = eventRegistryBrowseHTML({ stats: window.BNI_PUBLIC_STATS });
   bindEventChapterClicks(container, showBranchMembers);
 }
