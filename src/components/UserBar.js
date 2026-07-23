@@ -82,6 +82,9 @@ export function renderUserBar(el) {
     });
     if (!ok) return;
     try {
+      const { clearDinnerIdentity } = await import('../utils/dinnerSession.js');
+      clearDinnerIdentity();
+      window.BNI_DINNER_PROFILE = null;
       await signOut();
       location.hash = '';
       location.reload();
