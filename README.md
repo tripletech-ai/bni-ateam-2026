@@ -39,9 +39,11 @@
 
 | 項目 | 年會 | 今晚（`changhui-2026-0723`） |
 |------|------|------------------------------|
-| 公開名單／媒合 | `bni_get_public_members` | `bni_event_attendees` + `bni_get_event_public_members` |
+| 公開名單／媒合 | `bni_get_public_members` | `bni_event_attendees` + `bni_get_event_public_members`（80 人） |
 | 標記表 | `bni_connection_marks` | `bni_event_connection_marks` |
 | 排行榜 RPC | `bni_get_leaderboard` | `bni_get_event_leaderboard` |
+| 聊天室 | `bni_feed` | `bni_event_feed` |
+| 本機標記 key | `bni_ateam_marks_2026` | `bni_ateam_marks_2026:changhui-2026-0723` |
 | 開關 | `DINNER_MODE = false` | `DINNER_MODE = true` |
 
 - 年會歷史分數與全台名單**不動**；晚宴媒合／標記只走活動表
@@ -192,4 +194,5 @@ node scripts/setup-bni-insforge.mjs
 ## 技術支援（Contributor）
 
 - **王祈** — 三人科技顧問共同創辦人，AI 整合與系統架構  
+- **王銓** — 三人科技顧問 · AI 商務顧問，自動化與現場 AI 應用協作  
 - **李孟一** — 長輝分會魔術方塊教學，共同開發現場體驗與教學流程  

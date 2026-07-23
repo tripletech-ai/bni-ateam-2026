@@ -17,6 +17,21 @@ export const DEVELOPERS = [
     contactKey: 'dev_contact_cta',
   },
   {
+    id: 'wangquan',
+    name: '王銓',
+    photo: '王銓.jpg',
+    branchKey: 'dev_wangquan_branch',
+    roleKey: 'dev_wangquan_role',
+    tagKeys: ['dev_wangquan_tag_ai', 'dev_wangquan_tag_auto'],
+    highlightKeys: [
+      'dev_wangquan_h1',
+      'dev_wangquan_h2',
+      'dev_wangquan_h3',
+    ],
+    companyKeys: ['contributor_company_tripletech'],
+    contactKey: 'dev_contact_cta',
+  },
+  {
     id: 'limengyi',
     name: '李孟一',
     photo: '李孟一.png',

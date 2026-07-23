@@ -1,7 +1,7 @@
 import { getMarks, getPendingMarks, removeMark, getOneMarkCount, getConnectionCount, getMark, setMark, isMutuallyConnected } from '../utils/storage.js';
 import { showToast } from '../utils/toast.js';
 import { renderTabBar } from '../components/TabBar.js';
-import { goalProgressHTML, MARK_PARTNER_GOAL, MARK_ONE_GOAL } from '../components/GoalProgress.js';
+import { goalProgressHTML, getMarkPartnerGoal, getMarkOneGoal } from '../components/GoalProgress.js';
 import { escHtml, escAttr }     from '../utils/html.js';
 import { t }                    from '../i18n/translations.js';
 import { isGuestTrial } from '../utils/guestTrial.js';
@@ -43,8 +43,13 @@ function statsGridHTML(connected, oneCount, bizCount) {
 }
 
 function goalHintHTML(connected, oneCount) {
-  const done = connected >= MARK_PARTNER_GOAL && oneCount >= MARK_ONE_GOAL;
-  return `<p class="marks-goal-hint">${escHtml(done ? t('result_done') : t('result_goal_hint'))}</p>`;
+  const partnerGoal = getMarkPartnerGoal();
+  const oneGoal = getMarkOneGoal();
+  const done = connected >= partnerGoal && oneCount >= oneGoal;
+  const hint = done
+    ? t('result_done')
+    : `繼續標記本場夥伴，朝 ${partnerGoal} 人互相連結、${oneGoal} 次想約 1-1 邁進`;
+  return `<p class="marks-goal-hint">${escHtml(hint)}</p>`;
 }
 
 function markCardHTML(m, i) {
@@ -232,8 +237,12 @@ function refreshMarksStatsGrid(container) {
   if (nums[2]) nums[2].textContent = String(bizCount);
   const hint = page.querySelector('.marks-goal-hint');
   if (hint) {
-    const done = connected >= MARK_PARTNER_GOAL && oneCount >= MARK_ONE_GOAL;
-    hint.textContent = done ? t('result_done') : t('result_goal_hint');
+    const partnerGoal = getMarkPartnerGoal();
+    const oneGoal = getMarkOneGoal();
+    const done = connected >= partnerGoal && oneCount >= oneGoal;
+    hint.textContent = done
+      ? t('result_done')
+      : `繼續標記本場夥伴，朝 ${partnerGoal} 人互相連結、${oneGoal} 次想約 1-1 邁進`;
   }
 }
 

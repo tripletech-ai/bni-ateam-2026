@@ -1,6 +1,25 @@
-const KEY = "bni_ateam_marks_2026";
-const PENDING_KEY = "bni_pending_marks_2026";
+import { activeEventId } from './eventScope.js';
 
+const BASE_KEY = "bni_ateam_marks_2026";
+const BASE_PENDING_KEY = "bni_pending_marks_2026";
+
+function marksKey() {
+  const eventId = activeEventId();
+  return eventId ? `${BASE_KEY}:${eventId}` : BASE_KEY;
+}
+
+function pendingKey() {
+  const eventId = activeEventId();
+  return eventId ? `${BASE_PENDING_KEY}:${eventId}` : BASE_PENDING_KEY;
+}
+
+/** 晚宴目標較小；年會沿用原設定 */
+export function getMarkPartnerGoal() {
+  return activeEventId() ? 5 : 10;
+}
+export function getMarkOneGoal() {
+  return activeEventId() ? 10 : 30;
+}
 export const MARK_PARTNER_GOAL = 10;
 export const MARK_ONE_GOAL = 30;
 
@@ -15,23 +34,23 @@ function writeList(key, list) {
 }
 
 export function getMarks() {
-  return readList(KEY);
+  return readList(marksKey());
 }
 
 export function setMarks(list) {
-  writeList(KEY, list);
+  writeList(marksKey(), list);
 }
 
 export function getPendingMarks() {
-  return readList(PENDING_KEY);
+  return readList(pendingKey());
 }
 
 function setPendingMarks(list) {
-  writeList(PENDING_KEY, list);
+  writeList(pendingKey(), list);
 }
 
 export function clearPendingMarks() {
-  try { localStorage.removeItem(PENDING_KEY); }
+  try { localStorage.removeItem(pendingKey()); }
   catch (e) { console.warn('clearPendingMarks:', e); }
 }
 

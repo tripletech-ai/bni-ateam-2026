@@ -737,7 +737,7 @@ function dinnerBrowseHTML() {
       <div class="branch-browse-header">
         <div class="branch-browse-head-text">
           <div class="branch-browse-title">${escHtml(ev.title)}</div>
-          <div class="branch-browse-sub">AI 媒合僅限本場 ${roster.length} 人（與年會名單隔離）</div>
+          <div class="branch-browse-sub">AI 媒合僅限本場 ${roster.length} 人</div>
         </div>
       </div>
       <div class="branch-browse-body">

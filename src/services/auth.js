@@ -928,6 +928,20 @@ export async function fetchMyMutualStats() {
 }
 
 export async function fetchFeed(limit = 50, before = null) {
+  const eventId = activeEventId();
+  // 晚宴：絕不回年會聊天室；RPC 未部署時回空陣列
+  if (eventId) {
+    const { data, error } = await getAnonClient().database.rpc('bni_get_event_feed', {
+      p_event_id: eventId,
+      p_limit: limit,
+      p_before: before,
+    });
+    if (error) {
+      if (isRpcMissing(error)) return [];
+      throw error;
+    }
+    return Array.isArray(data) ? data : [];
+  }
   const { data, error } = await getAnonClient().database.rpc('bni_get_feed', {
     p_limit: limit,
     p_before: before,
@@ -941,9 +955,15 @@ export async function fetchFeed(limit = 50, before = null) {
 
 export async function postFeedMessage(content) {
   return withAuthRetry(async () => {
-    const { data, error } = await getClient().database.rpc('bni_post_feed_message', {
-      p_content: content,
-    });
+    const eventId = activeEventId();
+    const { data, error } = eventId
+      ? await getClient().database.rpc('bni_post_event_feed_message', {
+          p_event_id: eventId,
+          p_content: content,
+        })
+      : await getClient().database.rpc('bni_post_feed_message', {
+          p_content: content,
+        });
     if (error) throw error;
     return data;
   });

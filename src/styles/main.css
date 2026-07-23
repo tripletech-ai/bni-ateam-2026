@@ -2525,3 +2525,44 @@ body:has(.user-bar:not(.hidden)) .live-page--chat {
 .dinner-region-note-role { font-size: 13px; color: var(--muted); font-weight: 700; }
 .dinner-region-note-name { font-size: 18px; color: var(--gold); }
 .dinner-region-note-sub { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+
+/* Beginner guide (post-bind) */
+.beginner-guide-open { overflow: hidden; }
+#beginner-guide-overlay {
+  position: fixed; inset: 0; z-index: 1200;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px 16px;
+  background: rgba(12, 16, 28, 0.72);
+  backdrop-filter: blur(4px);
+}
+.beginner-guide-card {
+  width: min(420px, 100%);
+  padding: 28px 22px 22px;
+  border-radius: var(--r);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+.beginner-guide-eyebrow {
+  margin: 0 0 8px; font-size: 12px; letter-spacing: 0.08em;
+  font-weight: 700; color: var(--gold);
+}
+.beginner-guide-title {
+  margin: 0 0 12px; font-size: calc(24px * var(--fs-k, 0.78));
+  line-height: 1.25; color: var(--gold);
+}
+.beginner-guide-body {
+  margin: 0 0 18px; font-size: 15px; line-height: 1.65; color: var(--text);
+}
+.beginner-guide-dots {
+  display: flex; gap: 6px; margin-bottom: 18px;
+}
+.beginner-guide-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--border);
+}
+.beginner-guide-dot.active { background: var(--gold); }
+.beginner-guide-actions {
+  display: flex; flex-direction: column; gap: 8px;
+}

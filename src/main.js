@@ -31,7 +31,13 @@ import { showIncomingOneOverlay, dismissIncomingOverlay } from './components/Inc
 import { setIncomingUnseenCount } from './utils/incomingMarks.js';
 import { renderUserBar } from './components/UserBar.js';
 import { bootSkeletonHTML } from './utils/skeleton.js';
-import { showFirstRunHint, finishOnboardingTutorial } from './components/FirstRunHint.js';
+import { finishOnboardingTutorial } from './components/FirstRunHint.js';
+import { showBeginnerGuide } from './pages/BeginnerGuide.js';
+import {
+  queueBeginnerGuide,
+  consumeBeginnerGuideQueue,
+  hasSeenBeginnerGuide,
+} from './utils/beginnerGuide.js';
 import { loadMembersFromDb } from './services/membersApi.js';
 import { withRetry } from './utils/retry.js';
 import { isGuestTrial, endGuestTrial } from './utils/guestTrial.js';
@@ -143,6 +149,13 @@ function navigate() {
     hash = '#marks';
     if (window.location.hash === '#result') {
       history.replaceState(null, '', '#marks');
+    }
+  }
+  // 晚宴模式不開放年會董顧頁
+  if (isDinnerMode() && hash === '#leaders') {
+    hash = '#home';
+    if (window.location.hash === '#leaders') {
+      history.replaceState(null, '', '#home');
     }
   }
   if (isGuestTrial()) {
@@ -275,7 +288,7 @@ async function afterBindComplete() {
   if (mergedCount > 0) showToast(t('marks_pending_merged', { n: mergedCount }));
   isAdmin = await checkIsAdmin();
   await finishOnboardingTutorial();
-  sessionStorage.setItem('bni_show_first_run', '1');
+  queueBeginnerGuide();
   recordPresence().catch(() => {});
   preloadLiveData();
   startIncomingPoll();
@@ -283,16 +296,15 @@ async function afterBindComplete() {
   appReady = true;
   location.hash = '#home';
   navigate();
-  maybeShowFirstRunHint();
+  maybeShowBeginnerGuide();
   maybeNudgeEmptyProfile();
 }
 
-function maybeShowFirstRunHint() {
-  if (sessionStorage.getItem('bni_show_first_run') !== '1') return;
-  sessionStorage.removeItem('bni_show_first_run');
+function maybeShowBeginnerGuide() {
+  if (!consumeBeginnerGuideQueue()) return;
   const member = getMyStatus()?.member;
   const empty = profileBackendEmpty(member);
-  showFirstRunHint({
+  showBeginnerGuide({
     profileEmpty: empty,
     onGoProfile: () => goToPage('profile'),
     onGoSearch: () => goToPage('search'),
@@ -412,8 +424,10 @@ function showDinnerGate() {
     renderDinnerPickLogin(app, {
       onBack: () => showDinnerGate(),
       onComplete: async () => {
+        // 本場首次選人入場 → 顯示新手教學（回訪已看過則略過）
+        if (!hasSeenBeginnerGuide()) queueBeginnerGuide();
         mergeDinnerRosterIntoMembers();
-        await enterDinnerApp();
+        await enterDinnerApp({ showGuide: true });
       },
     });
   };
@@ -421,7 +435,7 @@ function showDinnerGate() {
   renderDinnerLanding(app, { onEnter: goPick });
 }
 
-async function enterDinnerApp() {
+async function enterDinnerApp({ showGuide = false } = {}) {
   const identity = loadDinnerIdentity();
   if (identity) applyDinnerBoundStatus(identity);
   mergeDinnerRosterIntoMembers();
@@ -437,6 +451,7 @@ async function enterDinnerApp() {
     location.hash = '#home';
   }
   navigate();
+  if (showGuide) maybeShowBeginnerGuide();
 }
 
 async function boot() {
@@ -484,8 +499,11 @@ async function boot() {
     }
   }
   mergeDinnerRosterIntoMembers();
-  await loadPublicStatsWithRetry();
-  await loadEventChaptersWithRetry();
+  // 晚宴：不拉年會全台 stats／分會名錄，避免記憶體混入舊活動資料
+  if (!isDinnerMode()) {
+    await loadPublicStatsWithRetry();
+    await loadEventChaptersWithRetry();
+  }
 
   const user = getCurrentUser();
   const wantsAdmin = isAdminRoute() || hasAdminLoginIntent();

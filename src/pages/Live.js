@@ -71,7 +71,7 @@ function leaderboardPanelHTML() {
   const rows = boards[liveLbMode] || [];
   const dinner = isEventScoped();
   const sub = dinner
-    ? `${CHANGHUI_DINNER_EVENT.title} · 今晚獨立計分（不含年會累積）`
+    ? `${CHANGHUI_DINNER_EVENT.title} · 今晚獨立計分`
     : t('lb_sub');
   return `
     <section class="live-panel live-panel-leaderboard${liveMainTab !== 'leaderboard' ? ' hidden' : ''}">

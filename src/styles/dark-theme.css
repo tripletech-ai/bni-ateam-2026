@@ -3007,3 +3007,12 @@ body.dinner-mode { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
 .dinner-region-note { background: #101629; border-color: rgba(250,199,117,0.28); }
 .dinner-region-note-eyebrow, .dinner-region-note-name { color: var(--gold-bright); }
 .dinner-region-note-role, .dinner-region-note-sub { color: var(--dark-muted); }
+
+#beginner-guide-overlay { background: rgba(4, 8, 18, 0.82); }
+.beginner-guide-card {
+  background: #101629; border-color: rgba(250,199,117,0.3);
+}
+.beginner-guide-eyebrow, .beginner-guide-title { color: var(--gold-bright); }
+.beginner-guide-body { color: var(--dark-text); }
+.beginner-guide-dot { background: rgba(255,255,255,0.18); }
+.beginner-guide-dot.active { background: var(--gold-bright); }
